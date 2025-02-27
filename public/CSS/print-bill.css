@@ -1,0 +1,356 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+/* Separator Line */
+.separator-line {
+    border-bottom: 2px solid #ddd;
+    margin: 8px 0;
+}
+.customer-header {
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    margin-bottom: 0px;
+    padding: 5px 0px;
+    background: #f8f8f8; /* Light gray background */
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.customer-header h2 {
+    font-size: 22px;
+    font-weight: normal;
+    margin-bottom: 1px;
+    color: #333;
+}
+
+.customer-header p {
+    font-size: 18px;
+    color: #555;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #007BFF; /* Blue highlight */
+}
+.back-btn {
+    background-color:#28a745;
+    color: white;
+    border: none;
+    padding: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.back-btn:hover {
+    background-color: #0056b3;
+}
+
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* 📄 Table Container with Side Margins */
+.table-container {
+    width: 95%;  /* Reduce width to give side margins */
+    max-width: 1200px; /* Prevent stretching too wide on big screens */
+    margin: 20px auto;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+/* 📊 Responsive Table */
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    table-layout: auto; /* Allow columns to adjust dynamically */
+}
+
+.transaction-table th, .transaction-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.transaction-table th {
+    background: #007bff;
+    color: white;
+}
+
+/* 🌓 Alternate Row Colors */
+.transaction-table tr:nth-child(even) {
+    background: #dbd9d9;
+}
+
+.transaction-table tr:hover {
+    background: #c0b9b9;
+}
+
+/* ✅ Select All Checkbox */
+.select-all-container {
+    text-align: right;
+    margin-top: 10px;
+    margin-right: 5%;
+}
+
+/* 💰 Total Section */
+.total-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 20px auto;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+.button-container {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
+    margin-top: 20px; /* Optional: Adjust spacing from content above */
+}
+
+/* 🖨️ Print Button */
+#printButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#printButton:hover {
+    background: #218838;
+}
+
+/* 🖨️ Print Button */
+#preview {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview:hover {
+    background: #27037a;
+}
+
+#markBilled {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#markBilled:hover {
+    background: #27037a;
+}
+
+/* 📱 Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .table-container {
+        width: 100%; /* Use full width for small devices */
+        padding: 5px; /* Reduce padding */
+    }
+    
+    .transaction-table th, .transaction-table td {
+        padding: 6px;
+        font-size: 14px; /* Reduce font size for small screens */
+    }
+
+    /* Hide some columns on very small screens */
+    @media screen and (max-width: 600px) {
+        .transaction-table th:nth-child(3), /* Hide Buyer */
+        .transaction-table td:nth-child(3),
+        .transaction-table th:nth-child(5), /* Hide Bhav */
+        .transaction-table td:nth-child(5) {
+            display: none;
+        }
+    }
+}
+
+
+
+
+
+
+

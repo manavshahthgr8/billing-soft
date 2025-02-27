@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Billing Software</title>
+    <link rel="stylesheet" href="CSS\home.css">
+    <script src="JS\home.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <span class="welcome-text">Welcome, Admin</span>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="internalpages/account.html">Your Account</a></li>
+                    <li><a href="internalpages/firm.html">Manage Firm</a></li>
+                    <li><a href="internalpages/FY-manage.html">Financial Year</a></li>
+                    <li><a href="internalpages/backup.html">Backup</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="internalpages/customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+     <!-- Main Content -->
+     
+     <div class="main-content">
+        <div class="ganesha-icon">
+            <img src="images\Om.png" alt="Lord Ganesha Icon">
+        </div>
+        <h1 class="title">--Dashboard--</h1>
+        <div class="features-grid">
+            <div class="feature-box"  id="createBillBtn">
+                <img src="images\Bill.png" alt="Create Bill" class="feature-icon" >
+                <p>Create Bill</p>
+            </div>
+            <div class="feature-box" id="viewTransactionsBtn">
+                <img src="images\edit.jpg" alt="View Transactions" class="feature-icon">
+                <p>View/Edit Transactions</p>
+            </div>
+            <div class="feature-box"  id="PrintBillBtn">
+                <img src="images\printer.webp" alt="Print Bill" class="feature-icon">
+                <p>Print Bill</p>
+            </div>
+            <div class="feature-box">
+                <img src="images\analytics.webp" alt="Analytics" class="feature-icon">
+                <p>Analytics</p>
+            </div>
+            <div class="feature-box v2FeatureTrigger">
+                <img src="images\dailysauda.png" alt="Daily Sauda Log" class="feature-icon">
+                <p>Daily Sauda Log</p>
+            </div>
+        </div>
+    </div>
+
+   <!-- ✅ Single Modal for Selecting Firm & FY -->
+<div class="edit_bill_modal" id="selectFirmFYModal" style="display: none;">
+    <div class="edit_bill_modal_content">
+        <h3>Select Firm & Financial Year</h3>
+        <form id="firmFyForm">
+            <label for="selectFirm">Select Firm:</label>
+            <select id="selectFirm" required>
+                <option value="">-- Select Firm --</option>
+            </select>
+
+            <label for="selectFY">Select Financial Year:</label>
+            <select id="selectFY" required>
+                <option value="">-- Select FY --</option>
+            </select>
+
+            <label for="currentPassword">Current Password:</label>
+            <input type="password" id="currentPassword" placeholder="Enter current password" required />
+
+            <button type="submit" id="submitFirmFY">Submit</button>
+            <button type="button" id="cancelFirmFY">Cancel</button>
+        </form>
+    </div>
+</div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Designed & Developed by Manav with ❤️
+    </div>
+
+    <!-- Modal -->
+    <!-- Modal -->
+<div class="modal" id="dailySaudaModal">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModal">&times;</button>
+        <p>
+            Thank you for showing interest in the feature.<br>
+            It will be released with version 2 in the future.<br>
+            For more inquiry, contact Manav.<br>
+            Thank you!
+        </p>
+    </div>
+</div>
+
+
+</body>
+</html>

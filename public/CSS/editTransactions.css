@@ -1,0 +1,705 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+  
+    padding: 0;
+}
+
+/* Page Header */
+.content-header {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 1px;
+}
+
+.content-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.content-header p {
+    margin: 1px 0 0;
+    color: #555;
+}
+
+/* Separator Line */
+.separator-line {
+    border-bottom: 2px solid #ddd;
+    margin: 8px 0;
+}
+
+
+
+/* Top Bar */
+.top-bar {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Left section auto, right section takes remaining space */
+    gap: 5px;
+    align-items: center;
+    background: #59d0ff7a;
+    padding: 2px 10px 2px 10px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+}
+
+/* Left Section */
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Right Section */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+/* Responsive for Small Screens */
+@media (max-width: 768px) {
+    .top-bar {
+        grid-template-columns: 1fr; /* Stack sections vertically */
+    }
+    
+    .right-section {
+        justify-content: flex-start;
+    }
+}
+
+
+.left-section span {
+    font-weight: bold;
+}
+
+.left-section button {
+    padding: 1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.left-section button:hover {
+    background-color: #ccc;
+}
+
+select {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+/* Right Section - Search */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#search-bar {
+    padding:1px 5px 1px 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+}
+
+#search-column {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#search-btn {
+    padding:1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#search-btn:hover {
+    background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .right-section {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #search-bar {
+        width: 100%;
+    }
+}
+
+/* General styles for the transaction card */
+
+  
+  /* Hover effect for the card */
+  .transaction-card:hover {
+    transform: scale(1.01);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Styles for transaction details */
+  .transaction-details {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .transaction-id {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    
+  }
+  
+  .transaction-meta {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* Styles for the transaction info section */
+  .transaction-info {
+    flex: 3;
+    font-size: 14px;
+    color: #444;
+  }
+  
+  .transaction-actions {
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+  }
+  
+  .transaction-actions button {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Green View button */
+  .view-btn {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .view-btn:hover {
+    background-color: #218838;
+  }
+  
+  /* Blue Download button */
+  .download-btn {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .download-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Pagination styling */
+  .pagination {
+    margin: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #prev-btn,
+  #next-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  #prev-btn:disabled,
+  #next-btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  #page-info {
+    font-size: 16px;
+  }
+
+
+/* General styles for the transaction card */
+.transaction-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 5px 20px 5px 20px;
+    margin: 5px 20px 5px 20px;
+    
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effect for the card */
+.transaction-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Left Section (Main content area) */
+.left-section-transaction{
+   
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 75%; /* Takes 75% of the card */
+}
+
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    
+}
+
+.transaction-info {
+    display: flex;
+    justify-content: space-between;
+    width: 60%;
+}
+
+.transaction-info p {
+    margin: 0 15px 0 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.transaction-date {
+    font-size: 14px;
+    color: #777;
+}
+
+.transaction-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+  
+}
+
+.transaction-direction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+}
+
+.from, .to {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+}
+
+.arrow {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 0 10px;
+}
+
+.transaction-rates {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 14px;
+    color: #444;
+}
+
+/* Right Section (Action buttons area) */
+.right-section-transaction {
+   
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.right-section-transaction button {
+    padding: 1px 10px 1px 10px;
+    font-size: 14px;
+    margin: 2px 5px 1px 5px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Green Edit button */
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #388E3C;
+}
+
+/* Red Delete button */
+.delete-btn {
+    background-color: #F44336;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #D32F2F;
+}
+
+/* Modal Background */
+/* Modal Background */
+.modal4 {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+    padding-top: 50px;
+}
+
+/* Modal Content */
+.modal-content4 {
+    background: white;
+    width: 50%;
+    margin: auto;
+    padding: 5PX 20PX 5PX 20PX;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal Heading */
+.modal-content4 h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+/* Close Button */
+.modal-close4 {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+    color: #555;
+}
+
+.modal-close4:hover {
+    color: black;
+}
+
+/* Note Styling */
+.note {
+    background: #fffbcc;
+    padding: 8px;
+    border-left: 4px solid #ffcc00;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+/* Flexbox for Row Layout */
+.row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels */
+.modal-content4 label {
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+/* Form Inputs */
+.modal-content4 input,
+.modal-content4 select {
+    width: 100%;
+    height: 30px;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Disabled Inputs */
+.modal-content4 input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* Centered Section Titles */
+.center-text {
+    text-align: center;
+    margin-top: 15px;
+    FONT-SIZE: 19px;
+    color: darkgoldenrod;
+}
+
+/* Buttons */
+.save-btn1,
+.delete-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+/* Save Button */
+.save-btn1 {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.save-btn1:hover {
+    background: #218838;
+}
+
+/* Delete Button */
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Animation for Modal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .modal-content4 {
+        width: 90%;
+    }
+
+    .row {
+        flex-direction: column;
+    }
+}
+
+  
+
+
+
+
+
+  

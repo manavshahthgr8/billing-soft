@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="..\CSS\account.css">
+    <link rel="stylesheet" href="..\CSS\firm.css">
+    
+    <script src="..\JS\firm.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li>Manage Firm</li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="firm-container">
+        <!-- Firm Row 1 -->
+        <div class="firm-row" id="firm-1">
+            <div class="firm-logo1">
+                <center> <img src="../images/image-removebg-preview (2).png" alt="Firm 1 Logo" /></center>
+            </div>
+            <div class="firm-header">
+                <h3>Firm 1</h3>
+                <button class="edit-firm" data-firm="1">✎</button>
+            </div>
+            <div class="firm-details" id="firm-1-details">
+                <p class="loading-text">Loading...</p> <!-- Placeholder text -->
+            </div>
+        </div>
+    
+        <!-- Firm Row 2 -->
+        <div class="firm-row" id="firm-2">
+            <div class="firm-logo2">
+                <center> <img src="../images/image-removebg-preview (3).png" alt="Firm 2 Logo" /></center>
+            </div>
+            <div class="firm-header">
+                <h3>Firm 2</h3>
+                <button class="edit-firm" data-firm="2">✎</button>
+            </div>
+            <div class="firm-details" id="firm-2-details">
+                <p class="loading-text">Loading...</p> <!-- Placeholder text -->
+            </div>
+        </div>
+    
+        <!-- Firm Row 3 -->
+        <div class="firm-row" id="firm-3">
+            <div class="firm-logo3">
+                <center><img src="../images/image-removebg-preview.png" alt="Firm 3 Logo" /></center>
+            </div>
+            <div class="firm-header">
+                <h3>Firm 3</h3>
+                <button class="edit-firm" data-firm="3">✎</button>
+            </div>
+            <div class="firm-details" id="firm-3-details">
+                <p class="loading-text">Loading...</p> <!-- Placeholder text -->
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Edit Modal -->
+    <div class="modal" id="firmEditModal" style="display: none;">
+        <div class="modal-content" id ="firmEditModalContent">
+            <button class="close-modal" id="closeModal1">&times;</button>
+            <h3>Edit Firm Details</h3>
+            <form id="firmEditForm">
+                <label for="firmName">Firm Name:</label>
+                <input type="text" id="firmName" />
+
+                <label for="BankName">Bank Name:</label>
+                <input type="text" id="BankName" />
+
+                <label for="accountNo">Account No:</label>
+                <input type="text" id="accountNo" />
+
+                <label for="ifscNo">IFSC No:</label>
+                <input type="text" id="ifscNo" />
+
+                <label for="address">Address:</label>
+                <input type="text" id="address" />
+
+                <label for="mobileNo">Mobile No:</label>
+                <input type="text" id="mobileNo" />
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" />
+
+                <label for="panNo">Pan No:</label>
+                <input type="text" id="panNo" />
+
+                <label for="ProName">Properitor:</label>
+                <input type="text" id="ProName" />
+
+                
+
+                <label for="currentPassword">Current Password:</label>
+                <input autocomplete="off" type="password" id="currentPassword" />
+
+                <button type="button" id="saveChanges">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+
+    
+
+    <div class="modal" id="dailySaudaModal">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal2">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="../CSS/print-bill.css">
+    <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    defer
+    onload="console.log('✅ jsPDF Loaded:', window.jspdf);"
+></script>
+
+<script src="../JS/print-bill.js" defer></script>
+
+ 
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+            <button id="backButton" class="back-btn">⬅ Back</button>
+        </div>
+        <div class="navbar-center">
+            <p>Printing Bill</p>
+
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <div class="customer-header">
+            
+            <h2>
+                You are viewing transactions for 
+                <span class="highlight" id="customerName"></span> 
+                (<span id="customerCity"></span>, 
+                <span id="customerState"></span>)
+            </h2>
+            <p>
+                For Firm: <span class="highlight" id="firmName"></span>,  
+                FY: <span class="highlight" id="fy"></span>
+            </p>
+        </div>
+        
+        
+    <!-- Separator Line -->
+<div class="separator-line"></div>
+<table class="transaction-table">
+    <thead>
+        <tr>
+            <th>Tid</th>
+            <th>S No</th>
+            <th>Date</th>
+            <th>Seller</th>
+            <th>Buyer</th>
+            <th>Transaction Type</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Bhav</th>
+            <th>Brokerage Rate</th>
+            <th>Amount</th>
+            <th>Select All <input type="checkbox" id="selectAll"></th>
+            <th>Billed</th>
+        </tr>
+    </thead>
+    <tbody id="transactionBody">
+        <!-- Transactions will be inserted dynamically -->
+    </tbody>
+</table>
+
+    
+        <div class="total-section">
+            <strong>Total Amount: </strong> ₹<span id="totalAmount">0.00</span>
+        </div>
+    
+        <div class="button-container">
+            <button id="preview" class="print-btn">Preview / Print</button>
+            <button id="printButton" class="print-btn">Mark & Download</button>
+            <button id="markBilled" class="print-btn">Mark Billed</button>
+        </div>
+        
+    </div>
+    
+        
+
+
+
+
+<!-- Dynamic loading of that transaction  -->
+
+
+
+
+
+
+
+  
+
+
+    
+        
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+
+    
+    
+</body>
+</html>

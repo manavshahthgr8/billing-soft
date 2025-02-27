@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="../CSS/backup.css">
+    <script src="../JS/backup.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li>Backup</li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="content-header">
+            <h3>Manage Your Financial Years Backup</h3>
+        </div>
+    
+        <!-- Sample Section -->
+        <div class="sample-section">
+            <h4>Sample Financial Year</h4>
+            <div class="backup-options">
+                <div class="firm-backup">
+                    Firm 1
+                    <button class="backup-btn excel-btn">Excel</button>
+                    <button class="backup-btn database-btn">Database</button>
+                    <button class="backup-btn pdf-btn">PDF</button>
+                </div>
+                <div class="firm-backup">
+                    Firm 2
+                    <button class="backup-btn excel-btn">Excel</button>
+                    <button class="backup-btn database-btn">Database</button>
+                    <button class="backup-btn pdf-btn">PDF</button>
+                </div>
+                <div class="firm-backup">
+                    Firm 3
+                    <button class="backup-btn excel-btn">Excel</button>
+                    <button class="backup-btn database-btn">Database</button>
+                    <button class="backup-btn pdf-btn">PDF</button>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Separator Line -->
+        <div class="separator-line"></div>
+    
+        <!-- Stored FY Section Title -->
+        <div class="content-header">
+            <h4>Financial Years Stored in System</h4>
+        </div>
+    
+        <!-- Dynamic FY Section -->
+        <div id="backupContainer" class="backup-container"></div>
+    </div>
+        
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

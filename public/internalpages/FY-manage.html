@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="../CSS/fy.css">
+    <script src="../JS/fy.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li>Financial Year</li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+    <div class="main-container">
+        <div class="content-header">
+            <h3>Manage Financial Year</h3>
+            <button class="create-btn" id="createFYBtn">Create New Financial Year</button>
+        </div>
+
+        <!-- Separator -->
+        <div class="separator-line"></div>
+
+        <!-- Financial Year List -->
+        <div class="financial-year-container" id="financialYearContainer">
+            <h3>Existing Financial Years</h3>
+            <ul id="financialYearList" class="financial-year-list">
+                <!-- Dynamic list of financial years will be appended here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal for Creating/Editing Financial Year -->
+    <div class="modal" id="financialYearModal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modalTitle">Create Financial Year</h3>
+            <form id="financialYearForm">
+                <label for="startYear">Start Year:</label>
+                <input type="number" id="startYear" required>
+                <label for="endYear">End Year:</label>
+                <input type="number" id="endYear" readonly>
+                <label for="currentPassword">Current Password:</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password" />
+                <button type="submit" id="saveFYBtn">Save</button>
+                <button type="button" id="cancelFYBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Financial Year Confirmation Modal -->
+<div id="delete_modal_fy" class="delete-modal">
+    <div class="delete-modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Confirm Deletion</h2>
+        <p id="delete_fy_message"></p>
+        <input type="password" id="delete_fy_password" placeholder="Enter your password" />
+        <button id="confirm_delete_fy">Delete</button>
+        <button id="cancel_delete_fy">Cancel</button>
+    </div>
+</div>
+
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

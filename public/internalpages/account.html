@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="..\CSS\account.css">
+    <script src="..\JS\account.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li>Your Account</li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <div class="account-container">
+        <div class="account-box">
+            <div class="account-header">
+                <h3>Your Account</h3>
+                <button class="edit-btn" id="editAccountBtn">🖉</button>
+            </div>
+            
+            <!-- Current Info Display (populated dynamically) -->
+<div class="account-info">
+    <div class="account-row">
+        <div class="account-detail">
+            <label for="email">Email ID:</label>
+            <span id="user-email">Loading...</span>
+        </div>
+        <div class="account-detail">
+            <label for="userId">User ID:</label>
+            <span id="userId">Loading...</span>
+        </div>
+    </div>
+    <div class="account-row">
+        <div class="account-detail">
+            <label for="username">Username:</label>
+            <span id="userName">Loading...</span>
+        </div>
+        <div class="account-detail">
+            <label for="role">Role:</label>
+            <span id="userRole">Loading...</span>
+        </div>
+    </div>
+</div>
+
+        </div>
+
+        <!-- Line Separator -->
+        <div class="separator-line"></div>
+
+        <!-- Log History Section -->
+        <div class="log-history-container">
+            <h3>Your Log History</h3>
+            <div class="log-history-box">
+                <p>Log history feature will be provided in the next update.</p>
+            </div>
+        </div>
+
+        <!-- Modal for Editing Account -->
+       <!-- Modal for Editing Account -->
+<div class="modal" id="accountEditModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeAccountEditModal">&times;</span>
+        <h3>Edit Account</h3>
+        
+        <div class="form-group">
+            <label for="newEmail">Email ID:</label>
+            <input type="email" id="newEmail" placeholder="Enter email" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="newUsername">Username:</label>
+            <input type="text" id="newUsername" placeholder="Enter username" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="newPassword"> Password:</label>
+            <input type="password" id="newPassword" placeholder="Enter  password"  required/>
+        </div>
+
+        <div class="form-group">
+            <label for="currentPassword">Current Password:</label>
+            <input type="password" id="currentPassword" placeholder="Enter current password" />
+        </div>
+
+        <button id="saveChangesBtn" class="save-btn">Save</button>
+        <p id="editMessage"></p> <!-- Message will be shown here -->
+    </div>
+</div>
+
+
+    </div>
+
+    <div class="modal" id="dailySaudaModal">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

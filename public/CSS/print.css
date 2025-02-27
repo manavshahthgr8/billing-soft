@@ -1,0 +1,425 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+/* Separator Line */
+.separator-line {
+    border-bottom: 2px solid #ddd;
+    margin: 8px 0;
+}
+
+
+
+/* Top Bar */
+.top-bar {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Left section auto, right section takes remaining space */
+    gap: 5px;
+    align-items: center;
+    background: #59d0ff7a;
+    padding: 2px 10px 2px 10px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+}
+
+/* Left Section */
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Right Section */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+/* Responsive for Small Screens */
+@media (max-width: 768px) {
+    .top-bar {
+        grid-template-columns: 1fr; /* Stack sections vertically */
+    }
+    
+    .right-section {
+        justify-content: flex-start;
+    }
+}
+
+
+.left-section span {
+    font-weight: bold;
+}
+
+.left-section button {
+    padding: 1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.left-section button:hover {
+    background-color: #ccc;
+}
+
+select {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+/* Right Section - Search */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#search-bar {
+    padding:1px 5px 1px 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+}
+
+#search-column {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#search-btn {
+    padding:1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#search-btn:hover {
+    background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .right-section {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #search-bar {
+        width: 100%;
+    }
+}
+
+ /* Pagination styling */
+ .pagination {
+    margin: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #prev-btn,
+  #next-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  #prev-btn:disabled,
+  #next-btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  #page-info {
+    font-size: 16px;
+  }
+
+ /* Customer Card Styling */
+.customer-card {
+    border: 1px solid #ddd; /* Softer border */
+    padding: 12px 20px;
+    margin: 12px auto; /* Auto centers horizontally */
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%; /* Slightly reduced width */
+    max-width: 800px; /* Prevents it from stretching too much */
+}
+
+/* Customer Info Styling */
+.customer-card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.customer-card p {
+    font-size: 14px;
+    color: #666;
+    margin: 4px 0;
+}
+
+/* Print Bill Button */
+.print-bill-btn {
+    padding: 5px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.print-bill-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* Slight pop effect */
+}
+
+/* Table Styling */
+.customer-table {
+    width: 90%; /* Slightly reduced width */
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); /* Subtle table shadow */
+}
+
+/* Table Headers & Cells */
+.customer-table th,
+.customer-table td {
+    padding: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Header Styling */
+.customer-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Adjust column widths */
+.customer-table th:first-child,
+.customer-table td:first-child {
+    width: 55%; /* More space for customer name */
+}
+
+.customer-table th:nth-child(2),
+.customer-table td:nth-child(2) {
+    width: 25%; /* Category column */
+}
+
+.customer-table th:nth-child(3),
+.customer-table td:nth-child(3) {
+    width: 20%; /* Print Bill button */
+}
+
+/* Print Button inside Table */
+.print-btn {
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.print-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* Slight hover effect */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .customer-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .print-bill-btn {
+        margin-top: 10px;
+    }
+
+    .customer-table th,
+    .customer-table td {
+        padding: 5px;
+        font-size: 14px;
+    }
+}
+
+

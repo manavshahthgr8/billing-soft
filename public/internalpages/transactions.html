@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Billing Software</title>
+    <link rel="stylesheet" href="../CSS/transaction.css">
+    <script src="../JS/transaction.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="content-header">
+            <h3>You are Creating Transaction for:</h3>
+            <p><strong>Firm:</strong> <span id="firmName"></span> | <strong>FY:</strong> <span id="fy"></span></p>
+        </div>
+    
+        <!-- Separator Line -->
+        <div class="separator-line"></div>
+    
+        <!-- Transaction Form -->
+        <form id="transactionForm" class="form-section">
+            <div class="form-grid">
+                <!-- Firm Details (Prefilled) -->
+                <div class="form-row">
+                    <label for="firmId" class="form-label">Firm ID:</label>
+                    <input type="text" id="firmId" class="form-input" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="firmNameInput" class="form-label">Firm Name:</label>
+                    <input type="text" id="firmNameInput" class="form-input" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="financialYear" class="form-label">Financial Year:</label>
+                    <input type="text" id="financialYear" class="form-input" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="sno" class="form-label">S no:</label>
+                    <input type="text" id="sno" class="form-input" readonly>
+                </div>
+                <div class="form-row">
+                    
+                </div>
+                <div class="form-row">
+                    
+                </div>
+                <div class="separator-line"></div>
+                <center><b><p>Seller Details</p></b></center>
+                <div class="separator-line"></div>
+        
+                <!-- Seller Selection -->
+                <div class="form-row">
+                    <label for="stateDropdown" class="form-label">Seller State:</label>
+                    <select id="stateDropdown" class="form-select">
+                        <option value="">Select State</option>
+                        <option value="Gj">Gujarat</option>
+                        <option value="mp">Madhya Pradesh</option>
+                        <option value="Cg">Chhattisgarh</option>
+                        <option value="Rj">Rajasthan</option>
+                        <option value="Mh">Maharashtra</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="cityDropdown" class="form-label">Seller City:</label>
+                    <select id="cityDropdown" class="form-select searchable">
+                        <option value="">Select City</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="sellerDropdown" class="form-label">Select Seller:</label>
+                    <select id="sellerDropdown" class="form-select searchable">
+                        <option value="">Select Seller</option>
+                    </select>
+                </div>
+        
+                <!-- Seller Item Selection -->
+                <div class="form-row">
+                    <label for="date" class="form-label">Date:</label>
+                    <input type="date" id="date" class="form-input" required>
+                </div>
+        
+                <div class="form-row">
+                    <label for="itemDropdown" class="form-label">Item:</label>
+                    <select id="itemDropdown" class="form-select" required>
+                        <option value="Paddy">Paddy</option>
+                    </select>
+                </div>
+        
+                <div class="form-row">
+                    <label for="packagingDropdown" class="form-label">Packaging:</label>
+                    <select id="packagingDropdown" class="form-select" required>
+                        <option selected value="Bags">Bags</option>
+                        <option  value="Katta">Katta</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label for="sellerQuantity" class="form-label">S Quantity:</label>
+                    <input type="number" id="sellerQuantity" class="form-input" required>
+                </div>
+        
+                <div class="form-row">
+                    <label for="sellerPrice" class="form-label">S Brok Rate:</label>
+                    <input type="number" id="sellerPrice" class="form-input" step="any" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="sellerAmount" class="form-label">Amount:</label>
+                    <input type="number" id="sellerAmount" class="form-input" readonly>
+                </div>
+
+                <div class="form-row">
+                    <label for="TRate" class="form-label">Bhav :</label>
+                    <input type="number" id="TRate" class="form-input">
+                </div>
+                <div class="form-row">
+                    
+                </div>
+                <div class="form-row">
+                    
+                </div>
+
+        
+                <div class="separator-line"></div>
+                <center><b><p>Buyer Details</p></b></center>
+                <div class="separator-line"></div>
+        
+                <!-- Buyer Selection -->
+                <div class="form-row">
+                    <label for="buyerStateDropdown" class="form-label">Buyer State:</label>
+                    <select id="buyerStateDropdown" class="form-select">
+                        <option value="">Select State</option>
+                        <option value="GJ">Gujarat</option>
+                        <option value="MP">Madhya Pradesh</option>
+                        <option value="CG">Chhattisgarh</option>
+                        <option value="RJ">Rajasthan</option>
+                        <option value="MH">Maharashtra</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="buyerCityDropdown" class="form-label">Buyer City:</label>
+                    <select id="buyerCityDropdown" class="form-select searchable">
+                        <option value="">Select City</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="buyerDropdown" class="form-label">Select Buyer:</label>
+                    <select id="buyerDropdown" class="form-select searchable">
+                        <option value="">Select Buyer</option>
+                    </select>
+                </div>
+        
+                <!-- Buyer Item Details -->
+                <div class="form-row">
+                    <label for="buyerQuantity" class="form-label">B Quantity:</label>
+                    <input type="number" id="buyerQuantity" class="form-input" required>
+                </div>
+        
+                <div class="form-row">
+                    <label for="buyerPrice" class="form-label">B Brok Rate:</label>
+                    <input type="number" id="buyerPrice" class="form-input" step="any" required>
+
+                </div>
+                
+                <div class="form-row">
+                    <label for="buyerAmount" class="form-label">Amount:</label>
+                    <input type="number" id="buyerAmount" class="form-input" readonly>
+                </div>
+
+                
+        
+                <!-- Buttons -->
+                <div class="separator-line"></div>
+                <div class="form-row">
+                    <button type="submit" class="form-btn">Submit</button>
+                    <button type="reset" class="form-btn clear">Clear</button>
+                </div>
+                <div class="separator-line"></div>
+            </div>
+        </form>
+        
+
+    </div>
+    
+        
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

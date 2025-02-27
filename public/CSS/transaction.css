@@ -1,0 +1,267 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+/* Transaction Form Styling */
+.form-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 10px auto;
+}
+
+/* Grid Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    align-items: center;
+}
+
+/* Form Rows */
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Labels */
+.form-label {
+    font-weight: bold;
+    min-width: 100px;
+    font-size: 14px;
+}
+
+/* Inputs */
+.form-input, .form-select {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Full-Width Input */
+.form-full {
+    grid-column: span 3;
+}
+
+/* Button Styling */
+.form-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    width: 48%;
+}
+
+.form-btn:hover {
+    background-color: #0056b3;
+}
+
+.form-btn.clear {
+    background-color: #dc3545;
+}
+
+.form-btn.clear:hover {
+    background-color: #a71d2a;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .form-full {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-full {
+        grid-column: span 1;
+    }
+}
+
+/* Page Header */
+.content-header {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.content-header h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+/* Separator Line */
+.separator-line {
+    width: 100%;
+    height: 2px;
+    background-color: #ddd;
+    margin: 10px 0;
+}
+select {
+    color: black !important; /* Ensure text color is visible */
+    background-color: white !important; /* Ensure dropdown is visible */
+}
+option {
+    color: black !important; /* Ensure option text is visible */
+}
+
+

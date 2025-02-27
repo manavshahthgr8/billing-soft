@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Software - Login</title>
+    <script src="JS\app.js"></script>
+    <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+    background-image: url("images/Untitled design.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top; /* Moves the image to the top */
+     /* Creates the padding effect (adjust as needed) */
+}
+
+
+
+        .header {
+            text-align: right;
+            padding: 10px 20px;
+           
+            color: rgb(235, 183, 13);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .login-container {
+            background: #ffffff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 300px;
+            margin: auto;
+            
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+            background: #333;
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Right Corner: Current Time -->
+    
+<div class="header">
+    Current Time: <span id="currentTime"></span>
+</div>
+
+
+    <!-- Login Form -->
+    <div class="login-container">
+       <center> <h1>Login</h1></center>
+        <form id="loginForm">
+            <label for="username">ID</label>
+            <input type="text" id="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" required>
+            <center>
+            <button type="submit">Admin Login</button>
+            <button type="button" id="staffLogin">Staff Login</button>
+            </center>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Designed & Developed by Manav with ❤️
+    </div>
+
+    <script>
+        
+    </script>
+</body>
+</html>
