@@ -1,143 +1,127 @@
 document.addEventListener("DOMContentLoaded", () => {
  
-  // Global variable to store customer data
-  let customers = [];
+  // Global variables
+let customers = [];
+let currentPage = 1;
+let totalPages = 1; // Store total pages globally
+const limit = 10; // Number of customers per page
 
-  // Customer List functionality start
-  const searchBar = document.getElementById('search-bar');
-  const searchColumn = document.getElementById('search-column');
-  const searchButton = document.getElementById('search-btn');
-  const prevButton = document.getElementById('prev-btn');
-  const nextButton = document.getElementById('next-btn');
-  const pageInfo = document.getElementById('page-info');
-  const customerList = document.getElementById('customer-list');
+// DOM elements
+const searchBar = document.getElementById('search-bar');
+const searchColumn = document.getElementById('search-column');
+const searchButton = document.getElementById('search-btn');
+const prevButton = document.getElementById('prev-btn');
+const nextButton = document.getElementById('next-btn');
+const pageInfo = document.getElementById('page-info');
+const customerList = document.getElementById('customer-list');
 
-  let currentPage = 1;
-  const limit = 10; // Number of customers per page
+// Fetch and display customers
+const fetchCustomers = async (params = {}) => {
+    let { page = 1, search = '', column = 'client_name' } = params;
 
-  // Fetch and display customers
-  const fetchCustomers = async (params = {}) => {
-      const {
-          page = 1, search = '', column = 'client_name'
-      } = params;
+    try {
+        const response = await fetch(
+            `/customers?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&column=${column}`
+        );
 
-      try {
-          const response = await fetch(
-              `/customers?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&column=${column}`
-          );
+        if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
 
-          if (!response.ok) {
-              throw new Error(
-                  `Failed to fetch: ${response.statusText}`
-              );
-          }
+        const { customers: fetchedCustomers, total, currentPage: apiPage, totalPages: apiTotalPages } = await response.json();
 
-          const {
-              customers: fetchedCustomers,
-              total,
-              currentPage,
-              totalPages
-          } = await response.json();
+        console.log('Fetched customers:', fetchedCustomers); // Debugging log
 
-          console.log('Fetched customers:',
-              fetchedCustomers); // Debugging log
-          customers =
-              fetchedCustomers; // Assign to the global customers array
-          renderCustomers(customers);
-          updatePagination(total, currentPage, totalPages);
-      } catch (error) {
-          console.error('Error fetching customers:', error);
-          alert(
-              'Failed to fetch customers. Please try again.'
-              );
-      }
-  };
+        customers = fetchedCustomers; // Assign to the global customers array
+        totalPages = apiTotalPages; // Update global total pages
+        currentPage = apiPage; // Update current page from API response
 
-  // Render customer cards
-  const renderCustomers = (customers) => {
-      if (!customerList) {
-          console.error(
-              'Customer list container is not found in the DOM.'
-          );
-          return;
-      }
+        renderCustomers(customers);
+        updatePagination(total, currentPage, totalPages);
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        alert('Failed to fetch customers. Please try again.');
+    }
+};
 
-      if (!customers || customers.length === 0) {
-          customerList.innerHTML = '<p>No customers found.</p>';
-          return;
-      }
+// Render customer cards
+const renderCustomers = (customers) => {
+    if (!customerList) {
+        console.error('Customer list container is not found in the DOM.');
+        return;
+    }
 
-      customerList.innerHTML = ''; // Clear previous entries
+    if (!customers || customers.length === 0) {
+        customerList.innerHTML = '<p>No customers found.</p>';
+        return;
+    }
 
-      customers.forEach((customer) => {
-          const customerBlock = `
-    <div class="customer-card">
-      <div class="customer-details">
-        <p class="customer-name"><strong>${customer.client_name}</strong></p>
-        <p class="customer-city">${customer.city}, ${customer.state} </p>
-        <p class="customer-city">ID: ${customer.customer_id}</p>
-      </div>
-      <div class="customer-info">
-        <p><strong>Type:</strong> ${customer.category}</p>
-        <p><strong>Contact:</strong> ${customer.contact || 'N/A'}</p>
-        <p><strong>Email:</strong> ${customer.email || 'N/A'}</p>
-      </div>
-      <div class="customer-actions">
-        <button class="edit-btn" data-id="${customer.customer_id}"><i class="fas fa-pencil-alt"></i> Edit</button>
-        <button class="delete-btn" data-id="${customer.customer_id}"><i class="fas fa-trash"></i> Delete</button>
-      </div>
-    </div>
-  `;
-          customerList.innerHTML += customerBlock;
-      });
-  };
+    customerList.innerHTML = ''; // Clear previous entries
 
-  // Update pagination controls
-  const updatePagination = (total, currentPage, totalPages) => {
-      pageInfo.textContent =
-          `Page ${currentPage} of ${totalPages}`;
-      prevButton.disabled = currentPage === 1;
-      nextButton.disabled = currentPage === totalPages;
-  };
+    customers.forEach((customer) => {
+        const customerBlock = `
+        <div class="customer-card">
+            <div class="customer-details">
+                <p class="customer-name"><strong>${customer.client_name}</strong></p>
+                <p class="customer-city">${customer.city}, ${customer.state} </p>
+                <p class="customer-city">ID: ${customer.customer_id}</p>
+            </div>
+            <div class="customer-info">
+                <p><strong>Type:</strong> ${customer.category}</p>
+                <p><strong>Contact:</strong> ${customer.contact || 'N/A'}</p>
+                <p><strong>Email:</strong> ${customer.email || 'N/A'}</p>
+            </div>
+            <div class="customer-actions">
+                <button class="edit-btn" data-id="${customer.customer_id}"><i class="fas fa-pencil-alt"></i> Edit</button>
+                <button class="delete-btn" data-id="${customer.customer_id}"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>
+        `;
+        customerList.innerHTML += customerBlock;
+    });
+};
 
-  // Event listeners for pagination
-  prevButton.addEventListener('click', () => {
-      if (currentPage > 1) {
-          currentPage--;
-          fetchCustomers({
-              page: currentPage,
-              search: searchBar.value.trim(),
-              column: searchColumn.value
-          });
-      }
-  });
+// Update pagination controls
+const updatePagination = (total, currentPage, totalPages) => {
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    prevButton.disabled = currentPage <= 1;
+    nextButton.disabled = currentPage >= totalPages;
+};
 
-  nextButton.addEventListener('click', () => {
-      currentPage++;
-      fetchCustomers({
-          page: currentPage,
-          search: searchBar.value.trim(),
-          column: searchColumn.value
-      });
-  });
+// Event listeners for pagination
+prevButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+        fetchCustomers({
+            page: currentPage - 1,
+            search: searchBar.value.trim(),
+            column: searchColumn.value
+        });
+    }
+});
 
-  // Event listener for search
-  searchButton.addEventListener('click', () => {
-      const search = searchBar.value.trim();
-      currentPage = 1; // Reset to the first page
-      fetchCustomers({
-          page: currentPage,
-          search: search,
-          column: searchColumn.value
-      });
-  });
+nextButton.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+        fetchCustomers({
+            page: currentPage + 1,
+            search: searchBar.value.trim(),
+            column: searchColumn.value
+        });
+    }
+});
 
-  // Initial fetch on page load
-  fetchCustomers({
-      page: 1,
-      search: '',
-      column: 'client_name'
-  });
+// Event listener for search
+searchButton.addEventListener('click', () => {
+    const search = searchBar.value.trim();
+    currentPage = 1; // Reset to the first page
+    fetchCustomers({
+        page: currentPage,
+        search: search,
+        column: searchColumn.value
+    });
+});
+
+// Initial fetch on page load
+fetchCustomers({ page: 1, search: '', column: 'client_name' });
 
   // Event listener for state change to fetch cities
   document.getElementById('add-customer-state').addEventListener(

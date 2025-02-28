@@ -53,7 +53,14 @@
           <button id="add-customer-btn">Add New Customer</button>
         </div>
         <div class="right-section">
-          <input type="text" id="search-bar" placeholder="Search your customer">
+          <!-- Hidden dummy input -->
+<input type="text" style="display: none;" autocomplete="username">
+<input type="password" style="display: none;" autocomplete="current-password">
+
+<!-- Actual search bar -->
+<input type="text" id="search-bar" name="search-field" placeholder="Search your customer" autocomplete="off" autocapitalize="off">
+
+
           <select id="search-column">
             <option value="client_name">Name</option>
             <option value="city">City</option>
