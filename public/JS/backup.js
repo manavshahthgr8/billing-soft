@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    const backupContainer = document.getElementById("backupContainer");
+   // const backupContainer = document.getElementById("backupContainer");
 
     
 
@@ -65,46 +65,71 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Sample data to simulate stored FYs
-    const storedFinancialYears = [
-        { year: "2024-2025", firms: ["Firm 1", "Firm 2", "Firm 3"] },
-        { year: "2023-2024", firms: ["Firm 1", "Firm 2", "Firm 3"] },
-        { year: "2022-2023", firms: ["Firm 1", "Firm 2", "Firm 3"] },
-        
-    ];
+    // Full Backup Buttons
+    document.getElementById("fullSoftwareBackup").addEventListener("click", () => {
+        if (confirm("Full Software Backup can be large. Do you want to continue?")) {
+            window.location.href = "/api/backup/software";
+        }
+    });
 
-    // Function to render stored FYs
-    function renderStoredFinancialYears() {
-        backupContainer.innerHTML = ""; // Clear existing content
+    document.getElementById("fullDatabaseBackup").addEventListener("click", () => {
+        window.location.href = "/api/backup/database";
+    });
 
-        storedFinancialYears.forEach(({ year, firms }) => {
-            const financialYearSection = document.createElement("div");
-            financialYearSection.classList.add("financial-year-section");
+    // Dynamic Financial Year Backup
+    const backupContainer = document.getElementById("backupContainer");
 
-            financialYearSection.innerHTML = `
-                <h4>Financial Year: ${year}</h4>
-                <div class="backup-options">
-                    ${firms
-                        .map(
-                            (firm) => `
-                        <div class="firm-backup">
-                            ${firm}
-                            <button class="backup-btn excel-btn">Excel</button>
-                            <button class="backup-btn database-btn">Database</button>
-                            <button class="backup-btn pdf-btn">PDF</button>
-                        </div>
-                    `
-                        )
-                        .join("")}
-                </div>
-            `;
+    // Fetch financial years from the server
+    fetch("/financial-years")
+                .then(response => response.json())
+                .then(fyData => {
+                    const backupContainer = document.getElementById("backupContainer");
+                    if (!fyData.length) {
+                        backupContainer.innerHTML = "<p>No financial years found.</p>";
+                        return;
+                    }
+                    
+                    fyData.forEach(({ startYear }) => {
+                        const yearCode = startYear; // Assuming startYear is the FY identifier
+                        const financialYearSection = document.createElement("div");
+                        financialYearSection.classList.add("financial-year-section");
 
-            backupContainer.appendChild(financialYearSection);
-        });
-    }
+                        financialYearSection.innerHTML = `
+                            <h4>Financial Year: ${yearCode}</h4>
+                            <div class="backup-options">
+                                <button class="backup-btn excel-btn" data-year="${yearCode}">Excel</button>
+                                <button class="backup-btn database-btn" data-year="${yearCode}">Database</button>
+                                <button class="backup-btn pdf-btn" data-year="${yearCode}">PDF</button>
+                            </div>
+                        `;
 
-    // Initial render of stored FYs
-    renderStoredFinancialYears();
+                        backupContainer.appendChild(financialYearSection);
+                    });
+
+                    document.querySelectorAll(".database-btn").forEach(button => {
+                        button.addEventListener("click", event => {
+                            const year = event.target.getAttribute("data-year");
+                            window.location.href = `/api/backup/transactions/${year}`;
+                        });
+                    });
+
+                    document.querySelectorAll(".excel-btn").forEach(button => {
+                        button.addEventListener("click", event => {
+                            const year = event.target.getAttribute("data-year");
+                            window.location.href = `/api/backup/transactions/${year}/excel`;
+                        });
+                    });
+
+                    document.querySelectorAll(".pdf-btn").forEach(button => {
+                        button.addEventListener("click", event => {
+                            alert("Feature not implemented yet.");
+                        });
+                    });
+                })
+                .catch(() => {
+                    document.getElementById("backupContainer").innerHTML = "<p>Error loading financial years.</p>";
+                });
+
 
     const v2FeatureTriggers = document.querySelectorAll(".v2FeatureTrigger"); // Select all elements with the class 'v2FeatureTrigger'
     const dailySaudaModal = document.getElementById("dailySaudaModal");

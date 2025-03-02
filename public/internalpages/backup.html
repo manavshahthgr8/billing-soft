@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account - Billing Software</title>
+    <title>Backup - Billing Software</title>
     <link rel="stylesheet" href="../CSS/backup.css">
     <script src="../JS/backup.js" defer></script>
 </head>
@@ -45,32 +45,14 @@
     <div class="main-container">
         <!-- Page Header -->
         <div class="content-header">
+            <h3>Page is under Development. Please contact Manav for immediate backup.</h3>
             <h3>Manage Your Financial Years Backup</h3>
         </div>
     
-        <!-- Sample Section -->
-        <div class="sample-section">
-            <h4>Sample Financial Year</h4>
-            <div class="backup-options">
-                <div class="firm-backup">
-                    Firm 1
-                    <button class="backup-btn excel-btn">Excel</button>
-                    <button class="backup-btn database-btn">Database</button>
-                    <button class="backup-btn pdf-btn">PDF</button>
-                </div>
-                <div class="firm-backup">
-                    Firm 2
-                    <button class="backup-btn excel-btn">Excel</button>
-                    <button class="backup-btn database-btn">Database</button>
-                    <button class="backup-btn pdf-btn">PDF</button>
-                </div>
-                <div class="firm-backup">
-                    Firm 3
-                    <button class="backup-btn excel-btn">Excel</button>
-                    <button class="backup-btn database-btn">Database</button>
-                    <button class="backup-btn pdf-btn">PDF</button>
-                </div>
-            </div>
+        <!-- Backup Options -->
+        <div class="backup-section">
+            <button id="fullSoftwareBackup" class="backup-btn">Full Software Backup</button>
+            <button id="fullDatabaseBackup" class="backup-btn">Full Database Backup</button>
         </div>
     
         <!-- Separator Line -->
@@ -84,6 +66,8 @@
         <!-- Dynamic FY Section -->
         <div id="backupContainer" class="backup-container"></div>
     </div>
+
+
         
     <!-- Modal for v2Feature -->
     <div class="modal" id="dailySaudaModal" style="display: none;">

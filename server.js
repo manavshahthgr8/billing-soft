@@ -365,52 +365,49 @@ app.post('/customers', (req, res) => {
     );
   });
 
+  //fetch customer for customer html
   app.get('/customers', (req, res) => {
-    let { page = 1, limit = 10, search = '', column = 'client_name' } = req.query;
-
-    page = parseInt(page);
-    limit = parseInt(limit);
+    const { page = 1, limit = 10, search = '', column = 'client_name' } = req.query;
+  
     const offset = (page - 1) * limit;
-
-    const allowedColumns = ['client_name', 'city', 'state', 'category'];
+    const allowedColumns = ['client_name', 'city', 'state', 'category']; // Define valid columns for dynamic queries.
+  
     if (!allowedColumns.includes(column)) {
-        return res.status(400).json({ error: 'Invalid search column.' });
+      return res.status(400).json({ error: 'Invalid search column.' });
     }
-
-    const searchQuery = `%${search}%`;
+  
+    const searchQuery = search ? `%${search}%` : '%';
     const query = `
-        SELECT customer_id, category, client_name, contact, email, state, city
-        FROM customers
-        WHERE ${column} LIKE ?
-        ORDER BY client_name
-        LIMIT ? OFFSET ?
+      SELECT customer_id, category, client_name, contact, email, state, city
+      FROM customers
+      WHERE ${column} LIKE ?
+      ORDER BY client_name
+      LIMIT ? OFFSET ?
     `;
-
-    db.all(query, [searchQuery, limit, offset], (err, rows) => {
+  
+    db.all(query, [searchQuery, parseInt(limit), parseInt(offset)], (err, rows) => {
+      if (err) {
+        console.error('Error fetching customers:', err.message);
+        return res.status(500).json({ error: 'Failed to fetch customers.' });
+      }
+  
+      // Count total customers for pagination info.
+      const countQuery = `SELECT COUNT(*) as total FROM customers WHERE ${column} LIKE ?`;
+      db.get(countQuery, [searchQuery], (err, result) => {
         if (err) {
-            console.error('Error fetching customers:', err.message);
-            return res.status(500).json({ error: 'Failed to fetch customers.' });
+          console.error('Error counting customers:', err.message);
+          return res.status(500).json({ error: 'Failed to count customers.' });
         }
-
-        const countQuery = `SELECT COUNT(*) as total FROM customers WHERE ${column} LIKE ?`;
-        db.get(countQuery, [searchQuery], (err, result) => {
-            if (err) {
-                console.error('Error counting customers:', err.message);
-                return res.status(500).json({ error: 'Failed to count customers.' });
-            }
-
-            const totalPages = Math.ceil(result.total / limit);
-
-            res.json({
-                customers: rows,
-                total: result.total,
-                currentPage: page,
-                totalPages: totalPages,
-            });
+  
+        res.json({
+          customers: rows,
+          total: result.total,
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(result.total / limit),
         });
+      });
     });
-});
-
+  });
   
   
 // Update customer API
@@ -714,7 +711,7 @@ FROM ${tableName} t
 JOIN customers seller ON t.seller_id = seller.customer_id
 JOIN customers buyer ON t.buyer_id = buyer.customer_id
 WHERE t.firm_id = ?
-ORDER BY t.date DESC
+ORDER BY t.sno DESC
 LIMIT ? OFFSET ?;
     `;
 
@@ -793,7 +790,7 @@ app.get("/filteredTransactions", (req, res) => {
         JOIN customers seller ON t.seller_id = seller.customer_id
         JOIN customers buyer ON t.buyer_id = buyer.customer_id
         ${whereClause}
-        ORDER BY t.date DESC
+        ORDER BY t.sno DESC
         LIMIT ? OFFSET ?;
     `;
 
@@ -863,7 +860,7 @@ app.get("/api/customer-transactions", (req, res) => {
         JOIN customers buyer ON t.buyer_id = buyer.customer_id
         WHERE t.firm_id = ? 
         AND (t.seller_id = ? OR t.buyer_id = ?) 
-        ORDER BY t.sno DESC;
+        ORDER BY t.sno ASC;
     `;
 
     db.all(sql, [firm_id, customer_id, customer_id], (err, rows) => {

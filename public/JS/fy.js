@@ -183,6 +183,7 @@ async function deleteFinancialYear(startYear) {
 document.getElementById("createFYBtn").addEventListener("click", () => {
     document.getElementById("startYear").value = "";
     document.getElementById("endYear").value = "";
+    document.getElementById("currentPassword").value = "";
     document.getElementById("financialYearModal").style.display = "flex";
 setTimeout(() => {
     document.getElementById("startYear").focus();
