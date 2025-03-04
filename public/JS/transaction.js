@@ -437,13 +437,13 @@ document.body.addEventListener("change", (event) => {
     
 
 // 📝 Handle transaction form submission
-document.getElementById("transactionForm")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+async function submitTransactionForm() {
+    event.preventDefault(); // Prevent default form submission
 
     // 📅 Extract firmId & FY from URL
     const urlParams = new URLSearchParams(window.location.search);
     const firmId = urlParams.get("firmId");
-    const fy = urlParams.get("fy");  // ⚠️ Keep as string to match URL pattern
+    const fy = urlParams.get("fy"); 
 
     if (!firmId || !fy) {
         alert("❌ Missing Firm ID or Financial Year. Cannot submit transaction.");
@@ -454,45 +454,35 @@ document.getElementById("transactionForm")?.addEventListener("submit", async (ev
     const transactionData = {
         sno: document.getElementById("sno")?.value || "",
         firm_id: firmId,       
-        financial_year: fy,  // ✅ New field added
+        financial_year: fy,  
         seller_id: document.getElementById("sellerDropdown")?.value || "",
         buyer_id: document.getElementById("buyerDropdown")?.value || "",
         date: document.getElementById("date")?.value || "",
         item: document.getElementById("itemDropdown")?.value || "",
-        packaging: document.getElementById("packagingDropdown")?.value || "",  // ✅ New field added
+        packaging: document.getElementById("packagingDropdown")?.value || "",
         qty: document.getElementById("sellerQuantity")?.value || "",
-        bqty: document.getElementById("buyerQuantity")?.value || "",  // ✅ New field added
-        bhav: document.getElementById("TRate")?.value || "",  // ✅ New field added
-        seller_rate: document.getElementById("sellerPrice")?.value || "",  // ✅ New field added
-        buyer_rate: document.getElementById("buyerPrice")?.value || "",  // ✅ New field added
-        seller_amount: "",  // Will be calculated
-        buyer_amount: "",  // Will be calculated
-        payment_status: "Pending",  // ⚠️ Set default for now (update later if needed)
+        bqty: document.getElementById("buyerQuantity")?.value || "",
+        bhav: document.getElementById("TRate")?.value || "",
+        seller_rate: document.getElementById("sellerPrice")?.value || "",
+        buyer_rate: document.getElementById("buyerPrice")?.value || "",
+        seller_amount: "",
+        buyer_amount: "",
+        payment_status: "Pending",
     };
-    //console.log("firm id:", transactionData.firm_id);
-    //console.log("FY:", transactionData.financial_year);
-    //console.log("seller_id:", transactionData.seller_id); done
-    //console.log("Date:", transactionData.date); done
-    //console.log("item:", transactionData.item);
-    //console.log("qty:", transactionData.qty);
-    //console.log("seller_rate:", transactionData.seller_rate);
-    //console.log("buyer_rate:", transactionData.buyer_rate);
 
     // 🛑 Ensure required fields are filled
     if (!transactionData.seller_id || !transactionData.bhav || !transactionData.buyer_id || !transactionData.date || !transactionData.item || !transactionData.qty || !transactionData.seller_rate || !transactionData.buyer_rate) {
-        alert("⚠️ Please fill in all required fields (Seller, Buyer, Item, Quantity, Seller Rate, Buyer Rate , Bhav).");
+        alert("⚠️ Please fill in all required fields.");
         return;
     }
 
-    // 💰 Calculate Seller & Buyer Amounts
+    // 💰 Calculate Amounts
     transactionData.seller_amount = parseFloat(transactionData.qty) * parseFloat(transactionData.seller_rate);
     transactionData.buyer_amount = parseFloat(transactionData.bqty) * parseFloat(transactionData.buyer_rate);
 
-   // console.log("📝 Sending Transaction Data:", transactionData);  // Debugging
-
     try {
-        // 🔗 API Call (Corrected URL with `fy`)
-        const response = await fetch(`/transactions/${fy}`, {  // ✅ Fix: Added fy in URL
+        // 🔗 API Call
+        const response = await fetch(`/transactions/${fy}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(transactionData),
@@ -505,40 +495,30 @@ document.getElementById("transactionForm")?.addEventListener("submit", async (ev
 
         alert("✅ Transaction saved successfully!");
 
-        // ✅ **Clear only temporary fields (keep firm & FY)**
+        // ✅ **Reset only required fields**
         document.getElementById("sellerQuantity").value = "";
         document.getElementById("buyerQuantity").value = "";
-        //document.getElementById("sellerRate").value = "";
-        //document.getElementById("buyerRate").value = "";
         document.getElementById("date").value = "";
-
-        // ✅ **Keep dropdowns same, just reset selection**
         document.getElementById("buyerDropdown").value = "";
         document.getElementById("sellerDropdown").value = "";
         document.getElementById("TRate").value = "";
         
         // Reset dropdowns
-        document.getElementById("packagingDropdown").selectedIndex = 0; // Selects the first option in the dropdown
-        document.getElementById("stateDropdown").selectedIndex = 0; // Selects the first option in the dropdown
-        document.getElementById("cityDropdown").selectedIndex = 0; // Selects the first option in the dropdown
-        document.getElementById("buyerStateDropdown").selectedIndex = 0; // Selects the first option in the dropdown
-        document.getElementById("buyerCityDropdown").selectedIndex = 0; // Selects the first option in the dropdown
+        ["packagingDropdown", "stateDropdown", "cityDropdown", "buyerStateDropdown", "buyerCityDropdown"].forEach(id => {
+            document.getElementById(id).selectedIndex = 0;
+        });
 
-        document.getElementById("packagingDropdown").selectedIndex = 0; // Selects the first option in the dropdown
-
-        document.getElementById("sellerDropdown").selectedIndex = 0;// = '<option value="">Select Your Seller</option>';
-        document.getElementById("buyerDropdown").selectedIndex = 0;//.innerHTML = '<option value="">Select Your Buyer</option>';
-        // Reload sellers
-       // loadSellers();
-        //loadBuyers();
-       // document.getElementById("packagingDropdown").innerHTML = '<option value="">Katta</option>';
         updateRates();  // Reset rates & amounts
-        fetchSno();
+        fetchSno(); // Update transaction numbers
+
     } catch (error) {
         console.error("🚨 Error submitting transaction:", error);
         alert(`❌ Failed to save transaction: ${error.message}`);
     }
-});
+}
+
+document.getElementById("transactionForm")?.addEventListener("submit", submitTransactionForm);
+
 
 
 
@@ -629,8 +609,104 @@ document.getElementById("transactionForm")?.addEventListener("submit", async (ev
             console.error("🚨 Error fetching transaction:", error);
         }
     };
-    
-    
-    
+
+
+    //new code
+    const fields = ["sellerDropdown", "date", "packagingDropdown", "sellerQuantity", "TRate", "buyerDropdown", "submitbtn"];
+    let currentIndex = 0;
+    let dropdownOpened = false;
+    let submitPressedOnce = false;
+
+    function focusNextField() {
+        currentIndex++;
+        if (currentIndex < fields.length) {
+            let nextField = document.getElementById(fields[currentIndex]);
+            nextField.focus();
+            dropdownOpened = false;
+        }
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+
+            let currentField = document.getElementById(fields[currentIndex]);
+
+            if (currentField.tagName === "SELECT") {
+                if (!dropdownOpened) {
+                    currentField.focus();
+                    currentField.size = 10;
+                    if (currentField.id === "buyerDropdown") {
+                        currentField.classList.add("dropdown-up");
+                    }
+                    dropdownOpened = true;
+                } else {
+                    let selectedIndex = currentField.selectedIndex;
+                    if (selectedIndex !== -1) {
+                        dropdownOpened = false;
+                        currentField.size = 1;
+                        currentField.classList.remove("dropdown-up");
+                        focusNextField();
+                    }
+                }
+            } else if (currentField.id === "submitbtn") {
+                if (!submitPressedOnce) {
+                    submitPressedOnce = true;
+                } else {
+                    submitTransactionForm(); // Call the new function on second Enter
+                    setTimeout(() => {
+                        submitPressedOnce = false;
+                        currentIndex = 0;
+                        document.getElementById(fields[0]).focus();
+                    }, 500);
+                }
+            } else {
+                focusNextField();
+            }
+        }
+    });
+
+    // Dropdown auto-focus logic
+    fields.forEach(id => {
+        let field = document.getElementById(id);
+        if (field && field.tagName === "SELECT") {
+            field.addEventListener("change", function () {
+                dropdownOpened = true;
+            });
+
+            field.addEventListener("blur", function () {
+                dropdownOpened = false;
+                field.size = 1;
+                field.classList.remove("dropdown-up");
+            });
+        }
+    });
+
+    // Auto-detect last focused field
+    fields.forEach((id, index) => {
+        let field = document.getElementById(id);
+        if (field) {
+            field.addEventListener("focus", function () {
+                currentIndex = index;
+            });
+        }
+    });
+
+    document.getElementById(fields[0]).focus();
+
+ 
     
 });
+
+
+    
+
+
+
+
+
+
+
+
+
+    

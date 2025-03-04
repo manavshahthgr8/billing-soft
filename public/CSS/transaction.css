@@ -286,7 +286,26 @@ option {
     transition: 0.3s;
   }
 
+  .fixed-btn1 {
+    padding: 5px 5px;
+    background-color: rgb(241, 241, 243);
+    color: rgb(34, 32, 32);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.3s;
+  }
+  .fixed-btn1:hover {
+    background-color: rgb(78, 78, 78);
+  }
+
   .fixed-btn:hover {
     background-color: darkblue;
   }
+
+  .dropdown-up {
+    position: relative;
+    bottom: 50px;
+}
 
