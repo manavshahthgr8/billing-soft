@@ -114,7 +114,9 @@ async function fetchSno() {
 
         if (response.ok) {
             const newSno = data.lastSno + 1;
+            const lastDate = data.lastDate;
             document.getElementById("sno").value = newSno;  // Update the S.No field
+            document.getElementById("date").value = lastDate;  // Update the Date field
         } else {
             console.error("❌ Error fetching S.No:", data.error);
         }
@@ -554,4 +556,81 @@ document.getElementById("transactionForm")?.addEventListener("submit", async (ev
     window.addEventListener("click", (e) => {
         if (e.target === dailySaudaModal) dailySaudaModal.style.display = "none";
     });
+
+    function selectDropdownByText(dropdownId, textToMatch) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+    
+        for (let option of dropdown.options) {
+            if (option.textContent.trim().toLowerCase() === textToMatch.trim().toLowerCase()) {
+                dropdown.value = option.value; // Select the option
+                break; // Stop looping once found
+            }
+        }
+    }
+
+    document.getElementById("YourCustomers").addEventListener("click", function() {
+        window.open("customers.html", "_blank");
+      });
+    
+
+    document.getElementById("lastTransaction").onclick = async function () { 
+        let sno = document.getElementById("sno").value - 1;
+        let firm_id = firmId;
+        let fy1 = fy;
+    
+        console.log(`/lastTransaction/details?sno=${sno}&fy=${fy1}&firm_id=${firm_id}`);
+    
+        try {
+            const response = await fetch(`/lastTransaction/details?sno=${sno}&fy=${fy1}&firm_id=${firm_id}`);
+            const data = await response.json();
+    
+            if (data.success) {
+                const txn = data.transaction;
+
+                // **Step 1: Set Seller State and Wait for City Update**
+            document.getElementById("stateDropdown").value = txn.seller_state;
+            await updateCityDropdown("stateDropdown", "cityDropdown");
+
+            // **Step 2: Set Seller City and Wait for Seller Update**
+            document.getElementById("cityDropdown").value = txn.seller_city;
+            await updateSellerDropdown("cityDropdown", "sellerDropdown");
+
+           
+
+            // **Step 3: Set Buyer State and Wait for City Update**
+            document.getElementById("buyerStateDropdown").value = txn.buyer_state;
+            await updateCityDropdown("buyerStateDropdown", "buyerCityDropdown");
+
+            // **Step 4: Set Buyer City and Wait for Buyer Update**
+            document.getElementById("buyerCityDropdown").value = txn.buyer_city;
+            await updateBuyerDropdown("buyerCityDropdown", "buyerDropdown");
+    
+                // ✅ **Use Function to Match Text Instead of IDs**
+                selectDropdownByText("sellerDropdown", txn.seller_name);
+                selectDropdownByText("buyerDropdown", txn.buyer_name);
+
+
+
+    
+                // ✅ **Set Other Fields**
+                document.getElementById("date").value = txn.date;
+                document.getElementById("itemDropdown").value = txn.item;
+                document.getElementById("packagingDropdown").value = txn.packaging;
+                document.getElementById("sellerQuantity").value = txn.qty;
+                document.getElementById("buyerQuantity").value = txn.bqty;
+                document.getElementById("TRate").value = txn.bhav;
+                document.getElementById("sellerPrice").value = txn.seller_rate;
+                document.getElementById("buyerPrice").value = txn.buyer_rate;
+                document.getElementById("sellerAmount").value = txn.seller_amount;
+                document.getElementById("buyerAmount").value = txn.buyer_amount;
+            }
+        } catch (error) {
+            console.error("🚨 Error fetching transaction:", error);
+        }
+    };
+    
+    
+    
+    
 });

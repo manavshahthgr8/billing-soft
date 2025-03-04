@@ -923,7 +923,9 @@ app.get("/api/transactions/last-sno", async (req, res) => {
     const tableName = `transactions_FY${financial_year}`;
 
     const query = `
-        SELECT sno FROM ${tableName}
+        SELECT sno,
+        date
+        FROM ${tableName}
         WHERE firm_id = ?
         ORDER BY sno DESC
         LIMIT 1;
@@ -937,13 +939,67 @@ app.get("/api/transactions/last-sno", async (req, res) => {
             }
 
             const lastSno = row ? row.sno : 0; // If no record, return 0
-            res.json({ lastSno });
+            const lastDate = row ? row.date : null;
+            res.json({ lastSno , lastDate });
         });
     } catch (error) {
         console.error("❌ Unexpected error:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
+
+app.get("/lastTransaction/details", (req, res) => {
+    const { sno, fy, firm_id } = req.query;
+
+    if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
+        return res.status(400).json({ success: false, message: "Invalid financial year format." });
+    }
+
+    const tableName = `transactions_FY${fy}`;
+
+    const sql = `
+    SELECT 
+        t.transaction_id, 
+        t.sno,
+        t.firm_id, 
+        t.financial_year, 
+        t.date, 
+        t.item, 
+        t.packaging, 
+        t.qty,
+        t.bqty, 
+        t.bhav,
+        t.seller_rate, 
+        t.buyer_rate, 
+        t.seller_amount, 
+        t.buyer_amount, 
+        t.payment_status,
+        seller.client_name AS seller_name,
+        seller.state AS seller_state,
+        seller.city AS seller_city,
+        seller.category AS seller_category,
+        buyer.client_name AS buyer_name,
+        buyer.state AS buyer_state,
+        buyer.city AS buyer_city,
+        buyer.category AS buyer_category
+    FROM ${tableName} t
+    JOIN customers seller ON t.seller_id = seller.customer_id
+    JOIN customers buyer ON t.buyer_id = buyer.customer_id
+    WHERE t.sno = ? AND t.firm_id = ?;
+    `;
+
+    db.get(sql, [sno, firm_id], (err, row) => {
+        if (err) {
+            console.error("🚨 Error fetching transaction details:", err.message);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ success: false, message: "Transaction not found." });
+        }
+        res.json({ success: true, transaction: row });
+    });
+});
+
 
 
 

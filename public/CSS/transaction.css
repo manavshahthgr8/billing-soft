@@ -265,3 +265,28 @@ option {
 }
 
 
+.button-container {
+    position: fixed;
+    bottom: 5px;
+    right: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  /* Styling only these buttons */
+  .fixed-btn {
+    padding: 5px 5px;
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.3s;
+  }
+
+  .fixed-btn:hover {
+    background-color: darkblue;
+  }
+
