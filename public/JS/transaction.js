@@ -525,13 +525,13 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
     // 📌 Modal Handling
     const v2FeatureTriggers = document.querySelectorAll(".v2FeatureTrigger");
     const dailySaudaModal = document.getElementById("dailySaudaModal");
-    const closeModal = document.getElementById("closeModal1");
+    const closeModal12 = document.getElementById("closeModal1");
 
     v2FeatureTriggers.forEach(trigger => {
         trigger.addEventListener("click", () => dailySaudaModal.style.display = "flex");
     });
 
-    closeModal.addEventListener("click", () => dailySaudaModal.style.display = "none");
+    closeModal12.addEventListener("click", () => dailySaudaModal.style.display = "none");
 
     window.addEventListener("click", (e) => {
         if (e.target === dailySaudaModal) dailySaudaModal.style.display = "none";
@@ -693,6 +693,362 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
     });
 
     document.getElementById(fields[0]).focus();
+
+
+     //open modal based on button footer button
+     const modals = {
+        addCity: document.getElementById("add-city-modal"),
+        editCity: document.getElementById("edit-city-modal"),
+        addCustomer: document.getElementById("add-customer-modal")
+    };
+  
+    const openModal = (modalId) => {
+        document.getElementById(modalId).style.display = "block";
+    };
+  
+    const closeModal = (modalId) => {
+        const modal = document.getElementById(modalId);
+        modal.style.display = "none";
+  
+        // Clear all input fields within the modal
+        const inputs = modal.querySelectorAll("input, select");
+        inputs.forEach((input) => {
+            if (input.tagName === "SELECT") {
+                input.selectedIndex =
+                    0; // Reset dropdown to the first option
+            } else if (input.tagName === "INPUT") {
+                input.value = ""; // Clear text fields
+            }
+        });
+    };
+  
+    document.getElementById("add-city-btn").addEventListener("click",
+        () => {
+            closeModal("add-customer-modal");
+            closeModal("edit-city-modal");
+            openModal("add-city-modal");
+        });
+  
+    document.getElementById("edit-city-btn").addEventListener("click",
+        () => {
+            openModal("edit-city-modal");
+            closeModal("add-customer-modal");
+            closeModal("add-city-modal");
+  
+        });
+    document.getElementById("add-customer-btn").addEventListener(
+        "click", () => {
+            openModal("add-customer-modal");
+            closeModal("edit-city-modal");
+            closeModal("add-city-modal");
+  
+        });
+  
+    document.querySelectorAll(".modal-close").forEach((closeBtn) => {
+        closeBtn.addEventListener("click", (e) => {
+            const modalId = e.target.closest(".modal1")
+                .id;
+            closeModal(modalId);
+        });
+    });
+
+
+    // saving new city
+  
+    document.getElementById("add-city-save").addEventListener("click",
+        async () => {
+            const state = document.getElementById(
+                "add-city-state").value;
+            const cityName = document.getElementById(
+                    "add-city-name").value.trim()
+                .toLowerCase(); // Normalize input
+  
+            if (!state || !cityName) {
+                alert(
+                    "Please fill in both the state and city name."
+                    );
+                return;
+            }
+  
+            try {
+                // Step 1: Check if the city already exists
+                const checkResponse = await fetch(
+                    `/city/check?city_name=${encodeURIComponent(cityName)}`
+                );
+                const checkData = await checkResponse.json();
+  
+                if (checkData.exists) {
+                    alert(
+                        `City already exists in ${checkData.state}. You can edit it in Edit City or add another name.`
+                        );
+                    return;
+                }
+  
+                // Step 2: Add the city if it does not exist
+                const saveResponse = await fetch('/city', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        state,
+                        city_name: cityName
+                    }),
+                });
+  
+                if (saveResponse.ok) {
+                    const saveData = await saveResponse.json();
+                    alert(
+                        `City added successfully with ID: ${saveData.cityId}`
+                        );
+                    closeModal("add-city-modal");
+                } else {
+                    const errorData = await saveResponse.json();
+                    alert(
+                        `Failed to add city: ${errorData.error}`
+                        );
+                }
+            } catch (error) {
+                console.error("Error handling city:", error);
+                alert("An error occurred. Please try again.");
+            }
+        });
+    // based on state render city list
+    document.getElementById("edit-city-state").addEventListener(
+        "change", async (e) => {
+            const selectedState = e.target.value;
+            const cityDropdown = document.getElementById(
+                "edit-city-name");
+            cityDropdown.innerHTML =
+                ""; // Clear previous options
+  
+            try {
+                const response = await fetch(
+                    `/city/state/${selectedState}`);
+                // Check for a 404 error and handle accordingly
+                if (response.status === 404) {
+                    alert(
+                        "No cities found for the selected state."
+                        );
+                    return;
+                }
+  
+                // Check for other errors (500, etc.)
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cities.');
+                }
+  
+                const cities = await response.json();
+  
+                cities.forEach(city => {
+                    const option = document
+                        .createElement("option");
+                    option.value = city.city_id;
+                    option.textContent = city.city_name;
+                    cityDropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching cities:", error);
+                alert(
+                    "Failed to fetch cities. Please try again."
+                    );
+            }
+        });
+    // editing saved city
+    document.getElementById("edit-city-save").addEventListener("click",
+        async () => {
+            const cityId = document.getElementById(
+                "edit-city-name").value;
+            const newState = document.getElementById(
+                "edit-city-new-state").value;
+            const newCityName = document.getElementById(
+                "edit-city-new-name").value.trim();
+  
+            if (!cityId || !newState || !newCityName) {
+                alert("Please fill in all the fields.");
+                return;
+            }
+  
+            try {
+                const response = await fetch('/city', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        city_id: cityId,
+                        new_state: newState,
+                        new_city_name: newCityName
+                    }),
+                });
+  
+                const result = await response.json();
+  
+                if (response.ok) {
+                    alert(result.message);
+                    closeModal("edit-city-modal");
+                } else {
+                    alert(
+                        `Failed to update city: ${result.error}`
+                        );
+                }
+            } catch (error) {
+                console.error("Error updating city:", error);
+                alert("An error occurred. Please try again.");
+            }
+        });
+
+
+        //add customer modal
+        // Event listener for state change to fetch cities
+  document.getElementById('add-customer-state').addEventListener(
+    'change', async (e) => {
+        const selectedState = e.target.value;
+
+        // Clear city dropdown
+        const cityDropdown = document.getElementById(
+            'add-customer-city');
+        cityDropdown.innerHTML =
+            '<option value="">Select your City</option>';
+
+        if (!selectedState) {
+            return; // Exit if no state is selected
+        }
+
+        try {
+            const response = await fetch(
+                `/city/state/${selectedState}`);
+            if (response.status === 404) {
+                alert(
+                    "No cities found for the selected state."
+                    );
+                return;
+            }
+
+            // Check for other errors (500, etc.)
+            if (!response.ok) {
+                throw new Error('Failed to fetch cities.');
+            }
+            if (!response.ok) {
+                throw new Error(
+                    `Error: ${response.statusText}`);
+            }
+
+            const cities = await response.json();
+
+            // Check if cities are available
+            if (cities.length === 0) {
+                alert(
+                    'No cities found for the selected state.'
+                    );
+                return;
+            }
+
+            // Populate city dropdown
+            cities.forEach((city) => {
+                const option = document
+                    .createElement('option');
+                option.value = city.city_id; // Use city_id as the value
+                option.textContent = city
+                    .city_name; // Display city_name
+                cityDropdown.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+            alert(
+                'Failed to fetch cities. Please try again.'
+                );
+        }
+    });
+
+// Event listener for "Save" button to add a customer
+document.getElementById('add-customer-save').addEventListener(
+    'click', async () => {
+        const customerType = document.getElementById(
+            'add-customer-type').value;
+        const customerState = document.getElementById(
+            'add-customer-state').value;
+
+        const cityDropdown = document.getElementById(
+            'add-customer-city');
+        const customerCity = cityDropdown.options[
+            cityDropdown.selectedIndex].text;
+        if (customerCity === "Select your City" || !
+            customerCity) {
+            alert('Please select a valid city.');
+            return;
+        }
+        if (customerState === "Select your State" || !
+            customerState) {
+            alert('Please select a valid State.');
+            return;
+        }
+        const customerCityId = cityDropdown.options[cityDropdown.selectedIndex].value;
+
+
+        const customerName = document.getElementById(
+                'add-customer-name').value
+            .trim() //.toLowerCase(); // Normalize to lowercase
+        const customerContact = document.getElementById(
+            'add-customer-contact').value.trim();
+        const customerEmail = document.getElementById(
+            'add-customer-email').value.trim();
+
+        if (!customerType || !customerState || !
+            customerCity || !customerName) {
+            alert('Please fill out all required fields.');
+            return;
+        }
+
+        const customerData = {
+            category: customerType,
+            client_name: customerName,
+            contact: customerContact || null,
+            email: customerEmail || null,
+            state: customerState,
+            city: customerCity,
+            city_id: customerCityId,
+        };
+
+        try {
+            const response = await fetch('/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(customerData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Customer added successfully!');
+                document.getElementById('add-customer-type')
+                    .value = '';
+                document.getElementById(
+                    'add-customer-state').value = '';
+                cityDropdown.innerHTML =
+                    '<option value="">Select a City</option>';
+                document.getElementById('add-customer-name')
+                    .value = '';
+                document.getElementById(
+                    'add-customer-contact').value = '';
+                document.getElementById(
+                    'add-customer-email').value = '';
+                closeModal("add-customer-modal");
+                //fetchCustomers();
+
+            } else {
+                alert(`Error: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error adding customer:', error);
+            alert(
+                'Failed to add customer. Please try again.'
+                );
+        }
+    });
+  
 
  
     

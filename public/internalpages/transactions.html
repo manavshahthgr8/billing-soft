@@ -220,9 +220,9 @@
     <div class="button-container">
         <button class="fixed-btn" id="lastTransaction">Copy Last Transaction Data</button>
         <button class="fixed-btn" id="YourCustomers">Your Customers</button>
-        <button class="fixed-btn1" id="add-city-btn" disabled>Add City</button>
-        <button class="fixed-btn1" id="edit-city-btn" disabled>Edit City</button>
-        <button class="fixed-btn1" id="add-customer-btn" disabled>Add Customer</button>
+        <button class="fixed-btn" id="add-city-btn" >Add City</button>
+        <button class="fixed-btn" id="edit-city-btn" >Edit City</button>
+        <button class="fixed-btn" id="add-customer-btn" >Add Customer</button>
       </div>
     
         
@@ -238,6 +238,119 @@
             </p>
         </div>
     </div>
+
+
+    
+      <!-- Add City Modal -->
+<div id="add-city-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Add City</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="add-city-state">Select State:</label>
+      <select id="add-city-state">
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="add-city-name">City Name:</label>
+      <input type="text" id="add-city-name">
+    </div>
+    <div class="modal-footer1">
+      <button id="add-city-save">Save</button>
+      <button class="modal-close">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- Edit City Modal -->
+  <div id="edit-city-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Edit City</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="edit-city-state">Select State:</label>
+      <select id="edit-city-state">
+        <option value="">Select State</option>
+        <option value="mp">mp</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="edit-city-name">Select City:</label>
+      <select id="edit-city-name">
+        <!-- Future: Dynamically fetched values -->
+      </select>
+  
+      <label for="edit-city-new-state">Select New State:</label>
+      <select id="edit-city-new-state">
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="edit-city-new-name">New Updated Name:</label>
+      <input type="text" id="edit-city-new-name">
+    </div>
+    <div class="modal-footer1">
+      <button id="edit-city-save">Save</button>
+      <button class="modal-close">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- Add Customer Modal -->
+  <div id="add-customer-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Add Customer</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="add-customer-type">Type:</label>
+      <select id="add-customer-type">
+        <option value="seller">Seller</option>
+        <option value="buyer">Buyer</option>
+      </select>
+  
+      <label for="add-customer-state">State:</label>
+      <select id="add-customer-state">
+        <option value="">Select your State</option>
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="add-customer-city">City:</label>
+      <select id="add-customer-city">
+        <!-- Future: Dynamically fetched values -->
+      </select>
+  
+      <label for="add-customer-name">Client Name:</label>
+      <input type="text" id="add-customer-name" required>
+  
+      <label for="add-customer-contact">Contact:</label>
+      <input type="text" id="add-customer-contact">
+  
+      <label for="add-customer-email">Email:</label>
+      <input type="email" id="add-customer-email">
+    </div>
+    <div class="modal-footer1">
+      <button id="add-customer-save">Save</button>
+      <button class="modal-close">Cancel</button>
+      <br>
+      
+    </div>
+   <center> <p>Updating Customer will update all records.</p></center>
+  </div>
 </body>
 
 </html>
