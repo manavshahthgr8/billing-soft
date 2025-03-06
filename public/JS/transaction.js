@@ -494,6 +494,7 @@ async function submitTransactionForm() {
         }
 
         alert("✅ Transaction saved successfully!");
+      
 
         // ✅ **Reset only required fields**
         document.getElementById("sellerQuantity").value = "";
@@ -510,6 +511,10 @@ async function submitTransactionForm() {
 
         updateRates();  // Reset rates & amounts
         fetchSno(); // Update transaction numbers
+        document.getElementById("date").focus();
+        loadBuyers();
+        loadSellers();
+        
 
     } catch (error) {
         console.error("🚨 Error submitting transaction:", error);
@@ -604,6 +609,8 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
                 document.getElementById("buyerPrice").value = txn.buyer_rate;
                 document.getElementById("sellerAmount").value = txn.seller_amount;
                 document.getElementById("buyerAmount").value = txn.buyer_amount;
+
+                document.getElementById("date").focus();
             }
         } catch (error) {
             console.error("🚨 Error fetching transaction:", error);
@@ -612,7 +619,7 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
 
 
     //new code
-    const fields = ["sellerDropdown", "date", "packagingDropdown", "sellerQuantity", "TRate", "buyerDropdown", "submitbtn"];
+    const fields = ["date","sellerDropdown",  "packagingDropdown", "sellerQuantity", "TRate", "buyerDropdown", "submitbtn"];
     let currentIndex = 0;
     let dropdownOpened = false;
     let submitPressedOnce = false;
@@ -1023,6 +1030,8 @@ document.getElementById('add-customer-save').addEventListener(
 
             if (response.ok) {
                 alert('Customer added successfully!');
+                loadBuyers();
+                loadSellers();
                 document.getElementById('add-customer-type')
                     .value = '';
                 document.getElementById(
@@ -1037,6 +1046,7 @@ document.getElementById('add-customer-save').addEventListener(
                     'add-customer-email').value = '';
                 closeModal("add-customer-modal");
                 //fetchCustomers();
+
 
             } else {
                 alert(`Error: ${result.error}`);

@@ -1074,9 +1074,9 @@ app.get("/api/transactions/:tid", (req, res) => {
 app.post("/api/transactions/update", (req, res) => {
     const { tid, fy, firmId, seller_id, seller_rate, item, qty, bqty, bhav, date, packaging, buyer_id, buyer_rate } = req.body;
 
-   // console.log("📝 Update Transaction:", req.body); 
-    if (!tid || !fy || !seller_id || !buyer_id || !qty  || !bqty || !bhav || !seller_rate || !buyer_rate) {
-        return res.status(400).json({ success: false, message: "Missing required fields." });
+    //console.log("📝 Update Transaction:", req.body); 
+    if (!tid || !fy || !seller_id || !buyer_id || !qty  || !bqty || !bhav ) {
+        return res.status(400).json({ success: false, message: "Missing required fields all." });
     }
 
     const tableName = `transactions_FY${fy}`;

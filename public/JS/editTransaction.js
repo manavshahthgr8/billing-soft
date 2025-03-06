@@ -323,6 +323,11 @@ document.getElementById("save-transaction").addEventListener("click", async func
     const tid = document.getElementById("edit-tid").textContent;
     const password = document.getElementById("edit-password").value;
 
+    if(document.getElementById("edit-seller-rate").value=="" || document.getElementById("edit-buyer-rate").value=="" ){
+        alert("Seller Rate , Buyer rate can't be empty.");
+        return
+    }
+
     if (!password) {
         alert("Please enter your password.");
         return;
@@ -350,7 +355,7 @@ document.getElementById("save-transaction").addEventListener("click", async func
             fy: financialYear,
             firmId: firmId,
             seller_id: document.getElementById("edit-seller-name").value,
-            seller_rate: parseFloat(document.getElementById("edit-seller-rate").value),
+            seller_rate: parseFloat(document.getElementById("edit-seller-rate").value) || 0 ,
             item: document.getElementById("edit-item").value,
             qty: parseInt(document.getElementById("edit-qty").value),
             bqty: parseInt(document.getElementById("bedit-qty").value),
@@ -358,7 +363,7 @@ document.getElementById("save-transaction").addEventListener("click", async func
             date: document.getElementById("edit-date").value,
             packaging: document.getElementById("edit-pkg").value,
             buyer_id: document.getElementById("edit-buyer-name").value,
-            buyer_rate: parseFloat(document.getElementById("edit-buyer-rate").value),
+            buyer_rate: parseFloat(document.getElementById("edit-buyer-rate").value) || 0,
             seller_amount: parseFloat(document.getElementById("edit-seller-rate").value) * parseInt(document.getElementById("edit-qty").value),
             buyer_amount: parseFloat(document.getElementById("edit-buyer-rate").value) * parseInt(document.getElementById("edit-qty").value),
         };
@@ -478,6 +483,27 @@ document.getElementById("save-transaction").addEventListener("click", async func
             alert(error.message || "Operation failed.");
         });
     });
+
+
+    // Event Listeners
+    const packagingDropdown = document.getElementById("edit-pkg");
+    const sRateInput = document.getElementById("edit-seller-rate");  // Seller Rate
+    const bRateInput = document.getElementById("edit-buyer-rate");  // Buyer Rate
+
+    function updateRates() {
+        const packaging = packagingDropdown.value;
+        if (packaging === "Katta") {
+            sRateInput.value = 2;
+            bRateInput.value = 1.5;
+        } else if (packaging === "Bags") {
+            sRateInput.value = 3;
+            bRateInput.value = 2.5;
+        }
+        //updateAmounts();  // Ensure amounts update on packaging change
+    }
+
+     // Event Listeners
+     packagingDropdown.addEventListener("change", updateRates);
 });
 document.addEventListener("DOMContentLoaded", function () {
     let searchBar = document.getElementById("search-bar");
