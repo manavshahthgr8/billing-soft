@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Transaction Pagination and Rendering (Existing Code)
     let transactions = [];
     let currentPage = 1;
-    const limit = 10; // Transactions per page
+    const limit = 15; // Transactions per page
     const transactionListContainer = document.getElementById('transaction-list');
     const prevButton = document.getElementById('prev-btn');
     const nextButton = document.getElementById('next-btn');
@@ -123,38 +123,33 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = document.createElement('div');
             card.classList.add('transaction-card');
             card.innerHTML = `
-                <div class="left-section-transaction" id="transaction-left">
-                    <div class="transaction-header">
-                        <div class="transaction-info">
-                            <p class="tid"><strong>TID:</strong> ${transaction.transaction_id} <strong>S no:</strong> ${transaction.sno}</p>
-                            <p class="fy"><strong>FY:</strong> ${transaction.financial_year}</p>
-                            <p class="qty"><strong>S Qty:</strong> ${transaction.qty} <strong> B Qty:</strong> ${transaction.bqty}<strong> Bhav:</strong> ${transaction.bhav}</p>
-                            
-                        </div>
-                        <div class="transaction-date">
-                            <p><strong>Date:</strong> ${transaction.date}</p>
-                        </div>
-                    </div>
-                    <div class="transaction-body">
-                        <div class="transaction-direction">
-                            <div class="from">
-                                <p><strong>From:</strong> ${transaction.seller_name} (${transaction.seller_city}, ${transaction.seller_state})</p>
-                            </div>
-                            <div class="arrow"><p>&#8594;</p></div>
-                            <div class="to">
-                                <p><strong>To:</strong> ${transaction.buyer_name} (${transaction.buyer_city}, ${transaction.buyer_state})</p>
-                            </div>
-                        </div>
-                        <div class="transaction-rates">
-                            <p><strong>S Rate:</strong> ₹${transaction.seller_rate}</p>
-                            <p><strong>B Rate:</strong> ₹${transaction.buyer_rate}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="right-section-transaction" id="transaction-right">
-                    <button class="edit-btn" data-id="${transaction.transaction_id}">Edit</button>
-                    <button class="delete-btn" data-id="${transaction.transaction_id}">Delete</button>
-                </div>
+                  <div class="transaction-grid">
+        <div class="transaction-column">
+            <p><strong>TID:</strong> ${transaction.transaction_id}</p>
+            <p><strong>Sn:</strong> ${transaction.sno}</p>
+        </div>
+        <div class="transaction-column">
+            <p><strong>From:</strong> ${transaction.seller_name} (${transaction.seller_city})</p>
+            <p><strong>To:</strong> ${transaction.buyer_name} (${transaction.buyer_city})</p>
+        </div>
+        <div class="transaction-column">
+            <p><strong>S Rate:</strong> #${transaction.seller_rate}</p>
+            <p><strong>B Rate:</strong> #${transaction.buyer_rate}</p>
+        </div>
+        <div class="transaction-column">
+            <p><strong>Bhav:</strong> ₹${transaction.bhav}</p>
+            
+        </div>
+        <div class="transaction-column">
+            <p><strong>FY:</strong> ${transaction.financial_year}</p>
+            <p><strong>Date:</strong> ${transaction.date}</p>
+            <p><strong>S Qty:</strong> ${transaction.qty} | <strong>B Qty:</strong> ${transaction.bqty}</p>
+        </div>
+        <div class="transaction-column transaction-actions">
+            <button class="edit-btn" data-id="${transaction.transaction_id}">Edit</button>
+            <button class="delete-btn" data-id="${transaction.transaction_id}">Delete</button>
+        </div>
+    </div>
             `;
             transactionListContainer.appendChild(card);
         });
@@ -179,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 page: 1,
                 limit: limit
             });
+           // console.log("Filters:", filters);
             Object.keys(filters).forEach(key => {
                 if (filters[key]) {
                     queryParams.append(key, filters[key]);
@@ -382,7 +378,10 @@ document.getElementById("save-transaction").addEventListener("click", async func
         editModal.style.display = "none";
 
         // Refresh the transaction list
-        fetchTransactions({ page: currentPage, financialYear, firmId });
+        document.getElementById("apply-btn").click();
+
+        //fetchFilteredTransactions({  });
+      //  fetchTransactions({ page: currentPage, financialYear, firmId });
 
     } catch (error) {
         console.error("🚨 Error updating transaction:", error);

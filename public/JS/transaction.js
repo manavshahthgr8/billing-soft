@@ -176,7 +176,7 @@ async function loadSellers() {
             data.sellers.forEach((seller) => {
                 const option = document.createElement("option");
                 option.value = seller.customer_id;  // Use customer_id as value
-                option.textContent = seller.client_name; // Display client_name
+                option.textContent = seller.client_name +" , =>"+ seller.city; // Display client_name
                 sellerDropdown.appendChild(option);
 
                 // Store seller details in memory
@@ -211,7 +211,7 @@ async function loadBuyers() {
             data.sellers.forEach((buyer) => {
                 const option = document.createElement("option");
                 option.value = buyer.customer_id;  // Use customer_id as value
-                option.textContent = buyer.client_name; // Display client_name
+                option.textContent = buyer.client_name +" , =>"+ buyer.city; // Display client_name
                 buyerDropdown.appendChild(option);
 
                 // Store buyer details in memory

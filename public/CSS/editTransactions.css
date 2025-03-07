@@ -345,8 +345,8 @@ select {
   }
   
   .transaction-actions button {
-    margin: 5px 0;
-    padding: 8px 12px;
+    margin: 0px 5px;
+    padding: 1px 12px;
     border-radius: 4px;
     border: none;
     cursor: pointer;
@@ -405,117 +405,56 @@ select {
 
 
 /* General styles for the transaction card */
+/* Transaction Card - Rectangle Box */
 .transaction-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     background-color: #fff;
-    border-radius: 12px;
-    padding: 5px 20px 5px 20px;
-    margin: 5px 20px 5px 20px;
-    
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 2px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease-in-out;
-}
-
-/* Hover effect for the card */
-.transaction-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Left Section (Main content area) */
-.left-section-transaction{
-   
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 75%; /* Takes 75% of the card */
 }
 
-.transaction-header {
-    display: flex;
-    justify-content: space-between;
+/* Grid Layout for 5 Columns */
+.transaction-grid {
+    display: grid;
+    grid-template-columns: 0.3fr 1.5fr 0.5fr 0.5fr 1fr auto; /* Adjust column widths */
     width: 100%;
-    
+    align-items: center;
+    gap: 10px;
 }
 
-.transaction-info {
-    display: flex;
-    justify-content: space-between;
-    width: 60%;
-}
-
-.transaction-info p {
-    margin: 0 15px 0 0;
+/* Individual Columns */
+.transaction-column {
     font-size: 14px;
     color: #333;
+    padding: 1px;
+    border-right: 1px solid #ddd; /* Adds separation between columns */
 }
 
-.transaction-date {
-    font-size: 14px;
-    color: #777;
+.transaction-column:last-child {
+    border-right: none;
 }
 
-.transaction-body {
+/* Centering Text in Last Column */
+.transaction-actions {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    width: 100%;
-  
-}
-
-.transaction-direction {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-
-}
-
-.from, .to {
-    flex: 1;
-    text-align: center;
-    font-size: 14px;
-}
-
-.arrow {
-    font-size: 24px;
-    font-weight: bold;
-    padding: 0 10px;
-}
-
-.transaction-rates {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    font-size: 14px;
-    color: #444;
-}
-
-/* Right Section (Action buttons area) */
-.right-section-transaction {
-   
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    
     gap: 5px;
-    justify-content: flex-end;
 }
 
-.right-section-transaction button {
-    padding: 1px 10px 1px 10px;
-    font-size: 14px;
-    margin: 2px 5px 1px 5px;
+/* Buttons */
+.edit-btn, .delete-btn {
+    padding: 1px 5px 1px 5px;
+    font-size: 12px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-/* Green Edit button */
 .edit-btn {
     background-color: #4CAF50;
     color: white;
@@ -525,7 +464,6 @@ select {
     background-color: #388E3C;
 }
 
-/* Red Delete button */
 .delete-btn {
     background-color: #F44336;
     color: white;
@@ -642,9 +580,9 @@ select {
 .delete-btn {
     display: block;
     width: 100%;
-    padding: 10px;
-    margin-top: 15px;
-    font-size: 16px;
+    padding: 4px;
+    margin-top: 5px;
+    font-size: 15px;
     border-radius: 4px;
     cursor: pointer;
     text-align: center;
