@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
         // Render customers dynamically
         function renderCustomers() {
-            customersContainer.innerHTML = ""; // Clear previous results
+            customersContainer.innerHTML = "";
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const paginatedCustomers = filteredCustomers.slice(start, end);
@@ -151,13 +151,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const table = document.createElement("table");
             table.classList.add("customer-table");
         
-            // Create table header
             table.innerHTML = `
                 <thead>
                     <tr>
                         <th>Customer Name</th>
                         <th>Location</th>
                         <th>Category</th>
+                        <th>Billed Amount</th>
+                        <th>Unbilled Amount</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -172,14 +173,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${customer.client_name}</td>
                     <td>${customer.city}, ${customer.state}</td>
                     <td>${customer.category.charAt(0).toUpperCase() + customer.category.slice(1)}</td>
+                    <td id="billed-${customer.customer_id}">Loading...</td>
+                    <td id="unbilled-${customer.customer_id}">Loading...</td>
                     <td><button class="print-bill-btn" data-id="${customer.customer_id}">Print</button></td>
                 `;
                 tbody.appendChild(row);
+        
+                // Fetch Billed & Unbilled Amounts asynchronously
+                fetchBillingStatus(customer.customer_id);
             });
         
             customersContainer.appendChild(table);
             updatePaginationControls();
         }
+        
+        // Fetch and Update Billed & Unbilled Amounts
+        async function fetchBillingStatus(customerId) {
+            try {
+                const response = await fetch(`/api/customer-billing-status?fy=${financialYear}&firm_id=${firmId}&customer_id=${customerId}`);
+                const data = await response.json();
+        
+                if (data.success) {
+                    document.getElementById(`billed-${customerId}`).textContent = data.billedAmount;
+                    document.getElementById(`unbilled-${customerId}`).textContent = data.unbilledAmount;
+                } else {
+                    document.getElementById(`billed-${customerId}`).textContent = "Error";
+                    document.getElementById(`unbilled-${customerId}`).textContent = "Error";
+                }
+            } catch (error) {
+                console.error("Error fetching billing status:", error);
+                document.getElementById(`billed-${customerId}`).textContent = "Error";
+                document.getElementById(`unbilled-${customerId}`).textContent = "Error";
+            }
+        }
+        
         
         
     

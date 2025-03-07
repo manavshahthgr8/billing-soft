@@ -158,36 +158,70 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchTransactions({ page: 1, financialYear, firmId });
 
     prevButton.addEventListener("click", () => {
-        if (currentPage > 1) fetchTransactions({ page: --currentPage, financialYear, firmId });
+        if (currentPage > 1) {
+            const searchValue = document.getElementById("search-bar").value.trim();
+            const transactionType = document.getElementById("transaction-type").value;
+            const searchColumn = document.getElementById("search-column").value;
+    
+            let filters = {};
+            if (transactionType !== "all") {
+                filters.transaction_type = transactionType;
+            }
+            if (searchValue !== "") {
+                filters[searchColumn] = searchValue;
+                fetchFilteredTransactions(filters, currentPage - 1);  // 🔹 Use filtered fetch with updated page
+            } else {
+                fetchTransactions({ page: --currentPage, financialYear, firmId }); // 🔹 Normal fetch
+            }
+        }
     });
+    
     nextButton.addEventListener("click", () => {
-        fetchTransactions({ page: ++currentPage, financialYear, firmId });
+        const searchValue = document.getElementById("search-bar").value.trim();
+        const transactionType = document.getElementById("transaction-type").value;
+        const searchColumn = document.getElementById("search-column").value;
+    
+        let filters = {};
+        if (transactionType !== "all") {
+            filters.transaction_type = transactionType;
+        }
+        if (searchValue !== "") {
+            filters[searchColumn] = searchValue;
+            fetchFilteredTransactions(filters, currentPage + 1);  // Move to next page
+        } else {
+            fetchTransactions({ page: currentPage + 1, financialYear, firmId });
+        }
     });
+    
+    
+    
 
     // -------------------------------
     // Filter & Search (Unchanged)
-    const fetchFilteredTransactions = async (filters) => {
+    const fetchFilteredTransactions = async (filters, page = 1) => {
         try {
             let queryParams = new URLSearchParams({
                 fy: financialYear,
                 firm_id: firmId,
-                page: 1,
+                page: page,  // Use the dynamic page number
                 limit: limit
             });
-           // console.log("Filters:", filters);
+    
             Object.keys(filters).forEach(key => {
                 if (filters[key]) {
                     queryParams.append(key, filters[key]);
                 }
             });
+    
             const apiUrl = `/filteredTransactions?${queryParams.toString()}`;
-            //console.log("Filtered API Request URL:", apiUrl);
             const response = await fetch(apiUrl);
             if (!response.ok) throw new Error(`Failed to fetch filtered transactions: ${response.statusText}`);
+    
             const data = await response.json();
             transactions = data.transactions;
             renderTransactions(transactions);
-            currentPage = data.currentPage;
+    
+            currentPage = data.currentPage;  // Update pagination
             pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
             prevButton.disabled = currentPage === 1;
             nextButton.disabled = currentPage >= data.totalPages;
@@ -196,6 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Failed to fetch filtered transactions. Please try again.");
         }
     };
+    
 
     const applyButton = document.getElementById("apply-btn");
     applyButton.addEventListener("click", () => {

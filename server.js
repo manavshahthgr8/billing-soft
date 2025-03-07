@@ -270,7 +270,8 @@ app.get('/city/check', (req, res) => {
   app.get('/city/state/:state', (req, res) => {
     const { state } = req.params;
   
-    const query = `SELECT city_id, city_name FROM city WHERE LOWER(state) = LOWER(?)`;
+    const query = `SELECT city_id, city_name FROM city WHERE LOWER(state) = LOWER(?) ORDER BY LOWER(city_name) ASC`;
+
     db.all(query, [state], (err, rows) => {
         if (rows.length === 0) {
             return res.status(404).json({ error: 'No cities found for the selected state.' });
@@ -744,6 +745,7 @@ LIMIT ? OFFSET ?;
 app.get("/filteredTransactions", (req, res) => {
     const { fy, firm_id, page = 1, limit = 10, transaction_type, client_name, city, state } = req.query;
     const offset = (page - 1) * limit;
+    console.log("🛠 Querying transactions with:", { page, offset, values });
 
     if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
         return res.status(400).json({ success: false, message: "Invalid financial year format." });
@@ -912,6 +914,102 @@ app.get("/api/customer-transactions", (req, res) => {
     });
 });
 
+app.get("/api/customer-billing-status", (req, res) => {
+    const { fy, firm_id, customer_id } = req.query;
+
+    if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
+        return res.status(400).json({ success: false, message: "Invalid financial year format." });
+    }
+
+    const tableName = `transactions_FY${fy}`;
+
+    const sql = `
+        SELECT 
+            -- Seller Billed Amount (Excludes "Not Applicable" cases)
+            SUM(CASE 
+                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' 
+                THEN t.seller_amount 
+                ELSE 0 
+            END) AS seller_billed,
+
+            -- Seller Unbilled Amount (Excludes "Not Applicable" cases)
+            SUM(CASE 
+                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' 
+                THEN t.seller_amount 
+                ELSE 0 
+            END) AS seller_unbilled,
+
+            -- Buyer Billed Amount (Excludes "Not Applicable" cases)
+            SUM(CASE 
+                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
+                THEN t.buyer_amount 
+                ELSE 0 
+            END) AS buyer_billed,
+
+            -- Buyer Unbilled Amount (Excludes "Not Applicable" cases)
+            SUM(CASE 
+                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
+                THEN t.buyer_amount 
+                ELSE 0 
+            END) AS buyer_unbilled,
+
+            -- "Not Applicable" Transactions (Only take seller_amount)
+            SUM(CASE 
+                WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
+                THEN t.seller_amount 
+                ELSE 0 
+            END) AS not_applicable_unbilled,
+
+            SUM(CASE 
+                WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
+                THEN t.seller_amount 
+                ELSE 0 
+            END) AS not_applicable_billed
+
+        FROM ${tableName} t
+        WHERE t.firm_id = ? AND (t.seller_id = ? OR t.buyer_id = ?);
+    `;
+
+    db.get(sql, [
+        customer_id, customer_id, // Seller conditions
+        customer_id, customer_id, // Buyer conditions
+        customer_id, customer_id, // "Not Applicable" conditions
+        customer_id, customer_id, // "Not Applicable" conditions
+        firm_id, customer_id, customer_id // WHERE conditions
+    ], (err, row) => {
+        if (err) {
+            console.error("🚨 Error fetching billing status:", err.message);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+
+        //console.log("📝 Raw Row Data:", row); // Debugging
+
+        // Ensure the row is not null and replace potential NULL sums with 0
+        const seller_billed = row?.seller_billed || 0;
+        const seller_unbilled = row?.seller_unbilled || 0;
+        const buyer_billed = row?.buyer_billed || 0;
+        const buyer_unbilled = row?.buyer_unbilled || 0;
+        const not_applicable_unbilled = row?.not_applicable_unbilled || 0;
+        const not_applicable_billed = row?.not_applicable_billed || 0;
+
+        // 🔥 Fix: Print all values to check why it's wrong
+        // console.log("seller_billed:", seller_billed);
+        // console.log("seller_unbilled:", seller_unbilled);
+        // console.log("buyer_billed:", buyer_billed);
+        // console.log("buyer_unbilled:", buyer_unbilled);
+        // console.log("not_applicable_unbilled:", not_applicable_unbilled);
+        // console.log("not_applicable_billed:", not_applicable_billed);
+
+        // Final Amount Calculation
+        const billedAmount = seller_billed + buyer_billed + not_applicable_billed;
+        const unbilledAmount = seller_unbilled + buyer_unbilled + not_applicable_unbilled;
+
+        res.json({ success: true, billedAmount, unbilledAmount });
+    });
+});
+
+
+
 
 app.get("/api/transactions/last-sno", async (req, res) => {
     const { firm_id, financial_year } = req.query;
@@ -1071,12 +1169,12 @@ app.get("/api/transactions/:tid", (req, res) => {
 
 
 // 📌 API: Update a transaction
+// 📌 API: Update a transaction
 app.post("/api/transactions/update", (req, res) => {
     const { tid, fy, firmId, seller_id, seller_rate, item, qty, bqty, bhav, date, packaging, buyer_id, buyer_rate } = req.body;
 
-    //console.log("📝 Update Transaction:", req.body); 
-    if (!tid || !fy || !seller_id || !buyer_id || !qty  || !bqty || !bhav ) {
-        return res.status(400).json({ success: false, message: "Missing required fields all." });
+    if (!tid || !fy || !seller_id || !buyer_id || !qty || !bqty || !bhav) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
     const tableName = `transactions_FY${fy}`;
@@ -1085,8 +1183,9 @@ app.post("/api/transactions/update", (req, res) => {
 
     const sql = `
         UPDATE ${tableName} 
-        SET seller_id = ?, seller_rate = ?, item = ?, qty = ?, bqty = ? , bhav = ?, date = ?, packaging = ?, 
-            buyer_id = ?, buyer_rate = ?, seller_amount = ?, buyer_amount = ?
+        SET seller_id = ?, seller_rate = ?, item = ?, qty = ?, bqty = ?, bhav = ?, date = ?, packaging = ?, 
+            buyer_id = ?, buyer_rate = ?, seller_amount = ?, buyer_amount = ?, 
+            Seller_Billed = 'Not', Buyer_Billed = 'Not'  -- Reset billing status
         WHERE transaction_id = ?`;
 
     db.run(
@@ -1102,10 +1201,11 @@ app.post("/api/transactions/update", (req, res) => {
                 return res.status(404).json({ success: false, message: "Transaction not found or no changes made." });
             }
 
-            res.json({ success: true, message: "Transaction updated successfully." });
+            res.json({ success: true, message: "Transaction updated successfully. Billing status reset." });
         }
     );
 });
+
 
 app.post("/api/transactions/markBilled", async (req, res) => {
     const { transactionIds, financialYear, customer_id } = req.body;
