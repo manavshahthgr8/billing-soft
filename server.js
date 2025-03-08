@@ -745,7 +745,7 @@ LIMIT ? OFFSET ?;
 app.get("/filteredTransactions", (req, res) => {
     const { fy, firm_id, page = 1, limit = 10, transaction_type, client_name, city, state } = req.query;
     const offset = (page - 1) * limit;
-    console.log("🛠 Querying transactions with:", { page, offset, values });
+   // console.log("🛠 Querying transactions with:", { page, offset, values });
 
     if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
         return res.status(400).json({ success: false, message: "Invalid financial year format." });
