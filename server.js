@@ -241,6 +241,25 @@ app.post('/city', (req, res) => {
     });
 });
 
+// Fetch all cities without state filter
+app.get('/city/all', (req, res) => {
+    const query = `SELECT city_id, city_name FROM city ORDER BY LOWER(city_name) ASC`;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Error fetching cities:', err.message);
+            return res.status(500).json({ error: 'Failed to fetch cities.' });
+        }
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No cities found.' });
+        }
+
+        res.json(rows);
+    });
+});
+
+
 // API to check if a city exists
 app.get('/city/check', (req, res) => {
     const { city_name } = req.query;
@@ -601,6 +620,26 @@ app.get("/sellers/city/:city_name", (req, res) => {
   });
 });
 
+// 📌 API: Get Customers by City
+app.get("/customers/city", (req, res) => {
+    const { city_id } = req.query;
+
+    if (!city_id) {
+        return res.status(400).json({ success: false, message: "City ID is required." });
+    }
+
+    const sql = "SELECT customer_id, client_name, city, category, state FROM customers WHERE city_id = ? ORDER BY client_name";
+
+    db.all(sql, [city_id], (err, customers) => {
+        if (err) {
+            console.error("🚨 Error fetching customers by city:", err.message);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+
+        res.json({ success: true, customers: customers.length > 0 ? customers : [] });
+    });
+});
+
 
 
 // 📌 API: Get buyers by City
@@ -925,56 +964,76 @@ app.get("/api/customer-billing-status", (req, res) => {
 
     const sql = `
         SELECT 
-            -- Seller Billed Amount (Excludes "Not Applicable" cases)
+            -- Seller Billed Amount
             SUM(CASE 
                 WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' 
-                THEN t.seller_amount 
-                ELSE 0 
+                THEN t.seller_amount ELSE 0 
             END) AS seller_billed,
 
-            -- Seller Unbilled Amount (Excludes "Not Applicable" cases)
+            -- Seller Unbilled Amount
             SUM(CASE 
                 WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' 
-                THEN t.seller_amount 
-                ELSE 0 
+                THEN t.seller_amount ELSE 0 
             END) AS seller_unbilled,
 
-            -- Buyer Billed Amount (Excludes "Not Applicable" cases)
+            -- Buyer Billed Amount
             SUM(CASE 
                 WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
-                THEN t.buyer_amount 
-                ELSE 0 
+                THEN t.buyer_amount ELSE 0 
             END) AS buyer_billed,
 
-            -- Buyer Unbilled Amount (Excludes "Not Applicable" cases)
+            -- Buyer Unbilled Amount
             SUM(CASE 
                 WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
-                THEN t.buyer_amount 
-                ELSE 0 
+                THEN t.buyer_amount ELSE 0 
             END) AS buyer_unbilled,
 
-            -- "Not Applicable" Transactions (Only take seller_amount)
+            -- Not Applicable Transactions (Seller Amount only)
             SUM(CASE 
                 WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
-                THEN t.seller_amount 
-                ELSE 0 
+                THEN t.seller_amount ELSE 0 
             END) AS not_applicable_unbilled,
 
             SUM(CASE 
                 WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
-                THEN t.seller_amount 
-                ELSE 0 
-            END) AS not_applicable_billed
+                THEN t.seller_amount ELSE 0 
+            END) AS not_applicable_billed,
+
+            -- ✅ Seller Billed Transaction Count
+            COUNT(CASE 
+                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' 
+                THEN 1 ELSE NULL 
+            END) AS seller_billed_txn_count,
+
+            -- ✅ Seller Unbilled Transaction Count
+            COUNT(CASE 
+                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' 
+                THEN 1 ELSE NULL 
+            END) AS seller_unbilled_txn_count,
+
+            -- ✅ Buyer Billed Transaction Count
+            COUNT(CASE 
+                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
+                THEN 1 ELSE NULL 
+            END) AS buyer_billed_txn_count,
+
+            -- ✅ Buyer Unbilled Transaction Count
+            COUNT(CASE 
+                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
+                THEN 1 ELSE NULL 
+            END) AS buyer_unbilled_txn_count
 
         FROM ${tableName} t
         WHERE t.firm_id = ? AND (t.seller_id = ? OR t.buyer_id = ?);
     `;
 
     db.get(sql, [
-        customer_id, customer_id, // Seller conditions
-        customer_id, customer_id, // Buyer conditions
-        customer_id, customer_id, // "Not Applicable" conditions
-        customer_id, customer_id, // "Not Applicable" conditions
+        customer_id, customer_id, // Seller Billed/Unbilled
+        customer_id, customer_id, // Buyer Billed/Unbilled
+        customer_id, customer_id, // Not Applicable Unbilled
+        customer_id, customer_id, // Not Applicable Billed
+        customer_id, customer_id, // Seller Billed/Unbilled Count
+        customer_id, customer_id, // Buyer Billed/Unbilled Count
         firm_id, customer_id, customer_id // WHERE conditions
     ], (err, row) => {
         if (err) {
@@ -982,31 +1041,34 @@ app.get("/api/customer-billing-status", (req, res) => {
             return res.status(500).json({ success: false, error: err.message });
         }
 
-        //console.log("📝 Raw Row Data:", row); // Debugging
-
-        // Ensure the row is not null and replace potential NULL sums with 0
+        // Ensure valid values (replace NULLs with 0)
         const seller_billed = row?.seller_billed || 0;
         const seller_unbilled = row?.seller_unbilled || 0;
         const buyer_billed = row?.buyer_billed || 0;
         const buyer_unbilled = row?.buyer_unbilled || 0;
         const not_applicable_unbilled = row?.not_applicable_unbilled || 0;
         const not_applicable_billed = row?.not_applicable_billed || 0;
+        const seller_billed_txn_count = row?.seller_billed_txn_count || 0;
+        const seller_unbilled_txn_count = row?.seller_unbilled_txn_count || 0;
+        const buyer_billed_txn_count = row?.buyer_billed_txn_count || 0;
+        const buyer_unbilled_txn_count = row?.buyer_unbilled_txn_count || 0;
 
-        // 🔥 Fix: Print all values to check why it's wrong
-        // console.log("seller_billed:", seller_billed);
-        // console.log("seller_unbilled:", seller_unbilled);
-        // console.log("buyer_billed:", buyer_billed);
-        // console.log("buyer_unbilled:", buyer_unbilled);
-        // console.log("not_applicable_unbilled:", not_applicable_unbilled);
-        // console.log("not_applicable_billed:", not_applicable_billed);
-
-        // Final Amount Calculation
         const billedAmount = seller_billed + buyer_billed + not_applicable_billed;
         const unbilledAmount = seller_unbilled + buyer_unbilled + not_applicable_unbilled;
+        const billedTxnCount = seller_billed_txn_count + buyer_billed_txn_count;
+        const unbilledTxnCount = seller_unbilled_txn_count + buyer_unbilled_txn_count;
 
-        res.json({ success: true, billedAmount, unbilledAmount });
+        res.json({ 
+            success: true, 
+            billedAmount, 
+            unbilledAmount, 
+            billedTxnCount, 
+            unbilledTxnCount 
+        });
     });
 });
+
+
 
 
 

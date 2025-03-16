@@ -1,4 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
+    fetch('/city/all')
+        .then(response => response.json())
+        .then(data => {
+            const cityDropdown = document.getElementById('city-dropdown');
+            data.forEach(city => {
+                let option = document.createElement('option');
+                option.value = city.city_id;
+                option.textContent = city.city_name;
+                cityDropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading cities:', error));
+
+       
+        
     setTimeout(() => {
         document.getElementById("search-bar").value = "";
     }, 100); // Small delay ensures autofill is overridden// Clear search bar on page load
@@ -90,6 +105,36 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     fetchFirmDetails();
 
+    document.getElementById('enter-btn').addEventListener('click', function () {
+        const cityDropdown = document.getElementById('city-dropdown');
+        const selectedCity = cityDropdown.options[cityDropdown.selectedIndex];
+    
+        if (!cityDropdown.value) {
+            // Alert message
+            //alert('Please select a city before proceeding.');
+    
+            // Set focus back to the dropdown
+            //cityDropdown.focus();
+    
+            // Highlight dropdown with a red border
+           cityDropdown.style.border = '2px solid red';
+    
+            // Remove highlight after 2 seconds
+            setTimeout(() => {
+                cityDropdown.style.border = '';
+            }, 2000);
+        } else {
+            //console.log('City selected:', cityDropdown.value);
+            // Proceed with the action
+
+             // Construct the URL with query parameters
+        const url = `multiprint.html?city_id=${cityDropdown.value}&city=${encodeURIComponent(selectedCity.text)}&fy=${financialYear}&firm_id=${firmId}`;
+
+        // Redirect to multiprint.html
+        window.location.href = url;
+        }
+    });
+
    
 
     // -------------------------------
@@ -154,12 +199,14 @@ document.addEventListener("DOMContentLoaded", () => {
             table.innerHTML = `
                 <thead>
                     <tr>
-                        <th>Customer Name</th>
-                        <th>Location</th>
-                        <th>Category</th>
-                        <th>Billed Amount</th>
-                        <th>Unbilled Amount</th>
-                        <th>Action</th>
+                                <th>Customer Name</th>
+                                <th>Location</th>
+                                <th>Category</th>
+                                <th>Billed Amount</th>
+                                <th>Unbilled Amount</th>
+                                <th>Billed Txn</th>
+                                <th>Unbilled Txn</th>
+                                <th>Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -171,12 +218,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${customer.client_name}</td>
-                    <td>${customer.city}, ${customer.state}</td>
-                    <td>${customer.category.charAt(0).toUpperCase() + customer.category.slice(1)}</td>
-                    <td id="billed-${customer.customer_id}">Loading...</td>
-                    <td id="unbilled-${customer.customer_id}">Loading...</td>
-                    <td><button class="print-bill-btn" data-id="${customer.customer_id}">Print</button></td>
-                `;
+            <td>${customer.city}, ${customer.state}</td>
+            <td>${customer.category.charAt(0).toUpperCase() + customer.category.slice(1)}</td>
+            <td id="billed-${customer.customer_id}">Loading...</td>
+            <td id="unbilled-${customer.customer_id}">Loading...</td>
+            <td id="billed-txn-${customer.customer_id}">Loading...</td>
+            <td id="unbilled-txn-${customer.customer_id}">Loading...</td>
+            <td><button class="print-bill-btn" data-id="${customer.customer_id}">Print</button></td>
+        `;
+        tbody.appendChild(row);
                 tbody.appendChild(row);
         
                 // Fetch Billed & Unbilled Amounts asynchronously
@@ -196,14 +246,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.success) {
                     document.getElementById(`billed-${customerId}`).textContent = data.billedAmount;
                     document.getElementById(`unbilled-${customerId}`).textContent = data.unbilledAmount;
+                    document.getElementById(`billed-txn-${customerId}`).textContent = data.billedTxnCount;
+                    document.getElementById(`unbilled-txn-${customerId}`).textContent = data.unbilledTxnCount;
                 } else {
                     document.getElementById(`billed-${customerId}`).textContent = "Error";
                     document.getElementById(`unbilled-${customerId}`).textContent = "Error";
+                    document.getElementById(`billed-txn-${customerId}`).textContent = "Error";
+                    document.getElementById(`unbilled-txn-${customerId}`).textContent = "Error";
                 }
             } catch (error) {
                 console.error("Error fetching billing status:", error);
                 document.getElementById(`billed-${customerId}`).textContent = "Error";
                 document.getElementById(`unbilled-${customerId}`).textContent = "Error";
+                document.getElementById(`billed-txn-${customerId}`).textContent = "Error";
+                document.getElementById(`unbilled-txn-${customerId}`).textContent = "Error";
             }
         }
         

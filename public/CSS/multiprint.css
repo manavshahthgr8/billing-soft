@@ -371,9 +371,10 @@ select {
 }
 
 /* Adjust column widths */
+/* Adjust column widths */
 .customer-table th:first-child,
 .customer-table td:first-child {
-    width: 40%; /* More space for customer name */
+    width: 5%; /* More space for customer name */
 }
 
 .customer-table th:nth-child(2),
@@ -383,9 +384,8 @@ select {
 
 .customer-table th:nth-child(3),
 .customer-table td:nth-child(3) {
-    width: 35%; /* Print Bill button */
+    width: 25%; /* Print Bill button */
 }
-
 /* Print Button inside Table */
 .print-btn {
     padding: 6px 12px;
@@ -420,6 +420,82 @@ select {
         padding: 5px;
         font-size: 14px;
     }
+}
+
+.button-container {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
+    margin-top: 0px; /* Optional: Adjust spacing from content above */
+}
+
+/* 🖨️ Print Button */
+#printButton {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#printButton:hover {
+    background: #218838;
+}
+
+/* 🖨️ Print Button */
+#preview {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview:hover {
+    background: #27037a;
+}
+#preview1 {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview1:hover {
+    background: #27037a;
+}
+
+#markBilled {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#markBilled:hover {
+    background: #27037a;
 }
 
 

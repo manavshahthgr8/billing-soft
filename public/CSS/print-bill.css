@@ -307,6 +307,22 @@ a {
 #preview:hover {
     background: #27037a;
 }
+#preview1 {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview1:hover {
+    background: #27037a;
+}
 
 #markBilled {
     display: block;

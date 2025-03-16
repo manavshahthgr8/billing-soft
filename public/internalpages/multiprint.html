@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account - Billing Software</title>
-    <link rel="stylesheet" href="../CSS/print.css">
-    <script src="../JS/print.js" defer></script>
+    <link rel="stylesheet" href="../CSS/multiprint.css">
+    <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    defer
+    onload="console.log('✅ jsPDF Loaded:', window.jspdf);"
+></script>
+
+<script src="../JS/multiprint.js" defer></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -47,53 +53,27 @@
         
         <!-- Top Section -->
         <div class="top-bar">
-            <!-- Left Section -->
-            <div class="left-section">
-                <span class="font-semibold">Settings:</span>
-                <button id="reset-btn">Reset</button> 
+            <button id="back-btn">⬅ Back</button>
+        <p id="city-display" style="text-align: center;">
+            You are viewing customers for <span id="city-name"></span>
+        </p>
 
-                 <!-- New Section for Multi Part Print by City -->
-            <div class="multi-part-print">
-                <span class="font-semibold">Multi Party Print by City:</span>
-                <select id="city-dropdown">
-                    <option value="">Select a city</option>
-                    <!-- Cities will be populated here -->
-                </select>
-                <button id="enter-btn">Enter</button>
-            </div>
-              
-            </div>
-        
-            <!-- Right Section -->
-            <div class="right-section">
-                <span>Customer Type:</span>
-                <select id="transaction-type">
-                    <option value="all" selected>All</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="seller">Seller</option>
-                </select>
-        
-                <input type="search" id="search-bar" placeholder="Search your customer" autocomplete="off">
-
-                <select id="search-column">
-                    <option value="client_name">Party Name</option>
-                    <option value="city">City</option>
-                    <option value="state">State</option>
-                </select>
-        
-                <button id="apply-btn">Apply</button>
-            </div>
+           
         </div>
-
-        
     </div>
         
-
+    <div class="button-container">
+        <button id="preview" class="print-btn">Preview </button>
+        <button id="preview1" class="print-btn">Mark & Preview</button>
+        <button id="printButton" class="print-btn">Mark & Download</button>
+        
+    </div>
 
 <!-- Separator Line -->
 <div class="separator-line"></div>
 
 <!-- Dynamic loading of all Customer -->
+<div id="customers-container"></div>
 
 
 
@@ -101,12 +81,12 @@
 
 
 
-  <!-- Pagination Controls -->
+  <!-- Pagination 
   <div class="pagination">
     <button id="prev-btn" disabled>Previous</button>
     <span id="page-info">Page 1</span>
     <button id="next-btn" disabled>Next</button>
-  </div>
+  </div>  Controls -->
 
 </div>
     
