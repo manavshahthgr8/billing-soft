@@ -302,6 +302,14 @@ body {
     color: #444;
 }
 
+.feature-box[aria-disabled="true"] {
+    pointer-events: auto;  /* Allow hover but prevent clicking */
+    cursor: not-allowed;   /* Shows the 🚫 stop symbol */
+    filter: grayscale(00%);
+    opacity: 0.5;
+}
+
+
 /* Input Fields */
 #firmFyForm select,
 #firmFyForm input {
