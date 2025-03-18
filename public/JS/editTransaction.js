@@ -125,7 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
             card.innerHTML = `
                   <div class="transaction-grid">
         <div class="transaction-column">
-            <p><strong>TID:</strong> ${transaction.transaction_id}</p>
+          <p style="display: none;"><strong>TID:</strong> ${transaction.transaction_id}</p>
+
             <p><strong>Sn:</strong> ${transaction.sno}</p>
         </div>
         <div class="transaction-column">

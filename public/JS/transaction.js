@@ -557,6 +557,11 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
     document.getElementById("YourCustomers").addEventListener("click", function() {
         window.open("customers.html", "_blank");
       });
+      document.getElementById("edit-txn").addEventListener("click", function() {
+    
+        window.open(`editTransactions.html?firmId=${firmId}&fy=${fy}`, "_blank");
+    });
+    
     
 
     document.getElementById("lastTransaction").onclick = async function () { 
@@ -619,7 +624,7 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
 
 
     //new code
-    const fields = ["date","sellerDropdown",  "packagingDropdown", "sellerQuantity", "TRate", "buyerDropdown", "submitbtn"];
+    const fields = ["date","sellerDropdown", "buyerDropdown", "sellerQuantity", "TRate",  "packagingDropdown" ,"submitbtn"];
     let currentIndex = 0;
     let dropdownOpened = false;
     let submitPressedOnce = false;
@@ -757,6 +762,7 @@ document.getElementById("transactionForm")?.addEventListener("submit", submitTra
                 .id;
             closeModal(modalId);
         });
+
     });
 
 
