@@ -435,10 +435,18 @@ document.body.addEventListener("change", (event) => {
     bQuantityInput.addEventListener("input", updateAmounts);
 
     
-
+    let isSubmitting = false;  // Submit lock flag
 // 📝 Handle transaction form submission
 async function submitTransactionForm() {
+    //e.preventDefault();  // ✅ Use explicit event parameter
     event.preventDefault(); // Prevent default form submission
+
+     // 🔒 Prevent multiple submissions
+     if (isSubmitting) {
+        console.warn("⚠️ Already submitting...");
+        return;
+    }
+    isSubmitting = true;  // Set lock
 
     // 📅 Extract firmId & FY from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -447,6 +455,7 @@ async function submitTransactionForm() {
 
     if (!firmId || !fy) {
         alert("❌ Missing Firm ID or Financial Year. Cannot submit transaction.");
+        isSubmitting = false;  // Unlock
         return;
     }
 
@@ -473,6 +482,7 @@ async function submitTransactionForm() {
     // 🛑 Ensure required fields are filled
     if (!transactionData.seller_id || !transactionData.bhav || !transactionData.buyer_id || !transactionData.date || !transactionData.item || !transactionData.qty || !transactionData.seller_rate || !transactionData.buyer_rate) {
         alert("⚠️ Please fill in all required fields.");
+        isSubmitting = false;  // Unlock
         return;
     }
 
@@ -487,6 +497,13 @@ async function submitTransactionForm() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(transactionData),
         });
+        // ✅ Check for Duplicate Transaction
+        if (response.status === 409) {
+            const data = await response.json();
+            alert(`⚠️ Duplicate Transaction: ${data.message}`);
+            console.warn("🚫 Duplicate Transaction:", data.message);
+            return;
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -519,6 +536,8 @@ async function submitTransactionForm() {
     } catch (error) {
         console.error("🚨 Error submitting transaction:", error);
         alert(`❌ Failed to save transaction: ${error.message}`);
+    }finally {
+        isSubmitting = false;  // Unlock on completion (even on error)
     }
 }
 

@@ -137,14 +137,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <p><strong>S Rate:</strong> #${transaction.seller_rate}</p>
             <p><strong>B Rate:</strong> #${transaction.buyer_rate}</p>
         </div>
+         <div class="transaction-column">
+            <p><strong>S Qty:</strong> ${transaction.qty}</p>
+             <p><strong>B Qty:</strong> ${transaction.bqty}</p>
+        </div>
         <div class="transaction-column">
             <p><strong>Bhav:</strong> ₹${transaction.bhav}</p>
+            <p><strong>Type:</strong> ₹${transaction.packaging}</p>
             
         </div>
         <div class="transaction-column">
             <p><strong>FY:</strong> ${transaction.financial_year}</p>
             <p><strong>Date:</strong> ${transaction.date}</p>
-            <p><strong>S Qty:</strong> ${transaction.qty} | <strong>B Qty:</strong> ${transaction.bqty}</p>
+           
         </div>
         <div class="transaction-column transaction-actions">
             <button class="edit-btn" data-id="${transaction.transaction_id}">Edit</button>

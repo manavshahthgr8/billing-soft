@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account - Billing Software</title>
     <link rel="stylesheet" href="../CSS/print.css">
+    <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    defer
+    onload="console.log('✅ jsPDF Loaded:', window.jspdf);"
+></script>
     <script src="../JS/print.js" defer></script>
 </head>
 <body>
@@ -13,6 +18,7 @@
         <div class="navbar-left">
             <button class="hamburger" id="openSidebar">☰</button>
             <button id="home" class="welcome-text">Home</button>
+            <button id="report" class="welcome-text">Report / Summary</button>
         </div>
         <div class="navbar-center">
             <p>Billing of <strong>Firm:</strong> <span id="firmName"></span> | <strong>FY:</strong> <span id="fy"></span></p>

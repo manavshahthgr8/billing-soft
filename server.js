@@ -575,6 +575,26 @@ app.get("/debug/cities", (req, res) => {
   });
 });
 
+app.get("/customers/all/orderbycity", (req, res) => {
+    const sql = `
+    SELECT customer_id, client_name AS name, city, state
+    FROM customers
+    ORDER BY city COLLATE NOCASE ASC, client_name COLLATE NOCASE ASC
+`;
+
+
+
+    db.all(sql, [], (err, customers) => {
+        if (err) {
+            console.error("🚨 Error fetching customers:", err.message);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+
+        res.json({ success: true, customers });
+    });
+});
+
+
 // 📌 API: Get All Sellers
 app.get("/sellers/all", (req, res) => {
   const sql = "SELECT customer_id, client_name, city, category, state FROM customers ORDER BY client_name";
@@ -674,9 +694,9 @@ app.get("/buyers/city/:city_name", (req, res) => {
 // 📌 Add a Transaction
 app.post("/transactions/:fy", (req, res) => {
     const { fy } = req.params;
-    const { sno , firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, payment_status } = req.body;
+    const { sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, payment_status } = req.body;
 
-    // 🛑 Validate required fields
+    // 🛑 Validate required fields before proceeding
     if (!firm_id || !financial_year || !seller_id || !buyer_id || !date || !item || !packaging || !qty || !bhav || !seller_rate || !buyer_rate || !payment_status) {
         return res.status(400).json({ success: false, message: "Missing required fields." });
     }
@@ -686,27 +706,49 @@ app.post("/transactions/:fy", (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid financial year format." });
     }
 
-    const seller_amount = qty * seller_rate;
-    const buyer_amount = bqty * buyer_rate;
-    const tableName = `transactions_FY${fy}`;
+    const tableName = `transactions_FY${fy}`;  // ✅ Define table name early
 
-    // 📌 Insert Query
-    const sql = `INSERT INTO ${tableName} 
-    (sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    // ✅ Check for duplicates by sno + firm_id
+    const checkDuplicateSql = `SELECT COUNT(*) AS count FROM ${tableName} WHERE sno = ? AND firm_id = ?`;
 
-db.run(sql, [sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status], function (err) {
-
-
-   
+    db.get(checkDuplicateSql, [sno, firm_id], (err, row) => {
         if (err) {
-            console.error("🚨 Error inserting transaction:", err.message);
+            console.error("🚨 Error checking for duplicates:", err.message);
             return res.status(500).json({ success: false, error: err.message });
         }
 
-        res.json({ success: true, message: "Transaction added!", transaction_id: this.lastID });
+        if (row.count > 0) {
+            console.warn(`⚠️ Duplicate transaction detected for SNO: ${sno}, Firm ID: ${firm_id}`);
+            return res.status(409).json({ 
+                success: false, 
+                message: `Duplicate transaction detected for SNO: ${sno} in Firm ID: ${firm_id}` 
+            });
+        }
+
+        // 💰 Calculate Amounts
+        const seller_amount = qty * seller_rate;
+        const buyer_amount = bqty * buyer_rate;
+
+        // 📌 Insert Query
+        const sql = `
+            INSERT INTO ${tableName} 
+            (sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const values = [sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status];
+
+        db.run(sql, values, function (err) {
+            if (err) {
+                console.error("🚨 Error inserting transaction:", err.message);
+                return res.status(500).json({ success: false, error: err.message });
+            }
+
+            res.json({ success: true, message: "Transaction added!", transaction_id: this.lastID });
+        });
     });
 });
+
 
 
 // 📌 Get all transactions for a financial year of that firm

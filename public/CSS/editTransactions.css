@@ -405,21 +405,20 @@ select {
 
 
 /* General styles for the transaction card */
-/* Transaction Card - Rectangle Box */
 .transaction-card {
     background-color: #fff;
     border-radius: 10px;
-    padding: 2px;
+    padding: 10px;
     margin: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease-in-out;
     display: flex;
 }
 
-/* Grid Layout for 5 Columns */
+/* Grid Layout for 6 Columns */
 .transaction-grid {
     display: grid;
-    grid-template-columns: 0.3fr 1.5fr 0.5fr 0.5fr 1fr auto; /* Adjust column widths */
+    grid-template-columns: 0.3fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr auto; /* Adjusted for 6 columns */
     width: 100%;
     align-items: center;
     gap: 10px;
@@ -429,12 +428,12 @@ select {
 .transaction-column {
     font-size: 14px;
     color: #333;
-    padding: 1px;
-    border-right: 1px solid #ddd; /* Adds separation between columns */
+    padding: 5px;
+    border-right: 1px solid #ddd; /* Separation between columns */
 }
 
 .transaction-column:last-child {
-    border-right: none;
+    border-right: none; /* Remove border from last column */
 }
 
 /* Centering Text in Last Column */
@@ -447,7 +446,7 @@ select {
 
 /* Buttons */
 .edit-btn, .delete-btn {
-    padding: 1px 5px 1px 5px;
+    padding: 4px 10px;
     font-size: 12px;
     border-radius: 6px;
     border: none;
@@ -472,7 +471,6 @@ select {
 .delete-btn:hover {
     background-color: #D32F2F;
 }
-
 /* Modal Background */
 /* Modal Background */
 .modal4 {

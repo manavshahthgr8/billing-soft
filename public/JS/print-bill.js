@@ -205,6 +205,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     
     fetchCustomerTransactions();
+
+   
+    
+  
+    
     
 
 // 📌 Generate PDF
@@ -214,11 +219,42 @@ async function generatePDF(action) {
 
     await fetchFirmDetails();
     await fetchCustomerDetails();
+    let firmIdNumber = parseInt(firmId, 10);  // Convert firmId to a number
+
+    let firmCode;
+    if (firmIdNumber === 1) {
+        firmCode = "BB";
+    } else if (firmIdNumber === 2) {
+        firmCode = "PKC";
+    } else if (firmIdNumber === 3) {
+        firmCode = "MB";
+    } else {
+        console.log("Invalid Firm ID"); // Log for invalid firmId
+        return "Invalid Firm ID"; // Return an error if the firmId is invalid
+    }
+
+     // Get last 2 digits of fiscal year
+     let fyLastTwo = financialYear.toString().slice(-2);
+    
+     // Get first 3 letters of the city name
+     let cityCode = customerCity.substring(0, 3).toUpperCase();
+     
+     // Get the first 3 digits from customer name (assuming the name is a string and contains at least 3 digits)
+     let customerCode = customerName.substring(0, 3).toUpperCase();
+     
+     // CID is passed as-is
+    // let billNo = `${firmCode}${firmId}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     const fyDisplay = `${financialYear} - ${financialYear + 1}`;
-    doc.text(`${firmName} Invoice | FY ${fyDisplay}`, 105, 5.5, { align: "center" });
+    doc.text(`${firmName} Invoice | FY ${fyDisplay}`, 100, 5.5, { align: "center" });
+    // CID is passed as-is
+    let billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
+    console.log("billNo:", billNo); // Debugging final billNo
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Bill No: ${billNo}`, 205, 5.5, { align: "right" });
 
     // **📌 Firm & Customer Details Box**
     doc.setFontSize(10);
@@ -349,7 +385,7 @@ let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10; // Adjust X if rowY is t
 
 doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
 doc.setFont("helvetica", "normal");
-doc.text(`digitally signed by ${ProprietorName}`, 60, rowY + 5, { align: "right" });
+doc.text(`Digitally signed by ${ProprietorName}`, 60, rowY + 5, { align: "right" });
 
 rowY += 8;
 doc.setFontSize(11);

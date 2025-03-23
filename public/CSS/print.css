@@ -34,10 +34,40 @@ body {
 }
 
 .welcome-text {
-    margin-left: 0px;
-    font-size: 16px;
+    background: #f5f3e7;             /* Blue background */
+    color: #131212;                      /* White text */
+    border: none;                     /* Remove default border */
+    padding: 1px 2px 1px 2px;               /* Add padding for better click area */
+    font-size: 16px;                  /* Maintain font size */
+    border-radius: 5px;               /* Rounded corners */
+    margin-right:  10px;                 /* Add some margin */
+    transition: all 0.3s ease;        /* Smooth hover effect */
+    cursor: pointer;                  /* Cursor pointer on hover */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow */
 }
 
+/* Hover effect */
+.welcome-text:hover {
+    background: #ecebaf;              /* Darker blue on hover */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Stronger shadow on hover */
+    transform: translateY(-2px);       /* Slight lift effect */
+}
+
+/* Active/Clicked effect */
+.welcome-text:active {
+    background: #00408b;              /* Even darker blue when clicked */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Smaller shadow */
+    transform: translateY(1px);        /* Slight push-down effect */
+}
+
+/* Styling for a disabled button */
+.welcome-text:disabled {
+    background: #ccc;                  /* Gray background */
+    color: #666;                       /* Darker text */
+    cursor: not-allowed;               /* No pointer effect */
+    box-shadow: none;                  /* Remove shadow */
+    transform: none;                   /* No movement */
+}
 .navbar-center {
     font-size: 18px;
     font-weight: bold;

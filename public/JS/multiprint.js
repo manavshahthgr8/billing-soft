@@ -335,7 +335,40 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
-    doc.text(`${firmDetails.firmName} Invoice | FY ${fyDisplay}`, 105, 5.5, { align: "center" });
+    doc.text(`${firmDetails.firmName} Invoice | FY ${fyDisplay}`, 100, 5.5, { align: "center" });
+
+    let firmIdNumber = parseInt(firmId, 10);  // Convert firmId to a number
+
+    let firmCode;
+    if (firmIdNumber === 1) {
+        firmCode = "BB";
+    } else if (firmIdNumber === 2) {
+        firmCode = "PKC";
+    } else if (firmIdNumber === 3) {
+        firmCode = "MB";
+    } else {
+        console.log("Invalid Firm ID"); // Log for invalid firmId
+        return "Invalid Firm ID"; // Return an error if the firmId is invalid
+    }
+    
+    // Get last 2 digits of fiscal year
+    let fyLastTwo = fy.toString().slice(-2);
+   // console.log("fyLastTwo:", fyLastTwo); // Debugging fiscal year slice
+    
+    // Get first 3 letters of the city name
+    let cityCode = customerDetails.city.substring(0, 3).toUpperCase();
+   // console.log("cityCode:", cityCode); // Debugging cityCode
+    
+    // Get the first 3 digits from customer name (assuming the name is a string and contains at least 3 digits)
+    let customerCode = customerDetails.name.substring(0, 3).toUpperCase();
+    console.log("customerCode:", customerCode); // Debugging customerCode
+    //
+    // CID is passed as-is
+    let billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
+   // console.log("billNo:", billNo); // Debugging final billNo
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Bill No: ${billNo}`, 205, 5.5, { align: "right" });
 
     // **Firm & Customer Details Box**
     doc.setFontSize(10);
@@ -439,7 +472,7 @@ let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10; // Adjust X if rowY is t
 
 doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
 doc.setFont("helvetica", "normal");
-doc.text(`digitally signed by ${firmDetails.ProprietorName}`, 60, rowY + 5, { align: "right" });
+doc.text(`Digitally signed by ${firmDetails.ProprietorName}`, 60, rowY + 5, { align: "right" });
 
 rowY += 8;
 doc.setFontSize(11);

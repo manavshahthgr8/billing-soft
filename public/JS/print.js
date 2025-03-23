@@ -333,6 +333,236 @@ document.getElementById("reset-btn").addEventListener("click", () => {
     renderCustomers(); // Re-render customer list
 });
 
+document.getElementById("report").addEventListener("click", async () => {
+    alert("Generating PDF report... \nPlease wait for it to open in next tab.");
+});
+
+
+document.getElementById("report").addEventListener("click", async () => {
+    
+    const fy = financialYear;                      // Fiscal year
+    const response = await fetch(`/customers/all/orderbycity`);
+    const customerData = await response.json();
+
+    if (!customerData.success || !customerData.customers.length) {
+        alert("No customers found.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "landscape" });
+
+    const colWidths = [20, 45, 35, 17, 17, 35, 17, 17, 35, 17, 17, 18];  
+    const rowHeight = 7;                          
+    let startY = 10;                              
+    let currentCity = "";
+
+    // ✅ **Reusable function to draw the header**
+    function drawHeader() {
+        startY = 10;                               
+
+        // ✅ PDF Title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text(`Financial Year Report ${fy}-${parseInt(fy) + 1}`, 150, 5, { align: "center" });
+
+        // ✅ Main Header Row
+        doc.setFillColor(200, 200, 200);
+        doc.rect(5, startY, 290, rowHeight, "F");
+        doc.setFontSize(9);
+        doc.setTextColor(0);
+
+        let colX = 5;
+        doc.text("City", colX + 7, startY + 5);
+        colX += colWidths[0];
+
+        doc.text("Party Name", colX + 10, startY + 5);
+        colX += colWidths[1];
+
+        const firmNames = ["Brajmohan & Brothers", "Parag Kumar & Company", "Manav Brokers"];
+        for (let i = 0; i < 3; i++) {
+            doc.text(firmNames[i], colX + 20, startY + 5);
+            colX += colWidths[2] + colWidths[3] + colWidths[4];
+        }
+
+        startY += rowHeight;                      
+
+        // ✅ Sub-Headers
+        doc.setFontSize(8);
+        colX = 1 + colWidths[0] + colWidths[1];
+
+        for (let i = 0; i < 3; i++) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Bill No", colX + 5, startY + 5);
+            colX += colWidths[2];
+
+            doc.text("Bld $", colX + 5, startY + 5);
+            colX += colWidths[3];
+
+            doc.text("UnBld $", colX + 5, startY + 5);
+            colX += colWidths[4];
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Total Bld", colX + 5, startY + 5);
+        colX += colWidths[5];
+
+        // ✅ Draw Vertical Grid Lines
+        let colGridX = 5;                         
+        for (const width of colWidths) {
+            doc.line(colGridX, startY, colGridX, startY + rowHeight); 
+            colGridX += width;
+        }
+
+        startY += rowHeight;                      
+    }
+
+    // ✅ Draw initial header
+    drawHeader();
+
+    // ✅ Loop through customers
+    for (const customer of customerData.customers) {
+        const { city, name, customer_id } = customer;
+
+        // ✅ City Group Header
+        if (currentCity !== city) {
+            currentCity = city;
+
+            // ✅ Add city section
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            doc.setFillColor(230, 230, 250);      
+            doc.rect(5, startY, 290, rowHeight, "F");
+            doc.text(`City: ${currentCity}`, 130, startY + 5);
+
+            startY += rowHeight;
+
+            // ✅ Page break and reprint header if needed
+            if (startY > 190) {
+                doc.addPage();
+                drawHeader();
+            }
+        }
+
+        let colX = 1;                             
+
+        // ✅ Customer Info Row
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0);
+
+        // ✅ Alternating Row Colors
+        doc.setFillColor(startY % 14 < 7 ? 245 : 255, 245, 245);
+        doc.rect(5, startY, 290, rowHeight, "F");
+
+        doc.text(city, colX + 5, startY + 5);
+        colX += colWidths[0];
+
+        doc.text(name, colX + 5, startY + 5);
+        colX += colWidths[1];
+
+        let totalBilled = 0;  // ✅ Initialize total billed amount
+
+        // ✅ Fetch billing data for each firm
+        for (let firmId = 1; firmId <= 3; firmId++) {
+            const billingResponse = await fetch(
+                `/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customer_id}`
+            );
+            const billingData = await billingResponse.json();
+
+            const billed = billingData?.billedAmount || 0;
+            const unbilled = billingData?.unbilledAmount || 0;
+
+            totalBilled += billed;  // ✅ Accumulate billed amount
+
+            let billNo = "N/A";  
+
+            if (billed > 0) {
+                billNo = generateBillNo(firmId, fy, city, name, customer_id);
+
+                // ✅ Split the bill number into two parts:
+                const billPrefix = billNo.slice(0, billNo.lastIndexOf(customer_id.toString()));
+                const customerIdBold = customer_id.toString();
+
+                // ✅ Print the prefix in normal font
+                doc.setFont("helvetica", "normal");
+                doc.text(billPrefix, colX + 5, startY + 5);
+
+                // ✅ Print the customer ID in bold
+                const prefixWidth = doc.getTextWidth(billPrefix);  
+                doc.setFont("helvetica", "bold");
+                doc.text(customerIdBold, colX + 5 + prefixWidth, startY + 5);
+
+            } else {
+                // ✅ Print "N/A" in normal font only when billed is 0
+                doc.setFont("helvetica", "normal");
+                doc.text(billNo, colX + 5, startY + 5);
+            }
+
+            // ✅ Move to the next column (ONLY FOR AMOUNTS)
+            colX += colWidths[2];  
+
+            // ✅ Print billed and unbilled amounts
+            doc.setFont("helvetica", "normal");  
+            doc.text(billed.toString(), colX + 5, startY + 5);
+            colX += colWidths[3];
+
+            doc.text(unbilled.toString(), colX + 5, startY + 5);
+            colX += colWidths[4];
+        }
+
+        // ✅ Print the `Total Bld` column
+        doc.setFont("helvetica", "bold");
+        doc.text(totalBilled.toString(), colX + 5, startY + 5);
+        
+        colX += colWidths[5];
+
+        // ✅ Draw Vertical Grid Lines for Customer Row
+        let rowColX = 5;
+        for (const width of colWidths) {
+            doc.line(rowColX, startY, rowColX, startY + rowHeight);
+            rowColX += width;
+        }
+
+        startY += rowHeight;
+
+        // ✅ Page break and reprint header if needed
+        if (startY > 190) {
+            doc.addPage();
+            drawHeader();
+        }
+    }
+
+    // ✅ Generate PDF Blob and open in a new tab
+    const pdfBlob = doc.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    window.open(pdfUrl, "_blank");
+});
+
+
+// ✅ Bill Number Generator Function
+function generateBillNo(firmId, fy, city, customerName, customerId) {
+    let firmCode;
+    
+    switch (parseInt(firmId, 10)) {
+        case 1: firmCode = "BB"; break;
+        case 2: firmCode = "PKC"; break;
+        case 3: firmCode = "MB"; break;
+        default: return "Invalid Firm ID";
+    }
+
+    const fyLastTwo = fy.toString().slice(-2);
+    const cityCode = city.substring(0, 3).toUpperCase();
+    const customerCode = customerName.substring(0, 3).toUpperCase();
+
+    const billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
+    return billNo;
+}
+
+
+
     
     
 
