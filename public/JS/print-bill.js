@@ -221,6 +221,10 @@ async function generatePDF(action) {
     await fetchCustomerDetails();
     let firmIdNumber = parseInt(firmId, 10);  // Convert firmId to a number
 
+    // ✅ Fetch the latest checkbox states
+    const includeTid = document.getElementById("printTidCheckbox").checked;
+    const includeSno = document.getElementById("printSnoCheckbox").checked;
+
     let firmCode;
     if (firmIdNumber === 1) {
         firmCode = "BB";
@@ -307,8 +311,8 @@ async function generatePDF(action) {
         totalAmount += amount;
 
         selectedTransactions.push({
-            tid: row[0].textContent.trim(),
-            sno: row[1].textContent.trim(),
+            tid: includeTid ? row[0].textContent.trim() : "-",
+            sno: includeSno ? row[1].textContent.trim() : "-",
             date: row[2].textContent.trim(),
             party: party,
             city: city,

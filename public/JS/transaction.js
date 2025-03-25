@@ -176,7 +176,7 @@ async function loadSellers() {
             data.sellers.forEach((seller) => {
                 const option = document.createElement("option");
                 option.value = seller.customer_id;  // Use customer_id as value
-                option.textContent = seller.client_name +" , =>"+ seller.city; // Display client_name
+                option.textContent = `${seller.client_name} , => ${seller.city}`; // Display client_name
                 sellerDropdown.appendChild(option);
 
                 // Store seller details in memory
@@ -198,10 +198,10 @@ async function loadSellers() {
     }
 }
 
-// 📌 Load all buyers (Similar to loadSellers)
+// 📌 Load all buyers
 async function loadBuyers() {
     try {
-        const response = await fetch("http://localhost:3000/sellers/all");
+        const response = await fetch("http://localhost:3000/sellers/all");  // Correct API if different
         const data = await response.json();
 
         if (data.success) {
@@ -211,7 +211,7 @@ async function loadBuyers() {
             data.sellers.forEach((buyer) => {
                 const option = document.createElement("option");
                 option.value = buyer.customer_id;  // Use customer_id as value
-                option.textContent = buyer.client_name +" , =>"+ buyer.city; // Display client_name
+                option.textContent = `${buyer.client_name} , => ${buyer.city}`; // Display client_name
                 buyerDropdown.appendChild(option);
 
                 // Store buyer details in memory
@@ -233,7 +233,7 @@ async function loadBuyers() {
     }
 }
 
-// 📍 Update state & city when a seller is selected
+// 📌 Update state & city for seller
 async function updateStateAndCity(sellerId) {
     if (!sellerId || !sellerDataMap[sellerId]) return;
 
@@ -241,7 +241,7 @@ async function updateStateAndCity(sellerId) {
     await updateDropdowns("stateDropdown", "cityDropdown", state, city);
 }
 
-// 📍 Update state & city when a buyer is selected (Similar to updateStateAndCity)
+// 📌 Update state & city for buyer
 async function updateStateAndCityForBuyer(buyerId) {
     if (!buyerId || !buyerDataMap[buyerId]) return;
 
@@ -249,65 +249,78 @@ async function updateStateAndCityForBuyer(buyerId) {
     await updateDropdowns("buyerStateDropdown", "buyerCityDropdown", state, city);
 }
 
-// 📍 Generic function to update state & city dropdowns
+// 📌 Generic function to update state & city dropdowns with retry mechanism
 async function updateDropdowns(stateDropdownId, cityDropdownId, state, city) {
     const stateDropdown = document.getElementById(stateDropdownId);
     const cityDropdown = document.getElementById(cityDropdownId);
 
     if (!stateDropdown || !cityDropdown) return;
 
-    //console.log(`📌 Updating: ${stateDropdownId} → ${state}, ${cityDropdownId} → ${city}`);
-
+    // ✅ Select the state
     let matchedState = [...stateDropdown.options].find(opt => opt.value.toLowerCase() === state.toLowerCase());
-    
+
     if (matchedState) {
         stateDropdown.value = matchedState.value;
-       // console.log(`✅ State updated: ${matchedState.text} (${matchedState.value})`);
-        await updateCityDropdown(stateDropdownId, cityDropdownId);
+        await updateCityDropdown(stateDropdownId, cityDropdownId); // Load cities first
     } else {
         console.warn(`⚠️ No matching state found for '${state}'.`);
         return;
     }
 
-    setTimeout(() => {
-        let matchedCity = [...cityDropdown.options].find(opt => opt.text.toLowerCase() === city.toLowerCase());
-        if (matchedCity) {
-            cityDropdown.value = matchedCity.value;
-           // console.log(`✅ City updated: ${matchedCity.text}`);
-        } else {
-            console.warn(`⚠️ No matching city found for '${city}'. Keeping default.`);
-        }
-    }, 500);
+    // ✅ Retry mechanism to ensure city is selected after full population
+    await waitForCityDropdownPopulation(cityDropdown, city);
 }
 
-// 📍 Update city dropdown based on selected state
+// 📌 Retry mechanism with debounce for city selection
+async function waitForCityDropdownPopulation(dropdown, city, maxRetries = 10, delay = 100) {
+    let retries = 0;
+
+    const trySelectingCity = () => {
+        const matchedCity = [...dropdown.options].find(opt => opt.text.toLowerCase() === city.toLowerCase());
+        if (matchedCity) {
+            dropdown.value = matchedCity.value;
+            console.log(`✅ City selected: ${matchedCity.text}`);
+            return true;
+        }
+        return false;
+    };
+
+    // Try selecting city with retries
+    while (retries < maxRetries) {
+        if (trySelectingCity()) return;  // Exit if city is found
+        await new Promise(resolve => setTimeout(resolve, delay));  // Wait before next attempt
+        retries++;
+    }
+
+    console.warn(`⚠️ Failed to select city '${city}' after ${maxRetries} retries.`);
+}
+
+// 📌 Update city dropdown based on state selection
 async function updateCityDropdown(stateDropdownId, cityDropdownId) {
     const stateDropdown = document.getElementById(stateDropdownId);
     const cityDropdown = document.getElementById(cityDropdownId);
-    
-    if (!stateDropdown || !cityDropdown) {
-        console.error(`❌ Dropdowns not found: ${stateDropdownId}, ${cityDropdownId}`);
-        return;
-    }
+
+    if (!stateDropdown || !cityDropdown) return;
 
     const selectedState = stateDropdown.value.trim();
-    cityDropdown.innerHTML = `<option value="">Select City</option>`; // Reset city dropdown
+    cityDropdown.innerHTML = `<option value="">Select City</option>`;  // Reset
 
     if (!selectedState) return;
 
     try {
         const response = await fetch(`/city/state/${encodeURIComponent(selectedState)}`);
         const cities = await response.json();
+
         if (response.status === 404) {
-            alert(`⚠️ No cities exist in the database for the selected state: ${selectedState}`);
-            console.warn(`⚠️ No cities found for ${selectedState}`);
+            alert(`⚠️ No cities exist for the selected state: ${selectedState}`);
             return;
         }
-        
-        if (!Array.isArray(cities) || cities.length === 0) return;
 
         cities.forEach(city => {
-            cityDropdown.innerHTML += `<option value="${city.city_name}">${city.city_name}</option>`;
+            const option = document.createElement("option");
+            option.value = city.city_name;
+            option.textContent = city.city_name;
+            cityDropdown.appendChild(option);
         });
 
     } catch (error) {
@@ -315,7 +328,7 @@ async function updateCityDropdown(stateDropdownId, cityDropdownId) {
     }
 }
 
-// 📍 Update seller dropdown based on selected city
+// 📌 Update seller dropdown based on city
 async function updateSellerDropdown(cityDropdownId, sellerDropdownId) {
     const cityDropdown = document.getElementById(cityDropdownId);
     const sellerDropdown = document.getElementById(sellerDropdownId);
@@ -346,7 +359,7 @@ async function updateSellerDropdown(cityDropdownId, sellerDropdownId) {
     }
 }
 
-// 📍 Update buyer dropdown based on selected city (Similar to sellers)
+// 📌 Update buyer dropdown based on city
 async function updateBuyerDropdown(cityDropdownId, buyerDropdownId) {
     const cityDropdown = document.getElementById(cityDropdownId);
     const buyerDropdown = document.getElementById(buyerDropdownId);
@@ -384,6 +397,7 @@ document.body.addEventListener("change", (event) => {
     if (event.target.id === "cityDropdown") updateSellerDropdown("cityDropdown", "sellerDropdown");
     if (event.target.id === "buyerCityDropdown") updateBuyerDropdown("buyerCityDropdown", "buyerDropdown");
 });
+
 
 
 

@@ -906,7 +906,7 @@ app.get("/filteredTransactions", (req, res) => {
 });
 
 // 📌 API: Get Customer Transactions for print pagen
-// 📌 API: Get Customer Transactions for Print Page
+// 📌 API: Get Customer Transactions for Print Page with Formatted Dates
 app.get("/api/customer-transactions", (req, res) => {
     const { fy, firm_id, customer_id } = req.query;
 
@@ -920,7 +920,7 @@ app.get("/api/customer-transactions", (req, res) => {
         SELECT 
             t.transaction_id, 
             t.sno,
-            t.date, 
+            strftime('%d-%m-%Y', t.date) AS date,     -- ✅ Formatted date
             t.item, 
             t.packaging, 
             t.qty,
@@ -952,28 +952,25 @@ app.get("/api/customer-transactions", (req, res) => {
             return res.status(500).json({ success: false, error: err.message });
         }
 
-        // Process transactions correctly
+        // 🚀 Ensure all dates are reformatted in case of inconsistencies
         const transactions = rows.map(txn => {
             let transactionType = "Not Applicable";
             let brokerageRate = txn.seller_rate;
             let amount = txn.seller_amount;
-            let billedStatus = txn.Buyer_Billed; // Default to Buyer_Billed
+            let billedStatus = txn.Buyer_Billed;  
             let fqty = txn.qty;
 
             if (txn.seller_id == customer_id && txn.buyer_id == customer_id) {
-                // Customer is both Buyer & Seller → Use Buyer_Billed
                 transactionType = "Not Applicable";
                 billedStatus = txn.Buyer_Billed;
                 fqty = txn.qty;
             } else if (txn.seller_id == customer_id) {
-                // Customer is Seller → Use Seller_Billed
                 transactionType = "Sold";
                 brokerageRate = txn.seller_rate;
                 amount = txn.seller_amount;
                 billedStatus = txn.Seller_Billed;
                 fqty = txn.qty;
             } else if (txn.buyer_id == customer_id) {
-                // Customer is Buyer → Use Buyer_Billed
                 transactionType = "Purchased";
                 brokerageRate = txn.buyer_rate;
                 amount = txn.buyer_amount;
@@ -981,19 +978,29 @@ app.get("/api/customer-transactions", (req, res) => {
                 fqty = txn.bqty;
             }
 
+            // ✅ Force format date again in JS as a failsafe 
+            let formattedDate = txn.date;
+            if (txn.date.includes('-') && txn.date.split('-')[0].length === 4) {
+                const [yyyy, mm, dd] = txn.date.split('-');
+                formattedDate = `${dd}-${mm}-${yyyy}`;
+            }
+
             return {
                 ...txn,
+                date: formattedDate,   // ✅ Consistent date format
                 transactionType,
                 brokerageRate,
                 amount,
                 fqty,
-                billedStatus // Correct Billed Status based on role
+                billedStatus
             };
         });
 
         res.json({ success: true, transactions });
     });
 });
+
+
 
 app.get("/api/customer-billing-status", (req, res) => {
     const { fy, firm_id, customer_id } = req.query;

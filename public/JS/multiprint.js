@@ -381,6 +381,9 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     doc.text(`A/C No: ${firmDetails.AccountNo}`, 150, 17);
     doc.text(`PAN No: ${firmDetails.PAN}`, 10, 23);
     doc.text(`IFSC: ${firmDetails.IFSC}`, 150, 23);
+    // ✅ Fetch the latest checkbox states
+    const includeTid = document.getElementById("printTidCheckbox").checked;
+    const includeSno = document.getElementById("printSnoCheckbox").checked;
 
     // **Table Headers**
     const headers = ["Tid", "S.N", "Date", "Party", "City", "Txn Type", "Item", "Qty", "Bhav", "B Rate", "Amount"];
@@ -433,19 +436,21 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
         }
     
         let colX = 5;
-        let values = [
-            txn.transaction_id || "N/A",
-            txn.sno || "N/A",
+        let values = [];
+        values.push(includeTid ? (txn.transaction_id || "N/A") : "-");
+        values.push(includeSno ? (txn.sno || "N/A") : "-");
+        
+        values.push(
             txn.date || "N/A",
-            party,  // Now correctly assigned
-            city,   // Now correctly assigned
+            party,
+            city,
             txnType,
             txn.item || "N/A",
             txn.fqty || "0",
             txn.bhav || "0",
             txn.brokerageRate || "0",
-            parseFloat(txn.amount || 0).toFixed(2),
-        ];
+            parseFloat(txn.amount || 0).toFixed(2)
+        );
     
         values.forEach((value, i) => {
             let align = ["Qty", "Bhav", "B Rate", "Amount"].includes(headers[i]) ? "right" : "left";
