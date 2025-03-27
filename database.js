@@ -103,6 +103,26 @@ const db = new sqlite3.Database('billing.db', (err) => {
             startYear INTEGER UNIQUE NOT NULL,
             endYear INTEGER NOT NULL
         )`);
+
+        // 📌 Deleted Customers Table
+            db.run(`CREATE TABLE IF NOT EXISTS deleted_customers (
+                deleted_id INTEGER PRIMARY KEY AUTOINCREMENT,          -- Unique ID for tracking deletions
+                customer_id INTEGER NOT NULL,                          -- Original Customer ID (same as customers table)
+                category TEXT NOT NULL,
+                client_name TEXT NOT NULL COLLATE NOCASE,
+                contact TEXT,
+                email TEXT,
+                state TEXT NOT NULL,
+                city TEXT NOT NULL,
+                city_id INTEGER,
+                deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Timestamp when deleted
+                UNIQUE(customer_id)                                     -- Ensure no duplicate customer IDs
+            )`, (err) => {
+                if (err) console.error('❌ Error creating deleted_customers table:', err.message);
+                else console.log('✅ Deleted Customers table is ready.');
+            });
+
+
     }
 });
 

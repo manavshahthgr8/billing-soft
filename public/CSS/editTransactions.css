@@ -540,6 +540,71 @@ select {
     flex-direction: column;
 }
 
+/* Target only the Transaction Details Section */
+/* Compact Layout for Transaction Section */
+.row1 {
+    display: flex;
+    align-items: center;            /* Align items vertically */
+    gap: 10px;                      /* Reduce spacing between columns */
+    margin-bottom: 5px;             /* Smaller bottom margin */
+}
+
+.col1 {
+    flex: 0 0 auto;                 /* Prevent stretching */
+    display: flex;
+    flex-direction: column;
+    min-width: auto;                 /* Allow flexible column size */
+    max-width: 160px;                /* Slightly reduce max width */
+}
+
+/* Smaller Input Box for 3-digit Sno */
+/* ✅ Container for Left and Right Sections */
+.edit-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;                        /* Space between left and right sections */
+    margin-bottom: 15px;
+}
+
+/* ✅ Left Section: Compact Sno Styling */
+#left-edit-modal {
+    display: flex;
+    align-items: center;
+    gap: 10px;                        /* Space between label and input */
+}
+
+#left-edit-modal label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#edit-sno {
+    width: 70px;                      /* Compact width for 3 digits */
+    padding: 5px 8px;                 /* Reduced padding */
+    font-size: 14px;                  /* Standard font size */
+    text-align: center;               /* Center-align the input */
+    border: 1px solid #ccc;           /* Subtle border */
+    border-radius: 4px;               /* Rounded corners */
+}
+
+/* ✅ Right Section: Reuse Existing Row and Col Styling */
+#right-edit-modal {
+    flex: 1;                          /* Take remaining space */
+}
+
+/* Labels Styling */
+.col1 label {
+    font-weight: bold;
+    margin-bottom: 2px;              /* Tighter label spacing */
+}
+
+/* Consistent Span Styling */
+.col1 span {
+    font-size: 14px;
+    color: #333;                     /* Darker text color for better readability */
+}
+
+
 /* Labels */
 .modal-content4 label {
     font-weight: bold;

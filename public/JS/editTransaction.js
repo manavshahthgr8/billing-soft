@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    var orig_sno = 0;
     setTimeout(() => {
         document.getElementById("search-bar").value = "";
     }, 100); // Small delay ensures autofill is overridden// Clear search bar on page load
@@ -209,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let queryParams = new URLSearchParams({
                 fy: financialYear,
                 firm_id: firmId,
-                page: page,  // Use the dynamic page number
+                page: page,  
                 limit: limit
             });
     
@@ -227,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
             transactions = data.transactions;
             renderTransactions(transactions);
     
-            currentPage = data.currentPage;  // Update pagination
+            currentPage = data.currentPage;  
             pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
             prevButton.disabled = currentPage === 1;
             nextButton.disabled = currentPage >= data.totalPages;
@@ -237,21 +238,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
     
-
     const applyButton = document.getElementById("apply-btn");
     applyButton.addEventListener("click", () => {
         const transactionType = document.getElementById("transaction-type").value;
         const searchValue = document.getElementById("search-bar").value.trim();
         const searchColumn = document.getElementById("search-column").value;
+    
         let filters = {};
+    
         if (transactionType !== "all") {
             filters.transaction_type = transactionType;
         }
+        
         if (searchValue !== "") {
-            filters[searchColumn] = searchValue;
+            filters[searchColumn] = searchValue;   // ✅ Added dynamic filtering support
         }
+    
         fetchFilteredTransactions(filters);
     });
+    
 
     const resetButton = document.getElementById("reset-btn");
     resetButton.addEventListener("click", () => {
@@ -290,6 +295,7 @@ document.body.addEventListener("click", async function (event) {
     if (!event.target.classList.contains("edit-btn")) return;
 
     const tid = event.target.getAttribute("data-id");
+    
     if (!tid) {
         console.error("❌ No TID found on edit button!");
         return;
@@ -331,6 +337,8 @@ document.body.addEventListener("click", async function (event) {
 
         // 📝 Pre-fill form
         document.getElementById("edit-seller-name").value = txn.seller_id;
+        document.getElementById("edit-sno").value = txn.sno;
+        orig_sno = txn.sno;
         document.getElementById("edit-seller-rate").value = txn.seller_rate;
         document.getElementById("edit-item").value = txn.item;
         document.getElementById("edit-qty").value = txn.qty;
@@ -344,11 +352,26 @@ document.body.addEventListener("click", async function (event) {
 
         // ✅ Show modal after data is populated
         editModal.style.display = "block";
+
+        // ✅ Sync Quantities After Modal Opens
+        const sQuantityInput = document.getElementById("edit-qty");  // Seller Quantity
+        const bQuantityInput = document.getElementById("bedit-qty");  // Buyer Quantity
+
+        // Remove previous event listener to prevent multiple bindings
+        sQuantityInput.removeEventListener("input", syncBuyerQuantity);
+
+        // Add event listener inside modal open logic
+        function syncBuyerQuantity() {
+            bQuantityInput.value = sQuantityInput.value;  // Sync buyer quantity
+        }
+        sQuantityInput.addEventListener("input", syncBuyerQuantity);
     } catch (error) {
         console.error("🚨 Error loading transaction details:", error);
         alert("Failed to load transaction data.");
     }
 });
+
+
 
 // ❌ Close Edit Modal
 document.querySelector("#edit-transaction-modal .modal-close4").addEventListener("click", function () {
@@ -385,25 +408,58 @@ document.getElementById("save-transaction").addEventListener("click", async func
         }
 
         console.log("✅ Password verified. Proceeding with update...");
+        if(document.getElementById("edit-sno").value != orig_sno){
+            alert("Please Note you are changing Sno. Not Recommended.");
+            //return; 
+        }
+
 
         // Step 2️⃣: Collect updated data
         const updatedTransaction = {
             tid,
             fy: financialYear,
             firmId: firmId,
-            seller_id: document.getElementById("edit-seller-name").value,
-            seller_rate: parseFloat(document.getElementById("edit-seller-rate").value) || 0 ,
-            item: document.getElementById("edit-item").value,
-            qty: parseInt(document.getElementById("edit-qty").value),
-            bqty: parseInt(document.getElementById("bedit-qty").value),
-            bhav: parseInt(document.getElementById("bhav").value),
-            date: document.getElementById("edit-date").value,
-            packaging: document.getElementById("edit-pkg").value,
-            buyer_id: document.getElementById("edit-buyer-name").value,
-            buyer_rate: parseFloat(document.getElementById("edit-buyer-rate").value) || 0,
-            seller_amount: parseFloat(document.getElementById("edit-seller-rate").value) * parseInt(document.getElementById("edit-qty").value),
-            buyer_amount: parseFloat(document.getElementById("edit-buyer-rate").value) * parseInt(document.getElementById("edit-qty").value),
+            seller_id: document.getElementById("edit-seller-name").value || "",
+            
+            seller_rate: isNaN(parseFloat(document.getElementById("edit-seller-rate").value)) 
+                ? "0" 
+                : parseFloat(document.getElementById("edit-seller-rate").value).toString(),
+        
+            item: document.getElementById("edit-item").value || "",
+        
+            // 🔥 Send as string to avoid falsy issue
+            qty: isNaN(parseInt(document.getElementById("edit-qty").value)) 
+                ? "0" 
+                : parseInt(document.getElementById("edit-qty").value).toString(),
+        
+            bqty: isNaN(parseInt(document.getElementById("bedit-qty").value)) 
+                ? "0" 
+                : parseInt(document.getElementById("bedit-qty").value).toString(),
+        
+            bhav: isNaN(parseInt(document.getElementById("bhav").value)) 
+                ? "0" 
+                : parseInt(document.getElementById("bhav").value).toString(),
+        
+            date: document.getElementById("edit-date").value || "",
+            packaging: document.getElementById("edit-pkg").value || "",
+            buyer_id: document.getElementById("edit-buyer-name").value || "",
+        
+            buyer_rate: isNaN(parseFloat(document.getElementById("edit-buyer-rate").value)) 
+                ? "0" 
+                : parseFloat(document.getElementById("edit-buyer-rate").value).toString(),
+        
+            seller_amount: (
+                isNaN(parseFloat(document.getElementById("edit-seller-rate").value)) || 
+                isNaN(parseInt(document.getElementById("edit-qty").value))
+            ) ? "0" : (parseFloat(document.getElementById("edit-seller-rate").value) * parseInt(document.getElementById("edit-qty").value)).toString(),
+        
+            buyer_amount: (
+                isNaN(parseFloat(document.getElementById("edit-buyer-rate").value)) || 
+                isNaN(parseInt(document.getElementById("edit-qty").value))
+            ) ? "0" : (parseFloat(document.getElementById("edit-buyer-rate").value) * parseInt(document.getElementById("edit-qty").value)).toString()
         };
+        
+        
 
         // Step 3️⃣: Send Update API Request
         const updateRes = await fetch(`/api/transactions/update`, {

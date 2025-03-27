@@ -480,25 +480,116 @@ app.post('/api/update-customer', (req, res) => {
   
   
   // Endpoint for deleting a customer
-  app.delete('/api/customers/:customerId', (req, res) => {
-    const customerId = req.params.customerId; // Customer ID to delete
+  // 📌 DELETE Endpoint: Move Customer to Deleted Table
+  // ✅ Endpoint for deleting customer (move + hard delete)
+app.delete('/api/customers/:customerId', async (req, res) => {
+    const customerId = req.params.customerId;
 
-    // Perform delete query directly
-    const query = `DELETE FROM customers WHERE customer_id = ?`;
-    db.run(query, [customerId], function (err) {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Internal server error." });
+    if (!customerId) {
+        return res.status(400).json({ message: "❌ Invalid customer ID." });
+    }
+
+    try {
+        // 🔥 1. Fetch customer details before moving
+        const customerQuery = `SELECT * FROM customers WHERE customer_id = ?`;
+        const customer = await new Promise((resolve, reject) => {
+            db.get(customerQuery, [customerId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!customer) {
+            return res.status(404).json({ message: "❌ Customer not found." });
         }
 
-        // If row is deleted, rowCount will be > 0
-        if (this.changes > 0) {
-            return res.status(200).json({ message: "Customer deleted successfully." });
-        } else {
-            return res.status(404).json({ message: "Customer not found." });
+        // 🔥 2. Check for existing transactions across all years
+        const fyQuery = `SELECT startYear FROM financial_years`;
+        const years = await new Promise((resolve, reject) => {
+            db.all(fyQuery, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows.map(row => row.startYear));
+            });
+        });
+
+        const txnYears = [];
+
+        for (const year of years) {
+            const tableName = `transactions_FY${year}`;
+            
+            const txnCheckQuery = `
+                SELECT COUNT(*) AS txn_count FROM ${tableName} 
+                WHERE seller_id = ? OR buyer_id = ?
+            `;
+
+            const txnCount = await new Promise((resolve, reject) => {
+                db.get(txnCheckQuery, [customerId, customerId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row.txn_count);
+                });
+            });
+
+            if (txnCount > 0) {
+                txnYears.push(year);
+            }
         }
-    });
+
+        // 🔥 3. Handle case when transactions exist
+        if (txnYears.length > 0) {
+            return res.status(409).json({
+                message: "⚠️ Customer has transactions in multiple years.",
+                txnYears
+            });
+        }
+
+        // ✅ 4. No transactions → Move to `deleted_customers` & Hard Delete
+        const moveQuery = `
+            INSERT OR IGNORE INTO deleted_customers (
+                customer_id, category, client_name, contact, email, state, city, city_id, deleted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `;
+
+        await new Promise((resolve, reject) => {
+            db.run(moveQuery, [
+                customer.customer_id,
+                customer.category,
+                customer.client_name,
+                customer.contact,              // ✅ Added contact
+                customer.email,                // ✅ Added email
+                customer.state,
+                customer.city,
+                customer.city_id
+            ], (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        console.log(`✅ Customer moved to deleted_customers: ${customerId}`);
+
+        // ✅ 5. Hard delete the customer from `customers`
+        const deleteQuery = `DELETE FROM customers WHERE customer_id = ?`;
+        await new Promise((resolve, reject) => {
+            db.run(deleteQuery, [customerId], function (err) {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        console.log(`✅ Customer hard deleted: ${customerId}`);
+
+        res.status(200).json({
+            message: "✅ Customer moved to deleted_customers and hard deleted."
+        });
+
+    } catch (error) {
+        console.error("❌ Error deleting customer:", error);
+        res.status(500).json({ message: "❌ Internal server error." });
+    }
 });
+
+
+
 
 // 📌 Get all financial years
 app.get("/financial-years", (req, res) => {
@@ -824,9 +915,8 @@ LIMIT ? OFFSET ?;
   
 // 📌 filtered transaction
 app.get("/filteredTransactions", (req, res) => {
-    const { fy, firm_id, page = 1, limit = 10, transaction_type, client_name, city, state } = req.query;
+    const { fy, firm_id, page = 1, limit = 10, transaction_type, client_name, city, state, sno } = req.query;
     const offset = (page - 1) * limit;
-   // console.log("🛠 Querying transactions with:", { page, offset, values });
 
     if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
         return res.status(400).json({ success: false, message: "Invalid financial year format." });
@@ -837,7 +927,7 @@ app.get("/filteredTransactions", (req, res) => {
     let filters = ["t.firm_id = ?"];
     let values = [firm_id];
 
-    // 🛠 Fix: Transaction type filter (Check BOTH buyer and seller roles)
+    // ✅ Transaction type filter
     if (transaction_type) {
         if (transaction_type === "buyer") {
             filters.push("(buyer.category = 'buyer' OR seller.category = 'buyer')");
@@ -846,7 +936,7 @@ app.get("/filteredTransactions", (req, res) => {
         }
     }
 
-    // Dynamic search filters
+    // ✅ Dynamic search filters
     if (client_name) {
         filters.push("(buyer.client_name LIKE ? OR seller.client_name LIKE ?)");
         values.push(`%${client_name}%`, `%${client_name}%`);
@@ -859,10 +949,16 @@ app.get("/filteredTransactions", (req, res) => {
         filters.push("(buyer.state LIKE ? OR seller.state LIKE ?)");
         values.push(`%${state}%`, `%${state}%`);
     }
+    
+    // ✅ New Sno Filter
+    if (sno) {
+        filters.push("t.sno = ?");
+        values.push(sno);
+    }
 
     const whereClause = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
 
-    // Fetch filtered transactions
+    // ✅ Fetch filtered transactions
     const sql = `
         SELECT 
             t.transaction_id, t.firm_id, t.sno, t.financial_year, t.date, t.item, t.packaging, t.qty, t.bqty, t.bhav, 
@@ -883,11 +979,14 @@ app.get("/filteredTransactions", (req, res) => {
             return res.status(500).json({ success: false, error: err.message });
         }
 
-        // Count total filtered transactions
-        const countSql = `SELECT COUNT(*) AS total FROM ${tableName} t 
-                          JOIN customers seller ON t.seller_id = seller.customer_id
-                          JOIN customers buyer ON t.buyer_id = buyer.customer_id
-                          ${whereClause}`;
+        // ✅ Count total filtered transactions
+        const countSql = `
+            SELECT COUNT(*) AS total 
+            FROM ${tableName} t
+            JOIN customers seller ON t.seller_id = seller.customer_id
+            JOIN customers buyer ON t.buyer_id = buyer.customer_id
+            ${whereClause}
+        `;
 
         db.get(countSql, values, (err, row) => {
             if (err) {
@@ -904,6 +1003,7 @@ app.get("/filteredTransactions", (req, res) => {
         });
     });
 });
+
 
 // 📌 API: Get Customer Transactions for print pagen
 // 📌 API: Get Customer Transactions for Print Page with Formatted Dates

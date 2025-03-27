@@ -76,6 +76,7 @@
                     <option value="client_name">Party Name</option>
                     <option value="city">City</option>
                     <option value="state">State</option>
+                    <option value="sno">Sno</option>   <!-- ✅ Added Sno option -->
                 </select>
         
                 <button id="apply-btn">Apply</button>
@@ -176,21 +177,34 @@
                 <strong>Note:</strong> You cannot change the firm. Please delete and add a new transaction in another firm or contact Manav to add this feature.
             </p>
     
-            <!-- Transaction Details (Single Row) -->
-            <div class="row">
-                <div class="col">
-                    <label>T-ID:</label>
-                    <span id="edit-tid"></span>
+            <div class="edit-container">
+    
+                <!-- Left Section (Sno) -->
+                <div id="left-edit-modal">
+                    <label for="edit-sno">S no:</label>
+                    <input type="number" id="edit-sno" required  disabled aria-disabled="true"/>
                 </div>
-                <div class="col">
-                    <label>Firm Name:</label>
-                    <span id="edit-firm-name"></span>
-                </div>
-                <div class="col">
-                    <label>Financial Year:</label>
-                    <span id="edit-fy"></span>
+            
+                <!-- Right Section (T-ID, Firm Name, Financial Year) -->
+                <div id="right-edit-modal">
+                    <div class="row">
+                        <div class="col">
+                            <label>T-ID:</label>
+                            <span id="edit-tid"></span>
+                        </div>
+                        <div class="col">
+                            <label>Firm Name:</label>
+                            <span id="edit-firm-name"></span>
+                        </div>
+                        <div class="col">
+                            <label>Financial Year:</label>
+                            <span id="edit-fy"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+
     
             <!-- Seller Details (Dropdown for Seller Name) -->
             <h3 class="center-text">Seller Details</h3>
@@ -208,7 +222,7 @@
                 </div>
                 <div class="col">
                     <label for="edit-qty">S Quantity:</label>
-                    <input type="number" id="edit-qty"  required/>
+                    <input type="number" id="edit-qty" step="any" required/>
                 </div>
             </div>
     
@@ -257,7 +271,7 @@
                 </div>
                 <div class="col">
                     <label for="bedit-qty">B Quantity:</label>
-                    <input type="number" id="bedit-qty"  required/>
+                    <input type="number" id="bedit-qty" step="any" required/>
                 </div>
             </div>
     

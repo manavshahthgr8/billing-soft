@@ -444,66 +444,97 @@ document.getElementById("new-state").addEventListener("change", (e) => {
   });
  
 
-    // Event listener for the delete button
-    document.getElementById("customer-list").addEventListener("click", (e) => {
-        if (e.target && e.target.classList.contains("delete-btn")) {
-            const customerId = e.target.getAttribute("data-id");
-            const modal = document.getElementById("delete_modal_customer");
-            const message = document.getElementById("delete_cust_message");
-    message.innerHTML = `⚠️ Recommended to edit Detail or create new customer to avoid Bill loss <br>🚨 All related billing records will also be deleted!`;
-            modal.style.display = "block";
+    // 🚀 Event listener for the delete button
+document.getElementById("customer-list").addEventListener("click", async (e) => {
+    if (e.target && e.target.classList.contains("delete-btn")) {
+        const customerId = e.target.getAttribute("data-id");
+        const modal = document.getElementById("delete_modal_customer");
+        const message = document.getElementById("delete_cust_message");
+        message.innerHTML = `
+            ⚠️ Recommended to edit details or create a new customer to avoid bill loss. 
+            <br> 🚨 All related billing records will also be deleted!
+        `;
+        modal.style.display = "block";
 
-            // Handle modal actions
-            document.getElementById("confirm_delete").onclick = async () => {
-                const password = document.getElementById("delete_password").value;
-                if (!password) {
-                    alert("Password is required!");
+        // ✅ Handle modal actions
+        document.getElementById("confirm_delete").onclick = async () => {
+            const password = document.getElementById("delete_password").value;
+            
+            if (!password) {
+                alert("❌ Password is required!");
+                return;
+            }
+
+            try {
+                // 🔥 Step 1: Validate Password
+                const passwordResponse = await fetch('/api/account/check-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const passwordData = await passwordResponse.json();
+
+                if (!passwordResponse.ok) {
+                    alert(passwordData.message || "❌ Incorrect password.");
                     return;
                 }
 
-                try {
-                    const response = await fetch('/api/account/check-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password })
-                    });
+                // 🔥 Step 2: Check for existing transactions
+                const checkTxnResponse = await fetch(`/api/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
-                    const data = await response.json();
+                const checkTxnData = await checkTxnResponse.json();
 
-                    if (response.ok) {
-                        const deleteResponse = await fetch(`/api/customers/${customerId}`, {
+                if (checkTxnResponse.status === 409) {
+                    // 🚨 Transaction exists → Ask for confirmation
+                    const proceed = confirm(`⚠️ Transactions found in: ${checkTxnData.txnYears.join(', ')}. Do you want to proceed?`);
+                    
+                    if (proceed) {
+                        // ✅ Proceed with moving customer to `deleted_customers`
+                        const forceDeleteResponse = await fetch(`/api/customers/${customerId}`, {
                             method: 'DELETE',
                             headers: { 'Content-Type': 'application/json' },
                         });
 
-                        const deleteData = await deleteResponse.json();
+                        const forceDeleteData = await forceDeleteResponse.json();
 
-                        if (deleteResponse.ok) {
-                            alert("Customer deleted successfully!");
+                        if (forceDeleteResponse.ok) {
+                            alert("✅ Customer moved to deleted_customers successfully.");
                             window.location.reload();
                         } else {
-                            alert(deleteData.message || "Failed to delete customer.");
+                            alert(forceDeleteData.message || "❌ Failed to delete customer.");
                         }
-                    } else {
-                        alert(data.message || "Incorrect password.");
                     }
-                } catch (error) {
-                    console.error("Error:", error);
-                    alert("An error occurred. Please try again.");
+                } else if (checkTxnResponse.ok) {
+                    // ✅ No transactions → Move customer directly
+                    alert("✅ Customer moved to deleted_customers successfully.");
+                    window.location.reload();
+                } else {
+                    alert(checkTxnData.message || "❌ Failed to delete customer.");
                 }
 
-                modal.style.display = "none";
-            };
+            } catch (error) {
+                console.error("❌ Error:", error);
+                alert("An error occurred. Please try again.");
+            }
 
-            document.getElementById("cancel_delete").onclick = () => {
-                modal.style.display = "none";
-            };
+            modal.style.display = "none";
+        };
 
-            document.querySelector(".close-btn").onclick = () => {
-                modal.style.display = "none";
-            };
-        }
-    });
+        // 🔥 Cancel button actions
+        document.getElementById("cancel_delete").onclick = () => {
+            modal.style.display = "none";
+        };
+
+        document.querySelector(".close-btn").onclick = () => {
+            modal.style.display = "none";
+        };
+    }
+});
+
 
 
 

@@ -279,7 +279,7 @@ async function waitForCityDropdownPopulation(dropdown, city, maxRetries = 10, de
         const matchedCity = [...dropdown.options].find(opt => opt.text.toLowerCase() === city.toLowerCase());
         if (matchedCity) {
             dropdown.value = matchedCity.value;
-            console.log(`✅ City selected: ${matchedCity.text}`);
+           // console.log(`✅ City selected: ${matchedCity.text}`);
             return true;
         }
         return false;
