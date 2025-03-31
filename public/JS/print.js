@@ -153,163 +153,211 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    
+    const customersContainer = document.createElement("div");
+customersContainer.id = "customers-container";
+document.querySelector(".main-container").appendChild(customersContainer);
 
-    
-        const customersContainer = document.createElement("div");
-        customersContainer.id = "customers-container";
-        document.querySelector(".main-container").appendChild(customersContainer);
-    
-        const paginationControls = document.querySelector(".pagination");
-        const prevBtn = document.getElementById("prev-btn");
-        const nextBtn = document.getElementById("next-btn");
-        const pageInfo = document.getElementById("page-info");
-    
-        let customers = [];  // Store all customers
-        let filteredCustomers = []; // Store filtered results
-        let currentPage = 1;
-        const itemsPerPage = 15; // Number of customers per page
-    
-        // Fetch customers from API
-        async function fetchCustomers() {
+const paginationControls = document.querySelector(".pagination");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const pageInfo = document.getElementById("page-info");
+
+let customers = [];                  // All customers
+let filteredCustomers = [];          // Filtered results (city/status/search)
+let billingStatusMap = {};           // Cache billing status across all pages
+let currentPage = 1;
+const itemsPerPage = 15;             // Customers per page
+
+// ✅ Fetch customers from API
+async function fetchCustomers() {
+    try {
+        const response = await fetch("/sellers/all");
+        const data = await response.json();
+
+        if (data.success) {
+            customers = data.sellers;
+            filteredCustomers = [...customers];  // Reset filters
+            await fetchAllBillingStatuses();
+            applyFilters();
+        } else {
+            console.error("Failed to fetch customers");
+        }
+    } catch (error) {
+        console.error("Error fetching customers:", error);
+    }
+}
+
+// ✅ Fetch and Cache Billing Status for All Customers
+async function fetchAllBillingStatuses() {
+    const billingPromises = customers.map(async (customer) => {
+        const customerId = customer.customer_id;
+
+        if (!billingStatusMap[customerId]) {
             try {
-                const response = await fetch("/sellers/all");
+                const response = await fetch(
+                    `/api/customer-billing-status?fy=${financialYear}&firm_id=${firmId}&customer_id=${customerId}`
+                );
                 const data = await response.json();
+
                 if (data.success) {
-                    customers = data.sellers;
-                    filteredCustomers = customers; // Default view
-                    renderCustomers();
+                    billingStatusMap[customerId] = {
+                        billedAmount: data.billedAmount,
+                        unbilledAmount: data.unbilledAmount,
+                        billedTxnCount: data.billedTxnCount,
+                        unbilledTxnCount: data.unbilledTxnCount
+                    };
                 } else {
-                    console.error("Failed to fetch customers");
+                    console.error(`Failed to fetch status for ${customerId}`);
                 }
             } catch (error) {
-                console.error("Error fetching customers:", error);
+                console.error(`Error fetching billing status for ${customerId}:`, error);
             }
         }
-    
-        // Render customers dynamically
-        function renderCustomers() {
-            customersContainer.innerHTML = "";
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const paginatedCustomers = filteredCustomers.slice(start, end);
-        
-            const table = document.createElement("table");
-            table.classList.add("customer-table");
-        
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                                <th>Customer Name</th>
-                                <th>Location</th>
-                                <th>Category</th>
-                                <th>Billed Amount</th>
-                                <th>Unbilled Amount</th>
-                                <th>Billed Txn</th>
-                                <th>Unbilled Txn</th>
-                                <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-        
-            const tbody = table.querySelector("tbody");
-        
-            paginatedCustomers.forEach(customer => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${customer.client_name}</td>
+    });
+
+    // Wait until all billing status fetches are completed
+    await Promise.all(billingPromises);
+}
+
+// ✅ Render customers dynamically with pagination
+function renderCustomers() {
+    customersContainer.innerHTML = "";
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedCustomers = filteredCustomers.slice(start, end);
+
+    const table = document.createElement("table");
+    table.classList.add("customer-table");
+
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Billed Amount</th>
+                <th>Unbilled Amount</th>
+                <th>Billed Txn</th>
+                <th>Unbilled Txn</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+
+    const tbody = table.querySelector("tbody");
+
+    paginatedCustomers.forEach(customer => {
+        const customerId = customer.customer_id;
+        const billing = billingStatusMap[customerId] || {
+            billedAmount: "Loading...",
+            unbilledAmount: "Loading...",
+            billedTxnCount: "Loading...",
+            unbilledTxnCount: "Loading..."
+        };
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${customer.client_name}</td>
             <td>${customer.city}, ${customer.state}</td>
             <td>${customer.category.charAt(0).toUpperCase() + customer.category.slice(1)}</td>
-            <td id="billed-${customer.customer_id}">Loading...</td>
-            <td id="unbilled-${customer.customer_id}">Loading...</td>
-            <td id="billed-txn-${customer.customer_id}">Loading...</td>
-            <td id="unbilled-txn-${customer.customer_id}">Loading...</td>
-            <td><button class="print-bill-btn" data-id="${customer.customer_id}">Print</button></td>
+            <td>${billing.billedAmount}</td>
+            <td>${billing.unbilledAmount}</td>
+            <td>${billing.billedTxnCount}</td>
+            <td>${billing.unbilledTxnCount}</td>
+            <td><button class="print-bill-btn" data-id="${customerId}">Print</button></td>
         `;
-        tbody.appendChild(row);
-                tbody.appendChild(row);
-        
-                // Fetch Billed & Unbilled Amounts asynchronously
-                fetchBillingStatus(customer.customer_id);
-            });
-        
-            customersContainer.appendChild(table);
-            updatePaginationControls();
-        }
-        
-        // Fetch and Update Billed & Unbilled Amounts
-        async function fetchBillingStatus(customerId) {
-            try {
-                const response = await fetch(`/api/customer-billing-status?fy=${financialYear}&firm_id=${firmId}&customer_id=${customerId}`);
-                const data = await response.json();
-        
-                if (data.success) {
-                    document.getElementById(`billed-${customerId}`).textContent = data.billedAmount;
-                    document.getElementById(`unbilled-${customerId}`).textContent = data.unbilledAmount;
-                    document.getElementById(`billed-txn-${customerId}`).textContent = data.billedTxnCount;
-                    document.getElementById(`unbilled-txn-${customerId}`).textContent = data.unbilledTxnCount;
-                } else {
-                    document.getElementById(`billed-${customerId}`).textContent = "Error";
-                    document.getElementById(`unbilled-${customerId}`).textContent = "Error";
-                    document.getElementById(`billed-txn-${customerId}`).textContent = "Error";
-                    document.getElementById(`unbilled-txn-${customerId}`).textContent = "Error";
-                }
-            } catch (error) {
-                console.error("Error fetching billing status:", error);
-                document.getElementById(`billed-${customerId}`).textContent = "Error";
-                document.getElementById(`unbilled-${customerId}`).textContent = "Error";
-                document.getElementById(`billed-txn-${customerId}`).textContent = "Error";
-                document.getElementById(`unbilled-txn-${customerId}`).textContent = "Error";
-            }
-        }
-        
-        
-        
-    
-        // Update Pagination Controls
-        function updatePaginationControls() {
-            pageInfo.textContent = `Page ${currentPage} of ${Math.ceil(filteredCustomers.length / itemsPerPage)}`;
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = currentPage >= Math.ceil(filteredCustomers.length / itemsPerPage);
-        }
-    
-       // Search & Filter Logic
-document.getElementById("apply-btn").addEventListener("click", () => {
-    const searchValue = document.getElementById("search-bar").value.trim().toLowerCase();
-    const searchColumn = document.getElementById("search-column").value;
-    const typeFilter = document.getElementById("transaction-type").value;
 
+        tbody.appendChild(row);
+    });
+
+    customersContainer.appendChild(table);
+    updatePaginationControls();
+}
+
+// ✅ Apply combined filters (City + Status + Search)
+function applyFilters() {
+    const cityFilter = document.getElementById("search-bar").value.trim().toLowerCase();
+    const statusFilter = document.getElementById("status-dropdown").value;
+    const typeFilter = document.getElementById("transaction-type").value;
+    const searchColumn = document.getElementById("search-column").value;
+
+    // ✅ Filter based on city or search criteria first
     filteredCustomers = customers.filter(customer => {
-        // Check if the search term matches the selected column
-        const matchesSearch = searchValue
-            ? (customer[searchColumn] || "").toLowerCase().includes(searchValue)
+        const matchesSearch = cityFilter
+            ? (customer[searchColumn] || "").toLowerCase().includes(cityFilter)
             : true;
 
-        // Check if the customer matches the selected category
         const matchesType = typeFilter === "all" || customer.category === typeFilter;
 
         return matchesSearch && matchesType;
     });
 
+    // ✅ Apply Status filter on the filtered list
+    if (statusFilter !== "all") {
+        filteredCustomers = filteredCustomers.filter(customer => {
+            const status = billingStatusMap[customer.customer_id] || {
+                billedAmount: 0,
+                unbilledAmount: 0
+            };
+
+            const hasBilled = parseFloat(status.billedAmount) > 0;
+            const hasUnbilled = parseFloat(status.unbilledAmount) > 0;
+
+            if (statusFilter === "paid") {
+                return hasBilled;
+            } else if (statusFilter === "unpaid") {
+                return hasUnbilled;
+            }
+
+            return true;
+        });
+    }
+
     currentPage = 1;
     renderCustomers();
+}
+
+// ✅ Update Pagination Controls
+function updatePaginationControls() {
+    pageInfo.textContent = `Page ${currentPage} of ${Math.ceil(filteredCustomers.length / itemsPerPage)}`;
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage >= Math.ceil(filteredCustomers.length / itemsPerPage);
+}
+
+// ✅ Search & Filter Event
+document.getElementById("apply-btn").addEventListener("click", () => {
+    applyFilters();
 });
 
+// ✅ Status Filter Event
+document.getElementById("status-dropdown").addEventListener("change", () => {
+    applyFilters();
+});
+
+// ✅ Pagination Events
+prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderCustomers();
+    }
+});
+
+nextBtn.addEventListener("click", () => {
+    if (currentPage < Math.ceil(filteredCustomers.length / itemsPerPage)) {
+        currentPage++;
+        renderCustomers();
+    }
+});
+
+// ✅ Initialize customer fetching
+fetchCustomers();
+
     
-        // Pagination Events
-        prevBtn.addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderCustomers();
-            }
-        });
     
-        nextBtn.addEventListener("click", () => {
-            if (currentPage < Math.ceil(filteredCustomers.length / itemsPerPage)) {
-                currentPage++;
-                renderCustomers();
-            }
-        });
     
         // Event Listener for "Print Bill" Button
         document.body.addEventListener("click", (event) => {
