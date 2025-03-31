@@ -196,6 +196,37 @@ app.get('/api/customer/:customerId', (req, res) => {
     });
 });
 
+// ✅ API to fetch multiple customers by IDs
+app.get('/api/customers', (req, res) => {
+    const idsString = req.query.ids;  // Comma-separated IDs (e.g., "113,87,11,2")
+    if (!idsString) {
+        return res.status(400).json({ success: false, message: 'No customer IDs provided' });
+    }
+
+    const customerIds = idsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+
+    if (customerIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'Invalid customer IDs' });
+    }
+
+    const placeholders = customerIds.map(() => '?').join(',');  // Creates ?,?,? for query
+    const sql = `
+        SELECT customer_id, category, client_name, contact, email, state, city, city_id
+        FROM customers
+        WHERE customer_id IN (${placeholders})
+    `;
+
+    db.all(sql, customerIds, (err, rows) => {
+        if (err) {
+            console.error('Error fetching customer details:', err.message);
+            res.status(500).json({ success: false, message: 'Internal Server Error' });
+        } else {
+            res.json({ success: true, customers: rows });
+        }
+    });
+});
+
+
 app.post('/api/firmupdate/:firmId', (req, res) => {
     //console.log('Post request received for firm ID:', req.params.firmId);
     const firmId = req.params.firmId;
@@ -1416,6 +1447,87 @@ app.post("/api/transactions/update", (req, res) => {
         }
     );
 });
+
+//special api for multiple customer
+// ✅ API: Mark Multiple Customers as Billed
+app.post("/api/transactions/markMultipleBilled", async (req, res) => {
+    const { customerTransactions, financialYear } = req.body;
+
+    if (!customerTransactions || Object.keys(customerTransactions).length === 0) {
+        return res.status(400).json({ error: "No customer transactions provided." });
+    }
+
+    if (!financialYear) {
+        return res.status(400).json({ error: "Financial year is missing." });
+    }
+
+    try {
+        const tableName = `transactions_FY${financialYear}`;
+        
+        // ✅ Batch update for all customers
+        const updatePromises = [];
+
+        for (const [customerId, transactionIds] of Object.entries(customerTransactions)) {
+            if (!transactionIds.length) continue;
+
+            const placeholders = transactionIds.map(() => "?").join(",");
+            
+            const fetchSql = `
+                SELECT transaction_id, seller_id, buyer_id 
+                FROM ${tableName} 
+                WHERE transaction_id IN (${placeholders})
+            `;
+
+            const transactions = await new Promise((resolve, reject) => {
+                db.all(fetchSql, transactionIds, (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+
+            if (!transactions.length) continue;
+
+            const buyerTxnIds = [];
+            const sellerTxnIds = [];
+
+            transactions.forEach(txn => {
+                if (txn.buyer_id == customerId) {
+                    buyerTxnIds.push(txn.transaction_id);
+                } else if (txn.seller_id == customerId) {
+                    sellerTxnIds.push(txn.transaction_id);
+                }
+            });
+
+            if (buyerTxnIds.length) {
+                const buyerSql = `
+                    UPDATE ${tableName} 
+                    SET buyer_Billed = 'Yes' 
+                    WHERE transaction_id IN (${buyerTxnIds.map(() => "?").join(",")})
+                `;
+                updatePromises.push(db.run(buyerSql, buyerTxnIds));
+            }
+
+            if (sellerTxnIds.length) {
+                const sellerSql = `
+                    UPDATE ${tableName} 
+                    SET seller_Billed = 'Yes' 
+                    WHERE transaction_id IN (${sellerTxnIds.map(() => "?").join(",")})
+                `;
+                updatePromises.push(db.run(sellerSql, sellerTxnIds));
+            }
+        }
+
+        // ✅ Execute all updates in parallel
+        await Promise.all(updatePromises);
+
+        res.json({ message: "All customers marked as billed successfully." });
+
+    } catch (error) {
+        console.error("Error marking multiple customers as billed:", error);
+        res.status(500).json({ error: "Failed to update multiple transactions." });
+    }
+});
+
 
 
 app.post("/api/transactions/markBilled", async (req, res) => {

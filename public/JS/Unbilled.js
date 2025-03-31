@@ -1,24 +1,29 @@
-// Function to get URL parameters
+// ✅ Function to get query parameters from the URL
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
 
-// Get values from URL (with fallbacks)
-const cityId = getQueryParam('city_id') || 'N/A';
-const cityName = decodeURIComponent(getQueryParam('city') || 'Unknown City');
+// ✅ Extract parameters from the URL with fallbacks
+const cidsString = getQueryParam('cids') || '';
+const customerIds = cidsString ? cidsString.split(',') : [];  // Split into array
 const fy = getQueryParam('fy') || 'N/A';
 const firmId = getQueryParam('firm_id') || 'N/A';
 
+// console.log("Customer IDs:", customerIds);  // Array of customer IDs
+// console.log("FY:", fy);
+// console.log("Firm ID:", firmId);
+
+
+
+// Fetch customers based on city
 // Assign values to DOM elements
 document.addEventListener('DOMContentLoaded', async () => {
-   
-
     const firmIdInput = document.getElementById("firmId");
     const financialYearInput = document.getElementById("financialYear");
     const fySpan = document.getElementById("fy");
     const firmNameSpan = document.getElementById("firmName");
-    const cityDisplay = document.getElementById("city-name");
+    const customersContainer = document.getElementById("customers-container");
 
     // Format FY display
     const fyDisplay = fy !== 'N/A' ? `${fy} - ${parseInt(fy) + 1}` : 'N/A';
@@ -26,9 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (firmIdInput) firmIdInput.value = firmId;
     if (financialYearInput) financialYearInput.value = fy;
     if (fySpan) fySpan.textContent = fyDisplay;
-    if (cityDisplay) cityDisplay.textContent = cityName;
 
-    // Fetch firm details
+    // ✅ Fetch firm details
     if (firmId !== 'N/A' && firmNameSpan) {
         try {
             const response = await fetch(`/api/firm/${firmId}`);
@@ -39,8 +43,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Load customers
-    await fetchCustomers();
+    // ✅ Load customers by IDs
+    if (customerIds.length > 0) {
+        const customers = await fetchCustomers(customerIds);
+        if (customers.length > 0) {
+            renderCustomers(customers);
+        } else {
+            customersContainer.innerHTML = "<p>No customers found.</p>";
+        }
+    }
+});
+
+// Session check
+fetch('/api/session')
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success || !data.user) {
+            alert('You are not logged in. Redirecting to login page...');
+            window.location.href = '/index';
+        }
+    })
+    .catch(() => {
+        alert('You are not logged in. Redirecting to login page...');
+        window.location.href = '/index';
+    });
+
+    // Back Button Functionality
+    document.getElementById('backButton')?.addEventListener('click', () => window.history.back());
+
+// Daily Sauda Modal
+document.querySelectorAll(".v2FeatureTrigger").forEach(trigger => {
+    trigger.addEventListener("click", () => {
+        document.getElementById("dailySaudaModal").style.display = "flex";
+    });
+});
+document.getElementById("closeModal1")?.addEventListener("click", () => {
+    document.getElementById("dailySaudaModal").style.display = "none";
+});
+window.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("dailySaudaModal")) {
+        document.getElementById("dailySaudaModal").style.display = "none";
+    }
 });
 
  // 🏠 Home button functionality
@@ -82,67 +125,49 @@ document.addEventListener('DOMContentLoaded', async () => {
      });
  }
 
-// Session check
-fetch('/api/session')
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success || !data.user) {
-            alert('You are not logged in. Redirecting to login page...');
-            window.location.href = '/index';
-        }
-    })
-    .catch(() => {
-        alert('You are not logged in. Redirecting to login page...');
-        window.location.href = '/index';
-    });
 
-    // Back Button Functionality
-document.getElementById('back-btn')?.addEventListener('click', () => window.history.back());
 
-// Daily Sauda Modal
-document.querySelectorAll(".v2FeatureTrigger").forEach(trigger => {
-    trigger.addEventListener("click", () => {
-        document.getElementById("dailySaudaModal").style.display = "flex";
-    });
-});
-document.getElementById("closeModal1")?.addEventListener("click", () => {
-    document.getElementById("dailySaudaModal").style.display = "none";
-});
-window.addEventListener("click", (e) => {
-    if (e.target === document.getElementById("dailySaudaModal")) {
-        document.getElementById("dailySaudaModal").style.display = "none";
+
+// ✅ Fetch multiple customer details by IDs
+async function fetchCustomers(customerIds) {
+    if (customerIds.length === 0) {
+        console.warn("No customer IDs provided.");
+        return [];
     }
-});
 
-// Fetch customers based on city
-async function fetchCustomers() {
     try {
-        const response = await fetch(`/customers/city?city_id=${encodeURIComponent(cityId)}`);
-
+        const idsString = customerIds.join(',');
+        const response = await fetch(`/api/customers?ids=${idsString}`);
         const data = await response.json();
 
         if (data.success) {
-            renderCustomers(data.customers);
-
+            console.log("Fetched Customers:", data.customers);
+            return data.customers;  // Return the customer details
         } else {
-            console.error("Failed to fetch customers.");
+            console.error("Failed to fetch customer details:", data.message);
+            return [];
         }
     } catch (error) {
-        console.error("Error fetching customers:", error);
+        console.error("Error fetching customer details:", error);
+        return [];
     }
 }
 
-// Render customers dynamically
+// ✅ Render customers dynamically
 function renderCustomers(customers) {
     const customersContainer = document.getElementById("customers-container");
     if (!customersContainer) {
         console.error("Error: customers-container element not found.");
         return;
     }
+
+    // ✅ Clear previous content
     customersContainer.innerHTML = "";
-    
+
+    // ✅ Create customer table
     const table = document.createElement("table");
     table.classList.add("customer-table");
+
     table.innerHTML = `
         <thead>
             <tr>
@@ -158,8 +183,9 @@ function renderCustomers(customers) {
         </thead>
         <tbody></tbody>
     `;
-    
+
     const tbody = table.querySelector("tbody");
+
     customers.forEach(customer => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -173,15 +199,23 @@ function renderCustomers(customers) {
             <td id="unbilled-txn-${customer.customer_id}">Loading...</td>
         `;
         tbody.appendChild(row);
+
+        // ✅ Fetch and update billing status dynamically
         fetchBillingStatus(customer.customer_id);
     });
+
     customersContainer.appendChild(table);
+
+    // ✅ Select All functionality
     document.getElementById("select-all").addEventListener("change", function () {
-        document.querySelectorAll(".customer-checkbox").forEach(checkbox => checkbox.checked = this.checked);
+        document.querySelectorAll(".customer-checkbox").forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
     });
 }
 
-// Fetch and Update Billed & Unbilled Amounts
+
+// ✅ Fetch and Update Billed & Unbilled Amounts
 async function fetchBillingStatus(customerId) {
     try {
         const response = await fetch(`/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customerId}`);
@@ -201,6 +235,8 @@ async function fetchBillingStatus(customerId) {
         console.error("Error fetching billing status:", error);
     }
 }
+
+// ✅ **Mark Transactions as Billed**
 // ✅ Send Separate API Requests for Each Customer
 async function markEachCustomerBilled(customerTransactions) {
     const financialYear = getQueryParam("fy");
@@ -298,8 +334,11 @@ async function generateMultiCustomerPDF(action) {
 
 
 
-// 📌 Event Listeners
-// 📌 Multi-Customer PDF Event Listeners
+
+
+
+
+// ✅ Event Listeners for PDF
 const previewBtn = document.getElementById("preview");
 const printBtn = document.getElementById("printButton");
 const preview1Btn = document.getElementById("preview1");
@@ -307,6 +346,13 @@ const preview1Btn = document.getElementById("preview1");
 if (previewBtn) previewBtn.addEventListener("click", () => generateMultiCustomerPDF("preview"));
 if (printBtn) printBtn.addEventListener("click", () => generateMultiCustomerPDF("download"));
 if (preview1Btn) preview1Btn.addEventListener("click", () => generateMultiCustomerPDF("preview1"));
+
+
+
+
+
+// ✅ Generate Multi-Customer PDF with Multiple Customer Billing
+
 
 
 

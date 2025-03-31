@@ -385,6 +385,54 @@ document.getElementById("report").addEventListener("click", async () => {
     alert("Generating PDF report... \nPlease wait for it to open in next tab.");
 });
 
+// ✅ Add event listener to the "Unbilled All" button
+// ✅ Add event listener to the "Unbilled All" button
+document.getElementById("UnbilledAll").addEventListener("click", () => {
+    // Collect unbilled customer IDs
+    const unbilledCustomerIds = filteredCustomers
+        .filter(customer => {
+            const status = billingStatusMap[customer.customer_id] || { unbilledAmount: 0 };
+            return parseFloat(status.unbilledAmount) > 0;
+        })
+        .map(customer => customer.customer_id);
+
+    if (unbilledCustomerIds.length === 0) {
+        alert("No unbilled customers found.");
+        return;
+    }
+
+    // ✅ Compress IDs into a single comma-separated string
+    const idsString = unbilledCustomerIds.join(",");
+
+    // ✅ Redirect with compressed IDs in the URL
+    const redirectUrl = `/internalpages/unbilled.html?cids=${idsString}&fy=${financialYear}&firm_id=${firmId}`;
+    window.location.href = redirectUrl;
+});
+
+document.getElementById("billedAll").addEventListener("click", () => {
+    // Collect unbilled customer IDs
+    const unbilledCustomerIds = filteredCustomers
+        .filter(customer => {
+            const status = billingStatusMap[customer.customer_id] || { billedAmount: 0 };
+            return parseFloat(status.billedAmount) > 0;
+        })
+        .map(customer => customer.customer_id);
+
+    if (unbilledCustomerIds.length === 0) {
+        alert("No billed customers found.");
+        return;
+    }
+
+    // ✅ Compress IDs into a single comma-separated string
+    const idsString = unbilledCustomerIds.join(",");
+
+    // ✅ Redirect with compressed IDs in the URL
+    const redirectUrl = `/internalpages/billed.html?cids=${idsString}&fy=${financialYear}&firm_id=${firmId}`;
+    window.location.href = redirectUrl;
+});
+
+
+
 
 document.getElementById("report").addEventListener("click", async () => {
     
