@@ -1,0 +1,14 @@
+import sqlite3
+
+# Connect to the database (if it doesn't exist, it will be created)
+conn = sqlite3.connect('database.db')
+cursor = conn.cursor()
+
+# Execute the schema from the schema.sql file
+with open('schema.sql', 'r') as f:
+    schema = f.read()
+cursor.executescript(schema)
+
+# Commit the changes
+conn.commit()
+conn.close()
