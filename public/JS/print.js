@@ -170,9 +170,9 @@ let currentPage = 1;
 const itemsPerPage = 15;             // Customers per page
 
 // ✅ Fetch customers from API
-async function fetchCustomers() {
+async function fetchCustomers() { //active customer
     try {
-        const response = await fetch("/sellers/all");
+        const response = await fetch(`/sellers/active/${financialYear}`);
         const data = await response.json();
 
         if (data.success) {
@@ -181,10 +181,10 @@ async function fetchCustomers() {
             await fetchAllBillingStatuses();
             applyFilters();
         } else {
-            console.error("Failed to fetch customers");
+            console.error("Failed to fetch active customers");
         }
     } catch (error) {
-        console.error("Error fetching customers:", error);
+        console.error("Error fetching active customers:", error);
     }
 }
 
@@ -219,6 +219,22 @@ async function fetchAllBillingStatuses() {
     // Wait until all billing status fetches are completed
     await Promise.all(billingPromises);
 }
+
+async function updateBillNumbers(financialYear) {
+    try {
+        const response = await fetch(`/bills/generate/${financialYear}`, { method: "POST" });
+        const data = await response.json();
+
+        if (data.success) {
+            console.log(`✅ Bill numbers updated for FY ${financialYear}`);
+        } else {
+            console.error("⚠️ Failed to update bill numbers");
+        }
+    } catch (error) {
+        console.error("❌ Error updating bill numbers:", error);
+    }
+}
+updateBillNumbers(financialYear);  
 
 // ✅ Render customers dynamically with pagination
 function renderCustomers() {
@@ -436,8 +452,8 @@ document.getElementById("billedAll").addEventListener("click", () => {
 
 document.getElementById("report").addEventListener("click", async () => {
     
-    const fy = financialYear;                      // Fiscal year
-    const response = await fetch(`/customers/all/orderbycity`);
+    const fy = financialYear; // Ensure this variable is set correctly
+    const response = await fetch(`/customers/all/orderbycity/${fy}`);  // Append fy to the URL
     const customerData = await response.json();
 
     if (!customerData.success || !customerData.customers.length) {

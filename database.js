@@ -9,35 +9,47 @@ function createTransactionsTable(startYear) {
         return;
     }
 
-    const tableName = `transactions_FY${startYear}`;
-    console.log(`🛠️ Creating table: ${tableName}`);
+    const transactionsTable = `transactions_FY${startYear}`;
+    const billTable = `BillNo_FY${startYear}`;
 
-    db.run(`CREATE TABLE IF NOT EXISTS ${tableName} (
+    console.log(`🛠️ Creating table: ${transactionsTable} and ${billTable}`);
+
+    // ✅ Create Transactions Table
+    db.run(`CREATE TABLE IF NOT EXISTS ${transactionsTable} (
         transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        "sno"	INTEGER NOT NULL,
+        sno INTEGER NOT NULL,
         firm_id INTEGER NOT NULL,
-        financial_year TEXT NOT NULL,  -- New field for financial year
+        financial_year TEXT NOT NULL,
         seller_id INTEGER NOT NULL,
         buyer_id INTEGER NOT NULL,
         date DATE NOT NULL,
         item TEXT NOT NULL,
-        packaging TEXT NOT NULL,  -- New field for packaging (Katta/Bags)
+        packaging TEXT NOT NULL,
         qty INTEGER NOT NULL,
-        "bqty"	INTEGER,
-        bhav	INTEGER NOT NULL,
-        seller_rate DECIMAL(10,2) NOT NULL,  -- New field for Seller Rate
-        buyer_rate DECIMAL(10,2) NOT NULL,  -- New field for Buyer Rate
-        seller_amount DECIMAL(10,2) NOT NULL,  -- New field for Seller Amount
-        buyer_amount DECIMAL(10,2) NOT NULL,  -- New field for Buyer Amount
+        bqty INTEGER,
+        bhav INTEGER NOT NULL,
+        seller_rate DECIMAL(10,2) NOT NULL,
+        buyer_rate DECIMAL(10,2) NOT NULL,
+        seller_amount DECIMAL(10,2) NOT NULL,
+        buyer_amount DECIMAL(10,2) NOT NULL,
         payment_status TEXT CHECK(payment_status IN ('Pending', 'Completed', 'Partially Paid')) DEFAULT 'Pending',
-        "Seller_Billed"	TEXT DEFAULT 'Not' CHECK("Seller_Billed" IN ('Not', 'Yes')),
-	    "Buyer_Billed"	TEXT DEFAULT 'Not' CHECK("Buyer_Billed" IN ('Not', 'Yes'))
+        Seller_Billed TEXT DEFAULT 'Not' CHECK(Seller_Billed IN ('Not', 'Yes')),
+        Buyer_Billed TEXT DEFAULT 'Not' CHECK(Buyer_Billed IN ('Not', 'Yes'))
     )`, (err) => {
-        if (err) console.error(`❌ Error creating table ${tableName}:`, err.message);
-        else console.log(`✅ Table ${tableName} ready.`);
+        if (err) console.error(`❌ Error creating table ${transactionsTable}:`, err.message);
+        else console.log(`✅ Table ${transactionsTable} ready.`);
     });
 
+    // ✅ Create Bill Number Table (Simplified Version)
+    db.run(`CREATE TABLE IF NOT EXISTS ${billTable} (
+        bill_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL UNIQUE
+    )`, (err) => {
+        if (err) console.error(`❌ Error creating table ${billTable}:`, err.message);
+        else console.log(`✅ Table ${billTable} ready.`);
+    });
 }
+
 
 // 📌 Connect to SQLite database (or create it if it doesn't exist)
 const db = new sqlite3.Database('billing.db', (err) => {

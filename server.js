@@ -665,21 +665,81 @@ app.post("/financial-years", (req, res) => {
   );
 });
 
+app.post("/bills/generate/:financialYear", async (req, res) => {
+    const { financialYear } = req.params;
+    const transactionsTable = `transactions_FY${financialYear}`;
+    const billTable = `BillNo_FY${financialYear}`;
+
+    try {
+        const query = `
+            INSERT INTO ${billTable} (customer_id)
+            SELECT DISTINCT c.customer_id
+            FROM customers c
+            JOIN (
+                SELECT seller_id AS customer_id FROM ${transactionsTable}
+                UNION
+                SELECT buyer_id FROM ${transactionsTable}
+            ) t ON c.customer_id = t.customer_id
+            WHERE c.customer_id NOT IN (SELECT customer_id FROM ${billTable});
+        `;
+
+        db.run(query, [], (err) => {
+            if (err) {
+                console.error("❌ Error inserting missing bill numbers:", err);
+                return res.status(500).json({ success: false, message: "Database error" });
+            }
+            res.json({ success: true, message: "Missing bill numbers inserted successfully" });
+        });
+
+    } catch (error) {
+        console.error("❌ API Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+app.get("/bills/:financialYear/:customerId", async (req, res) => {
+    const { financialYear, customerId } = req.params;
+    const billTable = `BillNo_FY${financialYear}`;
+
+    try {
+        const query = `SELECT bill_id FROM ${billTable} WHERE customer_id = ?`;
+        db.get(query, [customerId], (err, row) => {
+            if (err) {
+                console.error("❌ Error fetching Bill ID:", err);
+                return res.status(500).json({ success: false, message: "Database error" });
+            }
+            if (row) {
+                res.json({ success: true, bill_id: row.bill_id });
+            } else {
+                res.json({ success: false, message: "Bill ID not found" });
+            }
+        });
+    } catch (error) {
+        console.error("❌ API Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
+
+
+
 
 // 📌 Delete a financial year
 app.delete("/financial-years/:startYear", (req, res) => {
-  const { startYear } = req.params;
+    const { startYear } = req.params;
 
-  db.run("DELETE FROM financial_years WHERE startYear = ?", [startYear], function (err) {
-      if (err) return res.status(500).json({ error: err.message });
+    db.run("DELETE FROM financial_years WHERE startYear = ?", [startYear], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
 
-      // Drop transactions table for that financial year
-      const tableName = `transactions_FY${startYear}`;
-      db.run(`DROP TABLE IF EXISTS ${tableName}`);
+        // Drop transactions and bill tables
+        const transactionsTable = `transactions_FY${startYear}`;
+        const billTable = `BillNo_FY${startYear}`;
+        db.run(`DROP TABLE IF EXISTS ${transactionsTable}`);
+        db.run(`DROP TABLE IF EXISTS ${billTable}`);
 
-      res.json({ message: "Financial Year deleted!", affectedRows: this.changes });
-  });
+        res.json({ message: "Financial Year deleted!", affectedRows: this.changes });
+    });
 });
+
 
 
 // 📌 API: Get Sellers by City
@@ -697,24 +757,26 @@ app.get("/debug/cities", (req, res) => {
   });
 });
 
-app.get("/customers/all/orderbycity", (req, res) => {
+app.get("/customers/all/orderbycity/:financialYear", (req, res) => {
+    const { financialYear } = req.params;
+    const billTable = `BillNo_FY${financialYear}`;
+
     const sql = `
-    SELECT customer_id, client_name AS name, city, state
-    FROM customers
-    ORDER BY city COLLATE NOCASE ASC, client_name COLLATE NOCASE ASC
-`;
+        SELECT c.customer_id, c.client_name AS name, c.city, c.state, b.bill_id
+        FROM customers c
+        INNER JOIN ${billTable} b ON c.customer_id = b.customer_id
+        ORDER BY c.city COLLATE NOCASE ASC, c.client_name COLLATE NOCASE ASC;
+    `;
 
-
-
-    db.all(sql, [], (err, customers) => {
+    db.all(sql, [], (err, rows) => {
         if (err) {
-            console.error("🚨 Error fetching customers:", err.message);
-            return res.status(500).json({ success: false, error: err.message });
+            console.error("❌ Error fetching customers:", err);
+            return res.status(500).json({ success: false, message: "Database error" });
         }
-
-        res.json({ success: true, customers });
+        res.json({ success: true, customers: rows });
     });
 });
+
 
 
 // 📌 API: Get All Sellers
@@ -1248,6 +1310,42 @@ app.get("/api/customer-billing-status", (req, res) => {
     });
 });
 
+app.get("/sellers/active/:financialYear", async (req, res) => {
+    const { financialYear } = req.params;
+    const tableName = `transactions_FY${financialYear}`;
+
+    // Validate financial year format
+    if (!/^\d{4}$/.test(financialYear)) {
+        return res.status(400).json({ success: false, message: "Invalid financial year format" });
+    }
+
+    try {
+        // Fetch distinct customer IDs from transactions (both seller & buyer)
+        const query = `
+            SELECT DISTINCT customer_id, client_name, state, city, category
+            FROM customers 
+            WHERE customer_id IN (
+                SELECT DISTINCT seller_id FROM ${tableName}
+                UNION
+                SELECT DISTINCT buyer_id FROM ${tableName}
+            )
+            ORDER BY client_name COLLATE NOCASE;
+        `;
+
+        db.all(query, [], (err, rows) => {
+            if (err) {
+                console.error("❌ Error fetching active customers:", err);
+                return res.status(500).json({ success: false, message: "Database error" });
+            }
+
+            res.json({ success: true, sellers: rows });
+        });
+
+    } catch (error) {
+        console.error("❌ API Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
 
 
 
