@@ -464,7 +464,7 @@ document.getElementById("report").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
-    const colWidths = [20, 45, 35, 17, 17, 35, 17, 17, 35, 17, 17, 18];  
+    const colWidths = [30, 60, 25, 17, 17, 25, 17, 17, 25, 17, 17, 18];  
     const rowHeight = 7;                          
     let startY = 10;                              
     let currentCity = "";

@@ -453,11 +453,11 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     let headers, colWidths;
 
     if (printType === "1") {
-        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Pkg", "Item", "Bhav", "Qty", "Brok", "Amount"];
-        colWidths = [9, 8, 20, 52, 24, 10, 10, 12, 10, 10, 10, 18];  // Reduced width of Txn Type by 2 and added to City column
+        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"];
+        colWidths = [9, 8, 20, 52, 24, 10, 12, 10, 10,10 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
     } else {
-        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Pkg", "Item", "Bhav", "Qty", "   ", "Amount"];
-        colWidths = [9, 8, 20, 52, 24, 15, 14, 13, 12, 10, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
+        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
+        colWidths = [9, 8, 20, 52, 24, 15, 13, 12, 10,14, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
     }
 
     const printTableHeaders = (yPos) => {
@@ -529,11 +529,11 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
             txn.date || "N/A",
             fitText(doc, party, colWidths[3] - 2),    // ✅ Apply ellipsis only to Party name
             fitText(doc, city, colWidths[4] - 2),     // ✅ Apply ellipsis to City
-            txnType,
-            txn.packaging || "N/A",                         // Leave pkg as-is
+            txnType,                        // Leave pkg as-is
             txn.item || "N/A",                         // Leave item as-is
             txn.bhav || "0",                           // Swapped order: Bhav now comes first
-            txn.fqty || "0", 
+            txn.fqty || "0",
+            txn.packaging || "N/A",  
         );           
         values.push( printType === "1" ?txn.brokerageRate || "0": "  " );               // Swapped order: Qty now comes second
             values.push(
