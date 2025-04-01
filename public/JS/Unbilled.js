@@ -412,26 +412,70 @@ async function fetchCustomerDetails(customerId) {
     }
 }
 
-// ✅ **Generate Customer Invoice PDF**
+async function fetchBillId(customerId, financialYear) {
+    try {
+        const response = await fetch(`/bills/${financialYear}/${customerId}`);
+        const data = await response.json();
+
+        if (data.success && data.bill_id) {
+            return data.bill_id;
+        } else {
+            console.warn(`No Bill ID found for customer ${customerId}`);
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ Error fetching Bill ID:", error);
+        return null;
+    }
+}
+
 // ✅ **Generate Customer Invoice PDF**
 async function generateCustomerPDF(doc, customerId, transactions, firmDetails, customerDetails) {
+    // Determine print type (Statement or Invoice)
+    const printType = document.querySelector('input[name="printType"]:checked').value;
+    const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
+    const headerText = printType === "1" 
+        ? `${firmDetails.firmName} Statement | FY ${fyDisplay}` 
+        : `${firmDetails.firmName} Invoice | FY ${fyDisplay}`;
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
-    doc.text(`${firmDetails.firmName} Invoice | FY ${fyDisplay}`, 100, 5.5, { align: "center" });
+    doc.text(headerText, 100, 5.5, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Dt: 31/03/25`, 10, 5.5, { align: "left" });
 
-    let firmIdNumber = parseInt(firmId, 10);  
-    let firmCode = (firmIdNumber === 1) ? "BB" : (firmIdNumber === 2) ? "PKC" : (firmIdNumber === 3) ? "MB" : "NA";
-    if (firmCode === "NA") return console.log("Invalid Firm ID");
+    // Fetch bill ID for the customer from the database
+    const billId = await fetchBillId(customerId, fy); 
+    if (!billId) {
+        console.warn(`⚠️ No Bill ID found for customer ${customerId}`);
+        return;
+    }
 
-    let fyLastTwo = fy.toString().slice(-2);
-    let cityCode = customerDetails.city.substring(0, 3).toUpperCase();
-    let customerCode = customerDetails.name.substring(0, 3).toUpperCase();
-    let billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
+    let firmPrefix, baseNumber;
+    switch (parseInt(firmId, 10)) {
+        case 1:
+            firmPrefix = "BB";
+            baseNumber = 100000;
+            break;
+        case 2:
+            firmPrefix = "PKC";
+            baseNumber = 300000;
+            break;
+        case 3:
+            firmPrefix = "MB";
+            baseNumber = 600000;
+            break;
+        default:
+            console.error("❌ Invalid Firm ID");
+            return;
+    }
 
+    // Generate final Bill No
+    let finalBillNo = `${firmPrefix}${baseNumber + billId}`;
+    
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Bill No: ${billNo}`, 205, 5.5, { align: "right" });
+    doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
 
     // **Firm & Customer Details Box**
     doc.setFontSize(10);
@@ -447,9 +491,16 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     const includeTid = document.getElementById("printTidCheckbox").checked;
     const includeSno = document.getElementById("printSnoCheckbox").checked;
 
-    // **Table Headers**
-    const headers = ["Tid", "S.N", "Date", "Party", "City", "Txn Type", "Item", "Qty", "Bhav", "B Rate", "Amount"];
-    const colWidths = [9, 9, 20, 48, 18, 23, 14, 10, 13, 15, 18];
+    // **Table Headers** - Declare outside of if/else block
+    let headers, colWidths;
+
+    if (printType === "1") {
+        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"];
+        colWidths = [9, 8, 20, 52, 24, 10, 12, 10, 10,10 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
+    } else {
+        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
+        colWidths = [9, 8, 20, 52, 24, 15, 13, 12, 10,14, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
+    }
 
     const printTableHeaders = (yPos) => {
         doc.setFontSize(10);
@@ -475,7 +526,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     let totalAmount = 0;
     let firstPage = true;
 
-    // ✅ **Ellipsis Function (Only for Party Name)**
+    // ✅ **Ellipsis Function (Only for Party Name and City)**
     const fitText = (doc, text, maxWidth) => {
         if (doc.getTextWidth(text) <= maxWidth) return text;
 
@@ -491,14 +542,17 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
 
     transactions.forEach((txn, index) => {
         let txnType = txn.transactionType;
-        let party = txnType === "Purchased" ? txn.seller_name : txn.buyer_name;
-        let city = txnType === "Purchased" ? txn.seller_city : txn.buyer_city;
+        txnType = txnType === "Purchased" ? "Buy" : txnType === "Sold" ? "Sell" : "N/A";  // Adjusted txn type
+        let party = txnType === "Buy" ? txn.seller_name : txn.buyer_name;
+        let city = txnType === "Buy" ? txn.seller_city : txn.buyer_city;
 
         if (rowY + rowHeight > pageHeight - bottomMargin) {
-            doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} Invoice`, 10, pageHeight - 3);
+            doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, 10, pageHeight - 3);
             doc.text(`Continued on next page | Page ${pageNumber}`, 170, pageHeight - 3, { align: "center" });
             doc.addPage();
-            rowY = printTableHeaders(10);
+            rowY = printTableHeaders(12);
+            doc.text(headerText, 100, 5.5, { align: "center" });
+            doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
             pageNumber++;
             firstPage = false;
         }
@@ -515,18 +569,21 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
 
         values.push(
             txn.date || "N/A",
-            fitText(doc, party, colWidths[3] - 2),     // ✅ Apply ellipsis only to Party name
-            city,                                      // Leave city as-is
-            txnType,
+            fitText(doc, party, colWidths[3] - 2),    // ✅ Apply ellipsis only to Party name
+            fitText(doc, city, colWidths[4] - 2),     // ✅ Apply ellipsis to City
+            txnType,                        // Leave pkg as-is
             txn.item || "N/A",                         // Leave item as-is
+            txn.bhav || "0",                           // Swapped order: Bhav now comes first
             txn.fqty || "0",
-            txn.bhav || "0",
-            txn.brokerageRate || "0",
-            parseFloat(txn.amount || 0).toFixed(2)
+            txn.packaging || "N/A",  
+        );           
+        values.push( printType === "1" ?txn.brokerageRate || "0": "  " );               // Swapped order: Qty now comes second
+            values.push(
+        parseFloat(txn.amount || 0).toFixed(2)
         );
 
         values.forEach((value, i) => {
-            let align = ["Qty", "Bhav", "B Rate", "Amount"].includes(headers[i]) ? "right" : "left";
+            let align = ["Qty", "B Rate", "Amount"].includes(headers[i]) ? "right" : "left";
             let xPos = align === "right" ? colX + colWidths[i] - 2 : colX + 2;
             doc.text(value.toString(), xPos, rowY, { align });
             colX += colWidths[i];
@@ -558,7 +615,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     doc.text("Thank you for being a valuable customer.", 105, rowY + 10, { align: "center" });
 
     doc.setFontSize(9);
-    doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} Invoice`, footerX, footerY);
+    doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, footerX, footerY);
 
     doc.setFontSize(9);
     doc.text(`Page ${pageNumber}`, 170, pageHeight - 3);

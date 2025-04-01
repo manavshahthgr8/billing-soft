@@ -91,182 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     fetchFirmDetails();
 
-    // Transaction Pagination and Rendering (Existing Code)
-    let transactions = [];
-    let currentPage = 1;
-    const limit = 15; // Transactions per page
-    const transactionListContainer = document.getElementById('transaction-list');
-    const prevButton = document.getElementById('prev-btn');
-    const nextButton = document.getElementById('next-btn');
-    const pageInfo = document.getElementById('page-info');
-
-    const fetchTransactions = async (params = {}) => {
-        const { page = 1, financialYear, firmId } = params;
-        try {
-            const response = await fetch(`/transactions?fy=${financialYear}&firm_id=${firmId}&page=${page}&limit=${limit}`);
-            if (!response.ok) throw new Error(`Failed to fetch transactions: ${response.statusText}`);
-            const data = await response.json();
-            transactions = data.transactions;
-            renderTransactions(transactions);
-            currentPage = data.currentPage;
-            pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
-            prevButton.disabled = currentPage === 1;
-            nextButton.disabled = currentPage >= data.totalPages;
-        } catch (error) {
-            console.error('Error fetching transactions:', error);
-            alert('Failed to fetch transactions. Please try again.');
-        }
-    };
-
-    const renderTransactions = (transactions) => {
-        transactionListContainer.innerHTML = '';
-        transactions.forEach(transaction => {
-            const card = document.createElement('div');
-            card.classList.add('transaction-card');
-            card.innerHTML = `
-                  <div class="transaction-grid">
-        <div class="transaction-column">
-          <p style="display: none;"><strong>TID:</strong> ${transaction.transaction_id}</p>
-
-            <p><strong>Sn:</strong> ${transaction.sno}</p>
-        </div>
-        <div class="transaction-column">
-            <p><strong>From:</strong> ${transaction.seller_name} (${transaction.seller_city})</p>
-            <p><strong>To:</strong> ${transaction.buyer_name} (${transaction.buyer_city})</p>
-        </div>
-        <div class="transaction-column">
-            <p><strong>S Rate:</strong> #${transaction.seller_rate}</p>
-            <p><strong>B Rate:</strong> #${transaction.buyer_rate}</p>
-        </div>
-         <div class="transaction-column">
-            <p><strong>S Qty:</strong> ${transaction.qty}</p>
-             <p><strong>B Qty:</strong> ${transaction.bqty}</p>
-        </div>
-        <div class="transaction-column">
-            <p><strong>Bhav:</strong> ₹${transaction.bhav}</p>
-            <p><strong>Type:</strong> ₹${transaction.packaging}</p>
-            
-        </div>
-        <div class="transaction-column">
-            <p><strong>FY:</strong> ${transaction.financial_year}</p>
-            <p><strong>Date:</strong> ${transaction.date}</p>
-           
-        </div>
-        <div class="transaction-column transaction-actions">
-            <button class="edit-btn" data-id="${transaction.transaction_id}">Edit</button>
-            <button class="delete-btn" data-id="${transaction.transaction_id}">Delete</button>
-        </div>
-    </div>
-            `;
-            transactionListContainer.appendChild(card);
-        });
-    };
-
-    fetchTransactions({ page: 1, financialYear, firmId });
-
-    prevButton.addEventListener("click", () => {
-        if (currentPage > 1) {
-            const searchValue = document.getElementById("search-bar").value.trim();
-            const transactionType = document.getElementById("transaction-type").value;
-            const searchColumn = document.getElementById("search-column").value;
-    
-            let filters = {};
-            if (transactionType !== "all") {
-                filters.transaction_type = transactionType;
-            }
-            if (searchValue !== "") {
-                filters[searchColumn] = searchValue;
-                fetchFilteredTransactions(filters, currentPage - 1);  // 🔹 Use filtered fetch with updated page
-            } else {
-                fetchTransactions({ page: --currentPage, financialYear, firmId }); // 🔹 Normal fetch
-            }
-        }
-    });
-    
-    nextButton.addEventListener("click", () => {
-        const searchValue = document.getElementById("search-bar").value.trim();
-        const transactionType = document.getElementById("transaction-type").value;
-        const searchColumn = document.getElementById("search-column").value;
-    
-        let filters = {};
-        if (transactionType !== "all") {
-            filters.transaction_type = transactionType;
-        }
-        if (searchValue !== "") {
-            filters[searchColumn] = searchValue;
-            fetchFilteredTransactions(filters, currentPage + 1);  // Move to next page
-        } else {
-            fetchTransactions({ page: currentPage + 1, financialYear, firmId });
-        }
-    });
-    
-    
-    
-
-    // -------------------------------
-    // Filter & Search (Unchanged)
-    const fetchFilteredTransactions = async (filters, page = 1) => {
-        try {
-            let queryParams = new URLSearchParams({
-                fy: financialYear,
-                firm_id: firmId,
-                page: page,  
-                limit: limit
-            });
-    
-            Object.keys(filters).forEach(key => {
-                if (filters[key]) {
-                    queryParams.append(key, filters[key]);
-                }
-            });
-    
-            const apiUrl = `/filteredTransactions?${queryParams.toString()}`;
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error(`Failed to fetch filtered transactions: ${response.statusText}`);
-    
-            const data = await response.json();
-            transactions = data.transactions;
-            renderTransactions(transactions);
-    
-            currentPage = data.currentPage;  
-            pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
-            prevButton.disabled = currentPage === 1;
-            nextButton.disabled = currentPage >= data.totalPages;
-        } catch (error) {
-            console.error("Error fetching filtered transactions:", error);
-            alert("Failed to fetch filtered transactions. Please try again.");
-        }
-    };
-    
-    const applyButton = document.getElementById("apply-btn");
-    applyButton.addEventListener("click", () => {
-        const transactionType = document.getElementById("transaction-type").value;
-        const searchValue = document.getElementById("search-bar").value.trim();
-        const searchColumn = document.getElementById("search-column").value;
-    
-        let filters = {};
-    
-        if (transactionType !== "all") {
-            filters.transaction_type = transactionType;
-        }
-        
-        if (searchValue !== "") {
-            filters[searchColumn] = searchValue;   // ✅ Added dynamic filtering support
-        }
-    
-        fetchFilteredTransactions(filters);
-    });
-    
-
-    const resetButton = document.getElementById("reset-btn");
-    resetButton.addEventListener("click", () => {
-        document.getElementById("transaction-type").value = "all";
-        document.getElementById("search-bar").value = "";
-        document.getElementById("search-column").value = "client_name";
-        fetchTransactions({ page: 1, financialYear, firmId });
-    });
-
-    // -------------------------------
+     // -------------------------------
     // Daily Sauda Modal (Unchanged)
     document.querySelectorAll(".v2FeatureTrigger").forEach(trigger => {
         trigger.addEventListener("click", () => {
@@ -282,9 +107,208 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // -------------------------------
-    // Edit Modal Elements & Handling
-    const editModal = document.getElementById("edit-transaction-modal");
+    let cachedSellers = null;  // Cache sellers to avoid refetching
+
+// Function to fetch sellers once and cache them
+const fetchSellers = async () => {
+    if (cachedSellers) return cachedSellers;  // Return cached data if available
+    try {
+        const customersRes = await fetch("/sellers/all");
+        const customersData = await customersRes.json();
+        if (!customersData.success) throw new Error("Failed to fetch customers.");
+        cachedSellers = customersData.sellers;  // Cache the data
+        return cachedSellers;
+    } catch (error) {
+        console.error("Failed to fetch sellers:", error);
+        return [];
+    }
+};
+
+// Function to efficiently update dropdown using DocumentFragment
+function updateDropdown(dropdown, items) {
+    const fragment = document.createDocumentFragment();
+    items.forEach(customer => {
+        let option = document.createElement("option");
+        option.value = customer.customer_id;
+        option.textContent = `${customer.client_name} (${customer.city}, ${customer.state})`;
+        fragment.appendChild(option);
+    });
+    dropdown.innerHTML = ''; // Clear previous options before appending new ones
+    dropdown.appendChild(fragment);
+}
+
+// --------------------------
+// Transaction Pagination and Rendering
+let transactions = [];
+let currentPage = 1;
+const limit = 15; // Transactions per page
+const transactionListContainer = document.getElementById('transaction-list');
+const prevButton = document.getElementById('prev-btn');
+const nextButton = document.getElementById('next-btn');
+const pageInfo = document.getElementById('page-info');
+
+const fetchTransactions = async (params = {}) => {
+    const { page = 1, financialYear, firmId } = params;
+    try {
+        const response = await fetch(`/transactions?fy=${financialYear}&firm_id=${firmId}&page=${page}&limit=${limit}`);
+        if (!response.ok) throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+        const data = await response.json();
+        transactions = data.transactions;
+        renderTransactions(transactions);
+        currentPage = data.currentPage;
+        pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage >= data.totalPages;
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        alert('Failed to fetch transactions. Please try again.');
+    }
+};
+
+const renderTransactions = (transactions) => {
+    transactionListContainer.innerHTML = '';
+    transactions.forEach(transaction => {
+        const card = document.createElement('div');
+        card.classList.add('transaction-card');
+        card.innerHTML = `
+            <div class="transaction-grid">
+                <div class="transaction-column">
+                    <p style="display: none;"><strong>TID:</strong> ${transaction.transaction_id}</p>
+                    <p><strong>Sn:</strong> ${transaction.sno}</p>
+                </div>
+                <div class="transaction-column">
+                    <p><strong>From:</strong> ${transaction.seller_name} (${transaction.seller_city})</p>
+                    <p><strong>To:</strong> ${transaction.buyer_name} (${transaction.buyer_city})</p>
+                </div>
+                <div class="transaction-column">
+                    <p><strong>S Rate:</strong> #${transaction.seller_rate}</p>
+                    <p><strong>B Rate:</strong> #${transaction.buyer_rate}</p>
+                </div>
+                <div class="transaction-column">
+                    <p><strong>S Qty:</strong> ${transaction.qty}</p>
+                    <p><strong>B Qty:</strong> ${transaction.bqty}</p>
+                </div>
+                <div class="transaction-column">
+                    <p><strong>Bhav:</strong> ₹${transaction.bhav}</p>
+                    <p><strong>Type:</strong> ₹${transaction.packaging}</p>
+                </div>
+                <div class="transaction-column">
+                    <p><strong>FY:</strong> ${transaction.financial_year}</p>
+                    <p><strong>Date:</strong> ${transaction.date}</p>
+                </div>
+                <div class="transaction-column transaction-actions">
+                    <button class="edit-btn" data-id="${transaction.transaction_id}">Edit</button>
+                    <button class="delete-btn" data-id="${transaction.transaction_id}">Delete</button>
+                </div>
+            </div>
+        `;
+        transactionListContainer.appendChild(card);
+    });
+};
+
+fetchTransactions({ page: 1, financialYear, firmId });
+
+prevButton.addEventListener("click", () => {
+    if (currentPage > 1) {
+        const searchValue = document.getElementById("search-bar").value.trim();
+        const transactionType = document.getElementById("transaction-type").value;
+        const searchColumn = document.getElementById("search-column").value;
+
+        let filters = {};
+        if (transactionType !== "all") {
+            filters.transaction_type = transactionType;
+        }
+        if (searchValue !== "") {
+            filters[searchColumn] = searchValue;
+            fetchFilteredTransactions(filters, currentPage - 1);
+        } else {
+            fetchTransactions({ page: --currentPage, financialYear, firmId });
+        }
+    }
+});
+
+nextButton.addEventListener("click", () => {
+    const searchValue = document.getElementById("search-bar").value.trim();
+    const transactionType = document.getElementById("transaction-type").value;
+    const searchColumn = document.getElementById("search-column").value;
+
+    let filters = {};
+    if (transactionType !== "all") {
+        filters.transaction_type = transactionType;
+    }
+    if (searchValue !== "") {
+        filters[searchColumn] = searchValue;
+        fetchFilteredTransactions(filters, currentPage + 1);
+    } else {
+        fetchTransactions({ page: currentPage + 1, financialYear, firmId });
+    }
+});
+
+// -------------------------------
+// Filter & Search (Unchanged)
+const fetchFilteredTransactions = async (filters, page = 1) => {
+    try {
+        let queryParams = new URLSearchParams({
+            fy: financialYear,
+            firm_id: firmId,
+            page: page,
+            limit: limit
+        });
+
+        Object.keys(filters).forEach(key => {
+            if (filters[key]) {
+                queryParams.append(key, filters[key]);
+            }
+        });
+
+        const apiUrl = `/filteredTransactions?${queryParams.toString()}`;
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Failed to fetch filtered transactions: ${response.statusText}`);
+
+        const data = await response.json();
+        transactions = data.transactions;
+        renderTransactions(transactions);
+
+        currentPage = data.currentPage;
+        pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage >= data.totalPages;
+    } catch (error) {
+        console.error("Error fetching filtered transactions:", error);
+        alert("Failed to fetch filtered transactions. Please try again.");
+    }
+};
+
+const applyButton = document.getElementById("apply-btn");
+applyButton.addEventListener("click", () => {
+    const transactionType = document.getElementById("transaction-type").value;
+    const searchValue = document.getElementById("search-bar").value.trim();
+    const searchColumn = document.getElementById("search-column").value;
+
+    let filters = {};
+
+    if (transactionType !== "all") {
+        filters.transaction_type = transactionType;
+    }
+
+    if (searchValue !== "") {
+        filters[searchColumn] = searchValue;
+    }
+
+    fetchFilteredTransactions(filters);
+});
+
+const resetButton = document.getElementById("reset-btn");
+resetButton.addEventListener("click", () => {
+    document.getElementById("transaction-type").value = "all";
+    document.getElementById("search-bar").value = "";
+    document.getElementById("search-column").value = "client_name";
+    fetchTransactions({ page: 1, financialYear, firmId });
+});
+
+// -------------------------------
+// Edit Modal Elements & Handling
+const editModal = document.getElementById("edit-transaction-modal");
 
 if (!editModal) {
     console.error("❌ Edit modal not found in DOM!");
@@ -295,38 +319,28 @@ document.body.addEventListener("click", async function (event) {
     if (!event.target.classList.contains("edit-btn")) return;
 
     const tid = event.target.getAttribute("data-id");
-    
+
     if (!tid) {
         console.error("❌ No TID found on edit button!");
         return;
     }
 
     console.log(`Opening Edit Modal for TID: ${tid}`);
-    
+
     // 🛑 Set Transaction ID, Firm Name, and FY
     document.getElementById("edit-tid").textContent = tid;
     document.getElementById("edit-firm-name").textContent = firmName;
     document.getElementById("edit-fy").textContent = financialYear;
 
     try {
-        // Step 1️⃣: Fetch All Customers (for Dropdowns)
-        const customersRes = await fetch("/sellers/all");
-        const customersData = await customersRes.json();
-        if (!customersData.success) throw new Error("Failed to fetch customers.");
-
+        // Step 1️⃣: Fetch Sellers (using cache)
+        const sellers = await fetchSellers();
         const sellersDropdown = document.getElementById("edit-seller-name");
         const buyersDropdown = document.getElementById("edit-buyer-name");
 
-        // Clear existing options
-        sellersDropdown.innerHTML = '<option value="">Select Seller</option>';
-        buyersDropdown.innerHTML = '<option value="">Select Buyer</option>';
-
         // Populate dropdowns
-        customersData.sellers.forEach(customer => {
-            const option = `<option value="${customer.customer_id}">${customer.client_name} (${customer.city}, ${customer.state})</option>`;
-            sellersDropdown.innerHTML += option;
-            buyersDropdown.innerHTML += option;
-        });
+        updateDropdown(sellersDropdown, sellers);
+        updateDropdown(buyersDropdown, sellers);
 
         // Step 2️⃣: Fetch Transaction Details
         const transactionRes = await fetch(`/api/transactions/${tid}?fy=${financialYear}`);
