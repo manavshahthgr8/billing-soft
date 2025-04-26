@@ -141,7 +141,7 @@ async function fetchCustomers(customerIds) {
         const data = await response.json();
 
         if (data.success) {
-            console.log("Fetched Customers:", data.customers);
+           // console.log("Fetched Customers:", data.customers);
             return data.customers;  // Return the customer details
         } else {
             console.error("Failed to fetch customer details:", data.message);
@@ -152,6 +152,8 @@ async function fetchCustomers(customerIds) {
         return [];
     }
 }
+const billingStatusMap = {}; // global map
+
 
 // ✅ Render customers dynamically
 function renderCustomers(customers) {
@@ -213,15 +215,52 @@ function renderCustomers(customers) {
         });
     });
 }
+const skipZeroCheckbox = document.getElementById("skipZeroCheckbox");
+
+if (skipZeroCheckbox) {
+    skipZeroCheckbox.addEventListener("change", function () {
+        if (this.checked) {
+            let skipped = 0;
+            document.querySelectorAll(".customer-checkbox").forEach(cb => {
+                const customerId = cb.dataset.id;
+                const status = billingStatusMap[customerId] || { billedAmount: 0 };
+                const bamount = parseFloat(status.billedAmount);
+                const ubamount = parseFloat(status.unbilledAmount);
+                const count = parseInt(status.unbilledTxnCount);
+
+                if (bamount === 0 && ubamount === 0 && count >= 0) {
+                    cb.checked = false;
+                    skipped++;
+                    cb.closest("tr").style.opacity = "0.5";
+                }
+            });
+            console.log(`${skipped} customers skipped.`);
+        } else {
+            document.querySelectorAll(".customer-checkbox").forEach(cb => {
+                cb.closest("tr").style.opacity = "1";
+            });
+        }
+    });
+}
 
 
-// ✅ Fetch and Update Billed & Unbilled Amounts
+
+
+
 async function fetchBillingStatus(customerId) {
     try {
         const response = await fetch(`/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customerId}`);
         const data = await response.json();
 
         if (data.success) {
+            // 🟢 Store in billingStatusMap
+            billingStatusMap[customerId] = {
+                billedAmount: data.billedAmount,
+                unbilledAmount: data.unbilledAmount,
+                billedTxnCount: data.billedTxnCount,
+                unbilledTxnCount: data.unbilledTxnCount
+            };
+
             document.getElementById(`billed-${customerId}`).textContent = data.billedAmount;
             document.getElementById(`unbilled-${customerId}`).textContent = data.unbilledAmount;
             document.getElementById(`billed-txn-${customerId}`).textContent = data.billedTxnCount;
@@ -236,16 +275,17 @@ async function fetchBillingStatus(customerId) {
     }
 }
 
+
 // ✅ **Mark Transactions as Billed**
 // ✅ Send Separate API Requests for Each Customer
 async function markEachCustomerBilled(customerTransactions) {
     const financialYear = getQueryParam("fy");
-    console.log("markEachCustomerBilled - customerTransactions:", customerTransactions);
+   // console.log("markEachCustomerBilled - customerTransactions:", customerTransactions);
     
     for (const [customerId, transactionIds] of Object.entries(customerTransactions)) {
         if (!transactionIds.length) continue;
 
-        console.log(`🔹 Marking Billed: Customer ID: ${customerId}, Transactions:`, transactionIds);
+        ///console.log(`🔹 Marking Billed: Customer ID: ${customerId}, Transactions:`, transactionIds);
 
         try {
             const response = await fetch("/api/transactions/markBilled", {
@@ -263,7 +303,7 @@ async function markEachCustomerBilled(customerTransactions) {
             if (!response.ok) {
                 console.error(`❌ Failed to mark transactions for customer ${customerId}:`, result.error);
             } else {
-                console.log(`✅ Customer ${customerId} marked as billed.`);
+               // console.log(`✅ Customer ${customerId} marked as billed.`);
             }
         } catch (error) {
             console.error(`⚠️ Error marking customer ${customerId}:`, error);
@@ -274,6 +314,7 @@ async function markEachCustomerBilled(customerTransactions) {
 // ✅ Generate Multi-Customer PDF with Separate API Hits for Each Customer
 async function generateMultiCustomerPDF(action) {
     // Get all selected customer IDs from checkboxes
+    const printType1 = document.querySelector('input[name="printType"]:checked').value;
     const selectedCustomers = Array.from(document.querySelectorAll(".customer-checkbox:checked"))
         .map(cb => cb.dataset.id);
     
@@ -312,7 +353,7 @@ async function generateMultiCustomerPDF(action) {
         customerTransactions[customerId] = transactions.map(txn => txn.transaction_id);
     }
 
-    console.log("Final customerTransactions object:", customerTransactions);
+   // console.log("Final customerTransactions object:", customerTransactions);
 
     // Mark each customer billed with separate API calls
     if ((action === "download" || action === "preview1") && Object.keys(customerTransactions).length > 0) {
@@ -324,8 +365,16 @@ async function generateMultiCustomerPDF(action) {
         window.open(doc.output("bloburl"), "_blank");
     } else if (action === "download") {
         const firmDetails = await fetchFirmDetails();
-        const firmName = firmDetails.firmName || "Unknown Firm";
-        const fileName = `FY${fy}_${firmName}.pdf`;
+        const firmName = firmDetails.name || "Unknown name";
+        
+        let fileName;  // Declare fileName here so it's accessible outside the if block
+        
+        if (printType1 === "1") {
+            fileName = `FY${fy}_${firmName}_Summary_Statement.pdf`;
+        } else {
+            fileName = `FY${fy}_${firmName}_Dummary_Invoice.pdf`;
+        }
+        
         doc.save(fileName);
     } else {
         window.open(doc.output("bloburl"), "_blank");
@@ -435,14 +484,34 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     const printType = document.querySelector('input[name="printType"]:checked').value;
     const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
     const headerText = printType === "1" 
-        ? `${firmDetails.firmName} Statement | FY ${fyDisplay}` 
-        : `${firmDetails.firmName} Invoice | FY ${fyDisplay}`;
+        ? `${firmDetails.firmName} Statement | FY ${fyDisplay} ` 
+        : `${firmDetails.firmName} Invoice | FY ${fyDisplay} `;
+
+        const headerText0 = printType === "1" 
+        ? `Statement` 
+        : `Invoice`;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`PAN No: ${firmDetails.PAN}`, 200, 10.5, { align: "right" });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text(headerText, 100, 5.5, { align: "center" });
+    doc.text(headerText0, 103, 5.5, { align: "center" });
+    doc.setFontSize(13);
+    doc.text(headerText, 103, 10.5, { align: "center" });
     doc.setFontSize(10);
-    doc.text(`Dt: 31/03/25`, 10, 5.5, { align: "left" });
+    if(firmId==1){
+        doc.addImage("../images/B%26B.png", "PNG", 5, 0.1, 19, 19);
+    }else if(firmId==2){
+        doc.addImage("../images/PKC.png", "PNG", 5, 0.1, 19, 19);
+    }else if(firmId==3){
+        doc.addImage("../images/MB.png", "PNG", 5, 0.1, 19, 19);
+    }
+    
+
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`32 Bhaktnagar Ujjain (M.P),456010, Contact: ${firmDetails.Contact}`, 100, 15.5, { align: "center" });
 
     // Fetch bill ID for the customer from the database
     const billId = await fetchBillId(customerId, fy); 
@@ -475,18 +544,27 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+   
 
     // **Firm & Customer Details Box**
     doc.setFontSize(10);
     let boxHeight = 18;
-    doc.rect(5, 7.5, 200, boxHeight);
-    doc.text(`Generated for: ${customerDetails.name}`, 10, 11);
-    doc.text(`Bank: ${firmDetails.BankName}`, 150, 11);
-    doc.text(`Generated by: ${firmDetails.ProprietorName} | Contact: ${firmDetails.Contact}`, 10, 17);
-    doc.text(`A/C No: ${firmDetails.AccountNo}`, 150, 17);
-    doc.text(`PAN No: ${firmDetails.PAN}`, 10, 23);
-    doc.text(`IFSC: ${firmDetails.IFSC}`, 150, 23);
+    doc.rect(5, 17.5, 200, boxHeight);
+    doc.text(`Party name : M/S ${customerDetails.name}`, 10, 21);
+    doc.text(`Party city : ${customerDetails.city}`, 10, 27);
+    if(printType === "0"){
+        doc.text(`Bill No: ${finalBillNo}`, 160, 21);//new
+    }
+    
+    
+    
+    doc.text(`Bill Date: 31/03/25`, 160, 27); //new
+    doc.text(`Bank: ${firmDetails.BankName}`, 10, 33); 
+    doc.text(`A/C holder : ${firmDetails.ProprietorName}`, 60, 33);
+    doc.text(`A/C No: ${firmDetails.AccountNo}`, 110, 33);
+    doc.text(`IFSC: ${firmDetails.IFSC}`, 160, 33);
+  
+    
 
     const includeTid = document.getElementById("printTidCheckbox").checked;
     const includeSno = document.getElementById("printSnoCheckbox").checked;
@@ -517,7 +595,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
         return yPos + 6;
     };
 
-    let startY = 15 + boxHeight;
+    let startY = 25 + boxHeight;
     let rowY = printTableHeaders(startY);
     let pageHeight = doc.internal.pageSize.height;
     let bottomMargin = 10;
@@ -547,14 +625,19 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
         let city = txnType === "Buy" ? txn.seller_city : txn.buyer_city;
 
         if (rowY + rowHeight > pageHeight - bottomMargin) {
+            doc.setFont("helvetica", "normal");
             doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, 10, pageHeight - 3);
-            doc.text(`Continued on next page | Page ${pageNumber}`, 170, pageHeight - 3, { align: "center" });
+            doc.text(`Continued on next page | Page ${pageNumber}`, 175, pageHeight - 3, { align: "center" });
             doc.addPage();
             rowY = printTableHeaders(12);
             doc.text(headerText, 100, 5.5, { align: "center" });
-            doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+            if(printType === "0"){
+                doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+            }
+            
             pageNumber++;
             firstPage = false;
+            doc.setFont("helvetica", "bold");
         }
 
         if (index % 2 === 0) {
@@ -583,7 +666,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
         );
 
         values.forEach((value, i) => {
-            let align = ["Qty", "B Rate", "Amount"].includes(headers[i]) ? "right" : "left";
+            let align = ["Qty", "Brok", "Amount"].includes(headers[i]) ? "right" : "left";
             let xPos = align === "right" ? colX + colWidths[i] - 2 : colX + 2;
             doc.text(value.toString(), xPos, rowY, { align });
             colX += colWidths[i];
@@ -600,7 +683,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     doc.line(5, rowY, 205, rowY);
     rowY += 6;
     doc.setFont("helvetica", "bold");
-    doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 190, rowY, { align: "right" });
+    doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 201, rowY, { align: "right" });
 
     let footerY = pageHeight - 3;
     let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10;

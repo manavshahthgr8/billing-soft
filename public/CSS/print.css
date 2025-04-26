@@ -375,6 +375,24 @@ select {
     transform: scale(1.05); /* Slight pop effect */
 }
 
+
+/* Print Bill Button */
+.summary-btn {
+    padding: 5px;
+    border: none;
+    background-color: #cbce1d;
+    color: rgb(22, 21, 21);
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.summary-btn :hover {
+    background-color: #fbff00;
+    transform: scale(1.05); /* Slight pop effect */
+}
+
 /* Table Styling */
 .customer-table {
     width: 90%; /* Slightly reduced width */

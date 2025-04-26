@@ -1,5 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOM loaded. Initializing event listeners...");
+    fetch('/city/all')
+        .then(response => response.json())
+        .then(data => {
+            const dropdown = document.getElementById("cityDropdown");
+            data.forEach(city => {
+                const option = document.createElement("option");
+                option.value = city.city_name;
+                option.textContent = city.city_name;
+                dropdown.appendChild(option);
+            });
+            const dropdown1 = document.getElementById("buyerCityDropdown");
+            data.forEach(city => {
+                const option = document.createElement("option");
+                option.value = city.city_name;
+                option.textContent = city.city_name;
+                dropdown1.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading cities:', error);
+        });
+
     
     // 📅 Extract firmId & FY from URL
 const urlParams = new URLSearchParams(window.location.search);

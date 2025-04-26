@@ -2,6 +2,12 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
+const fs = require('fs-extra');
+const sqlite3 = require('sqlite3');
+const csv = require('fast-csv');
+const archiver = require('archiver');
+
+
 const { createTransactionsTable, db } = require('./database');
 console.log("✅ Debug: createTransactionsTable is imported:", typeof createTransactionsTable);
 
@@ -1690,6 +1696,19 @@ app.post("/api/transactions/markBilled", async (req, res) => {
         console.error("Error updating transactions:", error);
         res.status(500).json({ error: "Failed to update transactions." });
     }
+});
+
+// Correct path to billing.db
+const DATABASE_PATH = path.join(__dirname, 'billing.db');
+
+// Full Database Backup API
+app.get('/api/backup/database', (req, res) => {
+    res.download(DATABASE_PATH, 'billing.db', (err) => {
+        if (err) {
+            console.error('Database download failed:', err);
+            res.status(500).send('Error downloading database.');
+        }
+    });
 });
 
 

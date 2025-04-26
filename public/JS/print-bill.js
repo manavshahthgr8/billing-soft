@@ -176,8 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <td>${txn.transaction_id}</td>
                             <td>${txn.sno}</td>
                             <td>${txn.date}</td>
-                            <td>${txn.seller_name} </td> <!-- (${txn.seller_city}) Showing city in brackets -->
-                            <td>${txn.buyer_name} </td> <!--  (${txn.buyer_city})Showing city in brackets -->
+                           <td><div class="scroll-cell" title="${txn.seller_name}">${txn.seller_name}</div></td> <!-- (${txn.seller_city}) Showing city in brackets -->
+                            <td><div class="scroll-cell" title="${txn.buyer_name}">${txn.buyer_name}</div></td> <!--  (${txn.buyer_city})Showing city in brackets -->
                             <td>${txn.transactionType}</td>
                             <td>${txn.item}</td>
                             <td>${txn.fqty}</td>
@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <!-- Add hidden fields for future use -->
                             <td class="hidden-seller-city" style="display:none">${txn.seller_city}</td> <!-- Hidden Seller City -->
                             <td class="hidden-buyer-city" style="display:none">${txn.buyer_city}</td> <!-- Hidden Buyer City -->
+                            <td class="hidden-pkg" style="display:none">${txn.packaging}</td> <!-- Hidden Buyer City -->
                             <td>${txn.billedStatus}</td>
                         </tr>
                     `;
@@ -208,10 +209,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
    
     
-  
+    async function fetchBillId(customerId, financialYear) {
+        try {
+            const response = await fetch(`/bills/${financialYear}/${customerId}`);
+            const data = await response.json();
+    
+            if (data.success && data.bill_id) {
+                return data.bill_id;
+            } else {
+                console.warn(`No Bill ID found for customer ${customerId}`);
+                return null;
+            }
+        } catch (error) {
+            console.error("❌ Error fetching Bill ID:", error);
+            return null;
+        }
+    }
     
     
 
+// 📌 Generate PDF
 // 📌 Generate PDF
 async function generatePDF(action) {
     const { jsPDF } = window.jspdf;
@@ -219,94 +236,102 @@ async function generatePDF(action) {
 
     await fetchFirmDetails();
     await fetchCustomerDetails();
-    let firmIdNumber = parseInt(firmId, 10);  // Convert firmId to a number
 
-    // ✅ Fetch the latest checkbox states
-    const includeTid = document.getElementById("printTidCheckbox").checked;
-    const includeSno = document.getElementById("printSnoCheckbox").checked;
+    const printType = document.querySelector('input[name="printType"]:checked').value;
+    const fyDisplay = `${financialYear} - ${financialYear + 1}`;
+    const headerText = printType === "1" 
+        ? `${firmName} Statement | FY ${fyDisplay}` 
+        : `${firmName} Invoice | FY ${fyDisplay}`;
+    const headerText0 = printType === "1" ? `Statement` : `Invoice`;
 
-    let firmCode;
-    if (firmIdNumber === 1) {
-        firmCode = "BB";
-    } else if (firmIdNumber === 2) {
-        firmCode = "PKC";
-    } else if (firmIdNumber === 3) {
-        firmCode = "MB";
-    } else {
-        console.log("Invalid Firm ID"); // Log for invalid firmId
-        return "Invalid Firm ID"; // Return an error if the firmId is invalid
-    }
-
-     // Get last 2 digits of fiscal year
-     let fyLastTwo = financialYear.toString().slice(-2);
-    
-     // Get first 3 letters of the city name
-     let cityCode = customerCity.substring(0, 3).toUpperCase();
-     
-     // Get the first 3 digits from customer name (assuming the name is a string and contains at least 3 digits)
-     let customerCode = customerName.substring(0, 3).toUpperCase();
-     
-     // CID is passed as-is
-    // let billNo = `${firmCode}${firmId}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
-
+    let firmIdNumber = parseInt(firmId, 10);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    const fyDisplay = `${financialYear} - ${financialYear + 1}`;
-    doc.text(`${firmName} Invoice | FY ${fyDisplay}`, 100, 5.5, { align: "center" });
-    // CID is passed as-is
-    let billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
-    console.log("billNo:", billNo); // Debugging final billNo
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Bill No: ${billNo}`, 205, 5.5, { align: "right" });
-
-    // **📌 Firm & Customer Details Box**
+    doc.text(headerText0, 103, 5.5, { align: "center" });
+    doc.setFontSize(13);
+    doc.text(headerText, 103, 10.5, { align: "center" });
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    let boxHeight = 18;
-    doc.rect(5, 7.5, 200, boxHeight);
-    doc.text(`Generated for: ${customerName}`, 10, 11);
-    doc.text(`Bank: ${BankName}`, 150, 11);
-    doc.text(`Generated by: ${ProprietorName} | Contact: ${contact}`, 10, 17);
-    doc.text(`A/C No: ${AcountNo}`, 150, 17);
-    doc.text(`PAN No: ${PAN}`, 10, 23);
-    doc.text(`IFSC: ${IFSC}`, 150, 23);
 
-    // **📊 Table Headers**
-    const headers = ["Tid", "S.N", "Date", "Party", "City", "Txn Type", "Item", "Qty", "Bhav", "B Rate", "Amount"];
-    const colWidths = [9, 9, 20, 48, 18, 25, 12, 10, 13, 15, 18];
+    if (firmIdNumber == 1) doc.addImage("../images/B%26B.png", "PNG", 5, 0.1, 19, 19);
+    else if (firmIdNumber == 2) doc.addImage("../images/PKC.png", "PNG", 5, 0.1, 19, 19);
+    else if (firmIdNumber == 3) doc.addImage("../images/MB.png", "PNG", 5, 0.1, 19, 19);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`32 Bhaktnagar Ujjain (M.P),456010, Contact: ${contact}`, 100, 15.5, { align: "center" });
+
+    const includeTid = document.getElementById("printTidCheckbox").checked;
+    const includeSno = document.getElementById("printSnoCheckbox").checked;
+    const billId = await fetchBillId(customerId, financialYear);
+    if (!billId) return alert("⚠️ No Bill ID found for customer");
+
+    let firmPrefix = ["BB", "PKC", "MB"][firmIdNumber - 1] || "X";
+    let baseNumber = [100000, 300000, 600000][firmIdNumber - 1] || 0;
+    let finalBillNo = `${firmPrefix}${baseNumber + billId}`;
+
+    doc.setFontSize(10);
+    let boxHeight = 18;
+    doc.rect(5, 17.5, 200, boxHeight);
+    if(printType === "0"){
+        doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+    }else{
+        doc.text(`Stmnt No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+    };
+    
+    doc.text(`Generated for: ${customerName}, ${customerCity}`, 10, 21);
+    doc.text(`Bank: ${BankName}`, 150, 21);
+    doc.text(`Generated by: ${ProprietorName} | Contact: ${contact}`, 10, 27);
+    doc.text(`A/C No: ${AcountNo}`, 150, 27);
+    doc.text(`PAN No: ${PAN}`, 10, 33);
+    doc.text(`IFSC: ${IFSC}`, 150, 33);
+
+    let headers = printType === "1"
+        ? ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"]
+        : ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
+    let colWidths = printType === "1"
+        ? [9, 8, 20, 52, 24, 10, 12, 12, 10, 10, 10, 18]
+        : [9, 8, 20, 52, 24, 15, 13, 12, 10, 14, 3, 18];
+
+    const fitText = (doc, text, maxWidth) => {
+        if (doc.getTextWidth(text) <= maxWidth) return text;
+        let shortened = text;
+        while (doc.getTextWidth(shortened + "...") > maxWidth && shortened.length > 1) {
+            shortened = shortened.slice(0, -1);
+        }
+        return shortened + "...";
+    };
 
     const printTableHeaders = (yPos) => {
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.setFillColor(220, 220, 220);
         doc.rect(5, yPos - 4, 200, 6, "F");
-
         let colX = 8;
         headers.forEach((header, index) => {
             doc.text(header, colX, yPos);
             colX += colWidths[index];
         });
-
         return yPos + 6;
     };
 
-    let startY = 15 + boxHeight;
-    let rowY = printTableHeaders(startY);
-    let firstPage = true;
+    const drawTableBorder = (topY, bottomY) => {
+        doc.rect(5, topY - 4, 200, bottomY - topY + 3);
+    };
 
-    // **📝 Fetch Selected Transactions**
+    let startY = 23 + boxHeight;
+    let rowY = printTableHeaders(startY);
+    let currentPageTopY = rowY - 6;
+
     let selectedTransactions = [];
     let totalAmount = 0;
-
+    doc.setFont("helvetica", "normal");
     document.querySelectorAll(".txn-checkbox:checked").forEach(checkbox => {
         const row = checkbox.closest("tr").querySelectorAll("td");
-
-        let sellerName = row[3].textContent.trim();
-        let buyerName = row[4].textContent.trim();
         let txnType = row[5].textContent.trim();
-        let party = txnType === "Purchased" ? sellerName : buyerName;
+        let party = txnType === "Purchased" ? row[3].textContent.trim() : row[4].textContent.trim();
         let city = txnType === "Purchased" ? row[12].textContent.trim() : row[13].textContent.trim();
+        party = fitText(doc, party, colWidths[3] - 2);
+        city = fitText(doc, city, colWidths[4] - 2);
+
         let amount = parseFloat(row[10].textContent.replace("₹", "").trim());
         totalAmount += amount;
 
@@ -316,38 +341,43 @@ async function generatePDF(action) {
             date: row[2].textContent.trim(),
             party: party,
             city: city,
-            type: txnType,
+            type: txnType === "Purchased" ? "Buy" : "Sell",
             item: row[6].textContent.trim(),
-            qty: row[7].textContent.trim(),
             bhav: row[8].textContent.trim(),
-            rate: row[9].textContent.trim(),
+            qty: row[7].textContent.trim(),
+            pkg: row[14].textContent.trim(),
+            rate: printType === "1" ? row[9].textContent.trim() : " ",
             amount: amount.toFixed(2)
         });
     });
 
-    if (selectedTransactions.length === 0) {
-        alert("Please select at least one transaction!");
-        return;
-    }
+    if (selectedTransactions.length === 0) return alert("Please select at least one transaction!");
 
-    // **📊 Print Transactions in PDF**
-    doc.setFont("helvetica", "normal");
     let pageHeight = doc.internal.pageSize.height;
-    let bottomMargin = 1;
+    let bottomMargin = 10;
     let rowHeight = 6;
     let pageNumber = 1;
 
     selectedTransactions.forEach((txn, index) => {
         if (rowY + rowHeight > pageHeight - bottomMargin) {
+            drawTableBorder(currentPageTopY, rowY);
             doc.setFontSize(10);
             doc.setFont("times", "normal");
-            doc.text(`${firmName} | FY ${fyDisplay} | ${customerName} Invoice`, 10, pageHeight - 3);
+            doc.text(`${firmName} | FY ${fyDisplay} | ${customerName} ${printType === "1" ? 'Statement' : 'Invoice'}`, 10, pageHeight - 3);
             doc.text(`Continued on next page | Page ${pageNumber}`, 170, pageHeight - 3, { align: "center" });
 
             doc.addPage();
             rowY = printTableHeaders(10);
+            currentPageTopY = rowY - 6;
+            doc.text(headerText, 100, 5.5, { align: "center" });
             doc.setFont("helvetica", "normal");
-            firstPage = false;
+            if(printType === "0"){
+                doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+            } else{
+                doc.text(`Stmnt No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+            }
+            
+
             pageNumber++;
         }
 
@@ -359,9 +389,12 @@ async function generatePDF(action) {
         let colX = 8;
         Object.entries(txn).forEach(([key, value], i) => {
             let maxWidth = colWidths[i] - 2;
-            let finalText = doc.getTextWidth(value) > maxWidth ? value.substring(0, Math.floor(maxWidth / 3)) + "..." : value;
+            let shouldTruncate = ["party", "city"].includes(headers[i].toLowerCase());
+            let finalText = shouldTruncate && doc.getTextWidth(value) > maxWidth
+                ? value.substring(0, Math.floor(maxWidth / 3)) + "..."
+                : value;
 
-            let align = ["qty", "bhav", "b rate", "amount"].includes(headers[i].toLowerCase()) ? "right" : "left";
+            let align = ["qty", "bhav", "pkg", "brok", "amount"].includes(headers[i].toLowerCase()) ? "right" : "left";
             let xPos = (align === "right") ? colX + colWidths[i] - 2 : colX;
             doc.text(finalText.toString(), xPos, rowY, { align });
             colX += colWidths[i];
@@ -370,9 +403,7 @@ async function generatePDF(action) {
         rowY += rowHeight;
     });
 
-    if (firstPage) {
-        doc.rect(5, startY - 4, 200, rowY - startY + 3);
-    }
+    drawTableBorder(currentPageTopY, rowY); // ✅ Draw border for last page
 
     if (rowY + 10 > pageHeight - bottomMargin) {
         doc.addPage();
@@ -382,47 +413,37 @@ async function generatePDF(action) {
     doc.line(5, rowY, 205, rowY);
     rowY += 6;
     doc.setFont("helvetica", "bold");
-    doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 170, rowY, { align: "right" });
+    doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 201, rowY, { align: "right" });
 
-    let footerY = pageHeight - 3; // Fixed Y position for footer
-let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10; // Adjust X if rowY is too close
+    doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.text(`Digitally signed by ${ProprietorName}`, 60, rowY + 5, { align: "right" });
 
-doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
-doc.setFont("helvetica", "normal");
-doc.text(`Digitally signed by ${ProprietorName}`, 60, rowY + 5, { align: "right" });
-
-rowY += 8;
-doc.setFontSize(11);
-doc.setFont("helvetica", "italic");
-doc.text("Thank you for being a valuable customer.", 105, rowY + 10, { align: "center" });
-
-// ✅ Adjusted Footer X if Overlap Detected
-doc.setFontSize(9);
-doc.text(`${firmName} | FY ${fyDisplay} | ${customerName} Invoice`, footerX, footerY);
-
+    rowY += 8;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "italic");
+    doc.text("Thank you for being a valuable customer.", 105, rowY + 10, { align: "center" });
 
     doc.setFontSize(9);
-    doc.text(`Page ${pageNumber}`, 170, pageHeight - 3);
+    let footerY = doc.internal.pageSize.height - 3;
+    let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10;
+    doc.text(`${firmName} | FY ${fyDisplay} | ${customerName} ${printType === "1" ? 'Statement' : 'Invoice'}`, footerX, footerY);
+    doc.text(`Page ${pageNumber}`, 170, footerY);
 
-    // CODE ERROS AS 
-    //doc.save(`Invoice_${customerName}_${financialYear}.pdf`);
     if (action === "preview") {
         window.open(doc.output("bloburl"), "_blank");
     } else if (action === "download") {
-        if (!confirm("By pressing OK, selected transactions will be marked as billed.")) {
-            return; // Stop execution if "Cancel" is pressed
-        }
+        if (!confirm("By pressing OK, selected transactions will be marked as billed.")) return;
         markTransactionsAsBilled();
         const fileName = `${customerName.split(" ")[0]}Invoice_${firmName.split(" ")[0]}FY${financialYear}.pdf`;
         doc.save(fileName);
     } else if (action === "preview1") {
-        if (!confirm("By pressing OK, selected transactions will be marked as billed.")) {
-            return; // Stop execution if "Cancel" is pressed
-        }
+        if (!confirm("By pressing OK, selected transactions will be marked as billed.")) return;
         markTransactionsAsBilled();
         window.open(doc.output("bloburl"), "_blank");
     }
 }
+
     
 
 // 📌 Event Listeners
@@ -455,7 +476,7 @@ async function markTransactionsAsBilled() {
             alert("Failed to mark transactions as billed.");
             return;
         }
-
+        alert(result.message);
         console.log("Transactions updated:", result.message);
         fetchCustomerTransactions();
     } catch (error) {

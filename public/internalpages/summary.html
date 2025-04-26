@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary - Customer </title>
+    <link rel="stylesheet" href="../CSS/summary.css">
+    <!-- ✅ Google Font for Hindi -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
+
+  <!-- ✅ html2pdf library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    defer
+    onload="console.log('✅ jsPDF Loaded:', window.jspdf);"
+></script>
+
+<script src="../JS/summary.js" defer></script>
+
+ 
+</head>
+<body>
+   
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+            <button id="backButton" class="back-btn">⬅ Back</button>
+        </div>
+        <div class="navbar-center">
+            <p>All firm Summary</p>
+
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+        
+        
+        
+    <!-- Separator Line -->
+    <div class="main-container">
+        <div class="top-bar">
+            <div style="grid-column: span 2; text-align: center;">
+              <h2>You are viewing all firm summary </h2>
+              <p>
+                For Customer: <span class="highlight" id="customerName">Loading...</span>,  
+                FY: <span class="highlight" id="fy"></span>
+              </p>
+            </div>
+          </div>
+        <div class="separator-line"></div>
+    
+        <!-- ✅ New Checkboxes for TID and SNO -->
+        <div class="checkbox-container">
+            <label>
+                <input type="checkbox" id="printTidCheckbox" checked> Print TID
+            </label>
+            <label>
+                <input type="checkbox" id="printSnoCheckbox" checked> Print SNO
+            </label>
+            <label for="statement">
+                <input type="radio" name="printType" id="statement" value="1" checked> Statement
+            </label>
+            <label for="invoice">
+                <input type="radio" name="printType" id="invoice" value="0"> Invoice
+            </label>
+            
+            
+        </div>
+    
+        <!-- Separator Line -->
+        <div class="separator-line"></div>
+    
+        <div class="button-container">
+            <button id="preview" class="print-btn">Preview </button>
+            <button id="preview1" class="print-btn" disabled aria-disabled="true">Mark & Preview</button>
+            <button id="printButton" class="print-btn"> Download</button>
+            
+        </div>
+    
+
+
+    <div class="due-container">
+        <table class="firm-due-table">
+            <thead>
+                <tr>
+                  <th>Firm Name</th>
+                  <th id="present-due-header">Present Due</th>
+                  <th id="previous-due-header">Previous FY Due</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              
+            <tbody>
+                <tr>
+                  <td id="firm-name-1">Loading…</td>
+                  <td id="present-due-1">₹0.00</td>
+                  <td><input type="number" id="old-due-1" placeholder="₹0.00" /></td>
+                  <td><input type="text" id="comment-1" placeholder="Optional comment" /></td>
+                </tr>
+                <tr>
+                  <td id="firm-name-2">Loading…</td>
+                  <td id="present-due-2">₹0.00</td>
+                  <td><input type="number" id="old-due-2" placeholder="₹0.00" /></td>
+                  <td><input type="text" id="comment-2" placeholder="Optional comment" /></td>
+                </tr>
+                <tr>
+                  <td id="firm-name-3">Loading…</td>
+                  <td id="present-due-3">₹0.00</td>
+                  <td><input type="number" id="old-due-3" placeholder="₹0.00" /></td>
+                  <td><input type="text" id="comment-3" placeholder="Optional comment" /></td>
+                </tr>
+              </tbody>
+              
+              
+            <tfoot>
+                <tr class="total-row">
+                    <td><strong>Total</strong></td>
+                    <td id="total-present-due">₹0.00</td>
+                    <td id="total-old-due">₹0.00</td>
+                    <td></td>
+                </tr>
+                <tr class="divider-row">
+                    <td colspan="2"><strong>Grand Total</strong></td>
+                    <td>=</td>
+                    <td id="grand-total">₹0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    
+    </div>
+  
+        
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+
+    
+    
+</body>
+</html>

@@ -58,12 +58,15 @@
     <!-- Separator Line -->
     <div class="main-container">
         <div class="top-bar">
-            <h2>You are viewing Unbilled transactions</h2>
-            <p>
+            <div style="grid-column: span 2; text-align: center;">
+              <h2>You are viewing Unbilled transactions</h2>
+              <p>
                 For Firm: <span class="highlight" id="firmName"></span>,  
                 FY: <span class="highlight" id="fy"></span>
-            </p>
-        </div>
+              </p>
+            </div>
+          </div>
+          
     
         <!-- ✅ New Checkboxes for TID and SNO -->
         <div class="checkbox-container">
@@ -85,6 +88,17 @@
     
         <!-- Separator Line -->
         <div class="separator-line"></div>
+        <p class="eco-note">
+            🌳 Note: Recommended to skip transactions with 
+            <span class="highlight-warning">Unbilled Amount = / ₹0 / or (Khali gadi)</span>
+            to reduce printing and save paper. <br>
+            <label>
+                <input type="checkbox" id="skipZeroCheckbox">
+                <strong>Auto-uncheck such customers</strong>
+            </label>
+        </p>
+        
+        
     
         <div class="button-container">
             <button id="preview" class="print-btn">Preview </button>

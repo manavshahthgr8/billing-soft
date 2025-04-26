@@ -225,16 +225,19 @@ a {
     border-collapse: collapse;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    table-layout: auto; /* Allow columns to adjust dynamically */
+    table-layout: auto; /* Keep dynamic layout for non-fixed columns */
 }
 
-.transaction-table th, .transaction-table td {
+/* 🧱 General Cell Styling */
+.transaction-table th,
+.transaction-table td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: center;
     white-space: nowrap; /* Prevent text wrapping */
 }
 
+/* 🌈 Table Header Styling */
 .transaction-table th {
     background: #007bff;
     color: white;
@@ -248,6 +251,46 @@ a {
 .transaction-table tr:hover {
     background: #c0b9b9;
 }
+
+/* 🧭 Fixed Width for Seller/Buyer Columns */
+.transaction-table th:nth-child(4),  /* Seller */
+.transaction-table td:nth-child(4),
+.transaction-table th:nth-child(5),  /* Buyer */
+.transaction-table td:nth-child(5) {
+    max-width: 280px;
+    min-width: 280px;
+}
+
+.scroll-cell {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    cursor: help;
+}
+
+
+/* 🌀 Scrollable Cell Content 
+.scroll-cell {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin; /* Firefox 
+}
+
+/* 🎯 Optional: Webkit Scrollbar Styling 
+.scroll-cell::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-cell::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 2px;
+}*/
+
+
 
 /* ✅ Select All Checkbox */
 .select-all-container {

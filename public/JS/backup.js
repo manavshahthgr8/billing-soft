@@ -65,19 +65,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Full Backup Buttons
     document.getElementById("fullSoftwareBackup").addEventListener("click", () => {
         if (confirm("Full Software Backup can be large. Do you want to continue?")) {
-            window.location.href = "/api/backup/software";
+            alert(
+                "Hey user, unfortunately you can't backup Software.\n" +
+                "GitHub Synced: Last push: Apr 2025.\n" +
+                "You can take backup of database instead.\n\n" +
+                "For further support, contact Manav."
+            );
+            alert("Redirecting to Home Page.");
+            window.location.href = "/home.html"; // Redirect to homepage after alert
         }
     });
+    
 
     document.getElementById("fullDatabaseBackup").addEventListener("click", () => {
-        window.location.href = "/api/backup/database";
+        if (confirm("Initiating Download.\n" +
+            "Note: Please always rename the file to 'billing.db' before use.\n" +
+            "Also, delete the old 'billing.db' in the folder before adding the new one.\n\n" +
+            "For support, contact Manav.")) {
+              window.location.href = "/api/backup/database"; // Redirect to the backup endpoint
+            };
     });
-
     // Dynamic Financial Year Backup
     const backupContainer = document.getElementById("backupContainer");
+
+    document.querySelectorAll('[aria-disabled="true"]').forEach(button => {
+        button.addEventListener('click', event => {
+          event.preventDefault();
+        });
+      });
+      
 
     // Fetch financial years from the server
     fetch("/financial-years")
@@ -96,11 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         financialYearSection.innerHTML = `
                             <h4>Financial Year: ${yearCode}</h4>
-                            <div class="backup-options">
-                                <button class="backup-btn excel-btn" data-year="${yearCode}">Excel</button>
-                                <button class="backup-btn database-btn" data-year="${yearCode}">Database</button>
-                                <button class="backup-btn pdf-btn" data-year="${yearCode}">PDF</button>
-                            </div>
+                           <div class="backup-options">
+                    <button class="backup-btn excel-btn" data-year="${yearCode}" disabled aria-disabled="true">Excel (Coming Soon)</button>
+                    <button class="backup-btn database-btn" data-year="${yearCode}">Database</button>
+                    <button class="backup-btn pdf-btn" data-year="${yearCode}" disabled aria-disabled="true">PDF (Coming Soon)</button>
+                </div>
                         `;
 
                         backupContainer.appendChild(financialYearSection);
@@ -109,10 +127,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.querySelectorAll(".database-btn").forEach(button => {
                         button.addEventListener("click", event => {
                             const year = event.target.getAttribute("data-year");
-                            window.location.href = `/api/backup/transactions/${year}`;
+                            // Initiate a download of database backup for that year
+                            alert("Feature not implemented yet. You can download the full database backup. For more details, contact Manav.");
+                            //window.location.href = `/api/backup/transactions/${year}`;
                         });
                     });
-
                     document.querySelectorAll(".excel-btn").forEach(button => {
                         button.addEventListener("click", event => {
                             const year = event.target.getAttribute("data-year");

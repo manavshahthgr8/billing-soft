@@ -1,0 +1,381 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+/* Separator Line */
+.separator-line {
+    border-bottom: 2px solid #ddd;
+    margin: 8px 0;
+}
+
+/* Top Bar */
+.top-bar {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Left section auto, right section takes remaining space */
+    gap: 5px;
+    align-items: center;
+    background: #59d0ff7a;
+    padding: 2px 10px 2px 10px;
+    border-radius: 0px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+}
+
+/* Left Section */
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Right Section */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+/* Responsive for Small Screens */
+@media (max-width: 768px) {
+    .top-bar {
+        grid-template-columns: 1fr; /* Stack sections vertically */
+    }
+    
+    .right-section {
+        justify-content: flex-start;
+    }
+}
+
+
+.left-section span {
+    font-weight: bold;
+}
+
+.left-section button {
+    padding: 1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.left-section button:hover {
+    background-color: #ccc;
+}
+
+select {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+/* Right Section - Search */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#search-bar {
+    padding:1px 5px 1px 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+}
+
+#search-column {
+    padding: 1px 5px 1px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#search-btn {
+    padding:1px 5px 1px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#search-btn:hover {
+    background-color: #218838;
+}
+
+/* Centered Container */
+.due-container {
+    max-width: 800px;
+    margin: 10px auto;
+    padding: 20px;
+}
+
+/* Table Styling */
+.firm-due-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.firm-due-table th,
+.firm-due-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.firm-due-table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+.firm-due-table input[type="number"],
+.firm-due-table input[type="text"] {
+    width: 90%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: right;
+}
+
+.total-row {
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+.divider-row td {
+    text-align: center;
+    font-size: 20px;
+    background-color: #efefef;
+    font-weight: bold;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
+    margin-top: 0px; /* Optional: Adjust spacing from content above */
+}
+
+/* 🖨️ Print Button */
+#printButton {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#printButton:hover {
+    background: #218838;
+}
+
+/* 🖨️ Print Button */
+#preview {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview:hover {
+    background: #27037a;
+}
+#preview1 {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #28a745;;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#preview1:hover {
+    background: #27037a;
+}
+
+#markBilled {
+    display: block;
+    margin: 20px auto;
+    padding: 0px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #2878a7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#markBilled:hover {
+    background: #27037a;
+}

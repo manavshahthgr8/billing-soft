@@ -258,6 +258,7 @@ function renderCustomers() {
                 <th>Billed Txn</th>
                 <th>Unbilled Txn</th>
                 <th>Action</th>
+                <th>Summary</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -284,7 +285,8 @@ function renderCustomers() {
             <td>${billing.unbilledAmount}</td>
             <td>${billing.billedTxnCount}</td>
             <td>${billing.unbilledTxnCount}</td>
-            <td><button class="print-bill-btn" data-id="${customerId}">Print</button></td>
+            <td><button class="print-bill-btn" data-id="${customerId}">View, Print</button></td>
+            <td><button class="summary-btn" data-id="${customerId}">Summary</button></td>
         `;
 
         tbody.appendChild(row);
@@ -320,8 +322,8 @@ function applyFilters() {
                 unbilledAmount: 0
             };
 
-            const hasBilled = parseFloat(status.billedAmount) > 0;
-            const hasUnbilled = parseFloat(status.unbilledAmount) > 0;
+            const hasBilled = parseFloat(status.billedTxnCount) > 0;
+            const hasUnbilled = parseFloat(status.unbilledTxnCount) > 0;
 
             if (statusFilter === "paid") {
                 return hasBilled;
@@ -382,6 +384,14 @@ fetchCustomers();
                 window.location.href = `print-bill.html?customer_id=${customerId}&firmId=${firmId}&fy=${financialYear}`;
             }
         });
+
+         // Event Listener for "Print Bill" Button
+         document.body.addEventListener("click", (event) => {
+            if (event.target.classList.contains("summary-btn")) {
+                const customerId = event.target.getAttribute("data-id");
+                window.location.href = `summary.html?customer_id=${customerId}&firmId=${firmId}&fy=${financialYear}`;
+            }
+        });
     
         // Fetch customers on page load
         fetchCustomers();
@@ -407,8 +417,8 @@ document.getElementById("UnbilledAll").addEventListener("click", () => {
     // Collect unbilled customer IDs
     const unbilledCustomerIds = filteredCustomers
         .filter(customer => {
-            const status = billingStatusMap[customer.customer_id] || { unbilledAmount: 0 };
-            return parseFloat(status.unbilledAmount) > 0;
+            const status = billingStatusMap[customer.customer_id] || { unbilledAmount: 0, unbilledTxnCount: 0 };
+            return parseFloat(status.unbilledAmount) > 0 || parseInt(status.unbilledTxnCount) > 0;
         })
         .map(customer => customer.customer_id);
 
@@ -451,9 +461,8 @@ document.getElementById("billedAll").addEventListener("click", () => {
 
 
 document.getElementById("report").addEventListener("click", async () => {
-    
-    const fy = financialYear; // Ensure this variable is set correctly
-    const response = await fetch(`/customers/all/orderbycity/${fy}`);  // Append fy to the URL
+    const fy = financialYear;
+    const response = await fetch(`/customers/all/orderbycity/${fy}`);
     const customerData = await response.json();
 
     if (!customerData.success || !customerData.customers.length) {
@@ -465,20 +474,16 @@ document.getElementById("report").addEventListener("click", async () => {
     const doc = new jsPDF({ orientation: "landscape" });
 
     const colWidths = [30, 60, 25, 17, 17, 25, 17, 17, 25, 17, 17, 18];  
-    const rowHeight = 7;                          
-    let startY = 10;                              
+    const rowHeight = 7;
+    let startY = 10;
     let currentCity = "";
 
-    // ✅ **Reusable function to draw the header**
     function drawHeader() {
-        startY = 10;                               
-
-        // ✅ PDF Title
+        startY = 10;
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
         doc.text(`Financial Year Report ${fy}-${parseInt(fy) + 1}`, 150, 5, { align: "center" });
 
-        // ✅ Main Header Row
         doc.setFillColor(200, 200, 200);
         doc.rect(5, startY, 290, rowHeight, "F");
         doc.setFontSize(9);
@@ -497,9 +502,7 @@ document.getElementById("report").addEventListener("click", async () => {
             colX += colWidths[2] + colWidths[3] + colWidths[4];
         }
 
-        startY += rowHeight;                      
-
-        // ✅ Sub-Headers
+        startY += rowHeight;
         doc.setFontSize(8);
         colX = 1 + colWidths[0] + colWidths[1];
 
@@ -519,52 +522,42 @@ document.getElementById("report").addEventListener("click", async () => {
         doc.text("Total Bld", colX + 5, startY + 5);
         colX += colWidths[5];
 
-        // ✅ Draw Vertical Grid Lines
-        let colGridX = 5;                         
+        let colGridX = 5;
         for (const width of colWidths) {
-            doc.line(colGridX, startY, colGridX, startY + rowHeight); 
+            doc.line(colGridX, startY, colGridX, startY + rowHeight);
             colGridX += width;
         }
 
-        startY += rowHeight;                      
+        startY += rowHeight;
     }
 
-    // ✅ Draw initial header
     drawHeader();
 
-    // ✅ Loop through customers
     for (const customer of customerData.customers) {
         const { city, name, customer_id } = customer;
 
-        // ✅ City Group Header
         if (currentCity !== city) {
             currentCity = city;
-
-            // ✅ Add city section
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.setTextColor(0);
-            doc.setFillColor(230, 230, 250);      
+            doc.setFillColor(230, 230, 250);
             doc.rect(5, startY, 290, rowHeight, "F");
             doc.text(`City: ${currentCity}`, 130, startY + 5);
 
             startY += rowHeight;
 
-            // ✅ Page break and reprint header if needed
             if (startY > 190) {
                 doc.addPage();
                 drawHeader();
             }
         }
 
-        let colX = 1;                             
-
-        // ✅ Customer Info Row
+        let colX = 1;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(0);
 
-        // ✅ Alternating Row Colors
         doc.setFillColor(startY % 14 < 7 ? 245 : 255, 245, 245);
         doc.rect(5, startY, 290, rowHeight, "F");
 
@@ -574,9 +567,12 @@ document.getElementById("report").addEventListener("click", async () => {
         doc.text(name, colX + 5, startY + 5);
         colX += colWidths[1];
 
-        let totalBilled = 0;  // ✅ Initialize total billed amount
+        let totalBilled = 0;
 
-        // ✅ Fetch billing data for each firm
+        // ✅ Fetch Bill ID ONCE per customer
+        const billId = await fetchBillId(customer_id, fy);
+        let validBillId = billId !== null;
+
         for (let firmId = 1; firmId <= 3; firmId++) {
             const billingResponse = await fetch(
                 `/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customer_id}`
@@ -586,37 +582,38 @@ document.getElementById("report").addEventListener("click", async () => {
             const billed = billingData?.billedAmount || 0;
             const unbilled = billingData?.unbilledAmount || 0;
 
-            totalBilled += billed;  // ✅ Accumulate billed amount
+            totalBilled += billed;
+            let billNo = "N/A";
 
-            let billNo = "N/A";  
+            if (billed > 0 && validBillId) {
+                let firmPrefix, baseNumber;
+                switch (firmId) {
+                    case 1:
+                        firmPrefix = "BB";
+                        baseNumber = 100000;
+                        break;
+                    case 2:
+                        firmPrefix = "PKC";
+                        baseNumber = 300000;
+                        break;
+                    case 3:
+                        firmPrefix = "MB";
+                        baseNumber = 600000;
+                        break;
+                    default:
+                        firmPrefix = "ERR";
+                        baseNumber = 0;
+                }
 
-            if (billed > 0) {
-                billNo = generateBillNo(firmId, fy, city, name, customer_id);
-
-                // ✅ Split the bill number into two parts:
-                const billPrefix = billNo.slice(0, billNo.lastIndexOf(customer_id.toString()));
-                const customerIdBold = customer_id.toString();
-
-                // ✅ Print the prefix in normal font
-                doc.setFont("helvetica", "normal");
-                doc.text(billPrefix, colX + 5, startY + 5);
-
-                // ✅ Print the customer ID in bold
-                const prefixWidth = doc.getTextWidth(billPrefix);  
-                doc.setFont("helvetica", "bold");
-                doc.text(customerIdBold, colX + 5 + prefixWidth, startY + 5);
-
-            } else {
-                // ✅ Print "N/A" in normal font only when billed is 0
-                doc.setFont("helvetica", "normal");
-                doc.text(billNo, colX + 5, startY + 5);
+                billNo = `${firmPrefix}${baseNumber + billId}`;
             }
 
-            // ✅ Move to the next column (ONLY FOR AMOUNTS)
-            colX += colWidths[2];  
+            // ✅ PRINT Bill No in correct column
+            doc.setFont("helvetica", "normal");
+            doc.text(billNo, colX + 5, startY + 5);
+            colX += colWidths[2];
 
-            // ✅ Print billed and unbilled amounts
-            doc.setFont("helvetica", "normal");  
+            // ✅ PRINT Billed & Unbilled Amounts
             doc.text(billed.toString(), colX + 5, startY + 5);
             colX += colWidths[3];
 
@@ -624,13 +621,10 @@ document.getElementById("report").addEventListener("click", async () => {
             colX += colWidths[4];
         }
 
-        // ✅ Print the `Total Bld` column
         doc.setFont("helvetica", "bold");
         doc.text(totalBilled.toString(), colX + 5, startY + 5);
-        
         colX += colWidths[5];
 
-        // ✅ Draw Vertical Grid Lines for Customer Row
         let rowColX = 5;
         for (const width of colWidths) {
             doc.line(rowColX, startY, rowColX, startY + rowHeight);
@@ -639,39 +633,28 @@ document.getElementById("report").addEventListener("click", async () => {
 
         startY += rowHeight;
 
-        // ✅ Page break and reprint header if needed
         if (startY > 190) {
             doc.addPage();
             drawHeader();
         }
     }
 
-    // ✅ Generate PDF Blob and open in a new tab
     const pdfBlob = doc.output("blob");
     const pdfUrl = URL.createObjectURL(pdfBlob);
-
     window.open(pdfUrl, "_blank");
 });
 
-
-// ✅ Bill Number Generator Function
-function generateBillNo(firmId, fy, city, customerName, customerId) {
-    let firmCode;
-    
-    switch (parseInt(firmId, 10)) {
-        case 1: firmCode = "BB"; break;
-        case 2: firmCode = "PKC"; break;
-        case 3: firmCode = "MB"; break;
-        default: return "Invalid Firm ID";
+async function fetchBillId(customerId, financialYear) {
+    try {
+        const response = await fetch(`/bills/${financialYear}/${customerId}`);
+        const data = await response.json();
+        return data.success && data.bill_id ? data.bill_id : null;
+    } catch (error) {
+        console.error("❌ Error fetching Bill ID:", error);
+        return null;
     }
-
-    const fyLastTwo = fy.toString().slice(-2);
-    const cityCode = city.substring(0, 3).toUpperCase();
-    const customerCode = customerName.substring(0, 3).toUpperCase();
-
-    const billNo = `${firmId}${firmCode}${fyLastTwo}${cityCode}00${customerCode}${customerId}`;
-    return billNo;
 }
+
 
 
 
