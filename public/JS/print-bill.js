@@ -271,6 +271,7 @@ async function generatePDF(action) {
     doc.setFontSize(10);
     let boxHeight = 18;
     doc.rect(5, 17.5, 200, boxHeight);
+    doc.text(`Date: 31/03/${Number(financialYear)+1}`, 205, 9.5, { align: "right" });
     if(printType === "0"){
         doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
     }else{
@@ -371,6 +372,7 @@ async function generatePDF(action) {
             currentPageTopY = rowY - 6;
             doc.text(headerText, 100, 5.5, { align: "center" });
             doc.setFont("helvetica", "normal");
+            
             if(printType === "0"){
                 doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
             } else{
@@ -418,6 +420,7 @@ async function generatePDF(action) {
     doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.text(`Digitally signed by ${ProprietorName}`, 60, rowY + 5, { align: "right" });
+    doc.text(`${firmName}`, 60, rowY + 9, { align: "right" });
 
     rowY += 8;
     doc.setFontSize(11);
