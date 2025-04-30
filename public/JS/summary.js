@@ -193,6 +193,10 @@ async function fetchPresentDues(customerId, fy) {
 
                           if (cell) {
                                   cell.textContent = `₹${(data.billedAmount || 0).toFixed(2)}`;
+
+                                  if(data.unbilledAmount > 0) {
+                                    cell.textContent += ` is Billed & Remaining skipped due to Unbilled = ₹${(data.unbilledAmount || 0).toFixed(2)}`;
+                            }
                           }
                   } else {
                           if (cell) cell.textContent = "Error";
