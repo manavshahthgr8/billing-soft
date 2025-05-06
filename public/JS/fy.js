@@ -113,7 +113,7 @@ async function addFinancialYear(startYear) {
             throw new Error(result.message || "Failed to add financial year"); // Handle error properly
         }
 
-        alert(`✅ ${startYear} + " created successfully . " ${result.message}`); // Success message
+        alert(`✅ ${startYear}-${Number(startYear)+1} created successfully  ${result.message}`); // Success message
         fetchFinancialYears(); // Refresh FY list
     } catch (error) {
         alert(`❌ ${error.message}`); // Show correct error message

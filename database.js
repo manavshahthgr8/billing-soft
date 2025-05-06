@@ -25,7 +25,13 @@ function createTransactionsTable(startYear) {
         date DATE NOT NULL,
         item TEXT NOT NULL,
         packaging TEXT NOT NULL,
-        qty INTEGER NOT NULL,
+        S_QuintQty Integer,
+        B_QuintQty Integer,
+        S_QuintRate DECIMAL(10,2) NOT NULL,
+        B_QuintRate DECIMAL(10,2) NOT NULL,
+        S_QuintAmount DECIMAL(10,2) NOT NULL,
+        B_QuintAmount DECIMAL(10,2) NOT NULL,
+        qty INTEGER ,
         bqty INTEGER,
         bhav INTEGER NOT NULL,
         seller_rate DECIMAL(10,2) NOT NULL,
@@ -69,6 +75,18 @@ const db = new sqlite3.Database('billing.db', (err) => {
             if (err) console.error('❌ Error creating users table:', err.message);
             else console.log('✅ Users table is ready.');
         });
+
+        // 📌 Create settings table
+        db.run(`CREATE TABLE IF NOT EXISTS settings (
+            id INTEGER PRIMARY KEY,                 -- Fixed ID for lookup (not AUTOINCREMENT)
+            name TEXT UNIQUE NOT NULL,              -- Readable name (e.g., 'default_billing_type')
+            value TEXT NOT NULL,                    -- Actual setting value (e.g., '0', 'en', 'dd-mm-yyyy')
+            description TEXT                        -- Optional: description for humans
+        )`, (err) => {
+            if (err) console.error('❌ Error creating settings table:', err.message);
+            else console.log('✅ Settings table is ready.');
+        });
+
 
         db.run(`CREATE TABLE IF NOT EXISTS firm (
             firm_id INTEGER PRIMARY KEY AUTOINCREMENT,

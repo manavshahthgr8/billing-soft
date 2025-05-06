@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Entry | New Version</title>
+    <link rel="stylesheet" href="../CSS/newtransaction.css">
+    <script src="../JS/newtransaction.js" defer></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger" id="openSidebar">☰</button>
+            <button id="home" class="welcome-text">Home</button>
+        </div>
+        <div class="navbar-center">
+            Billing Software
+        </div>
+        <div class="navbar-right">
+            <span id="currentTime"></span>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" id="closeSidebar">&times;</button>
+        <ul>
+            <li>
+                <span>Settings</span>
+                <ul class="dropdown">
+                    <li><a href="firm.html">Manage Firm</a></li>
+                    <li><a href="account.html">Your Account</a></li>
+                    <li><a href="backup.html">Backup</a></li>
+                    <li><a href="FY-manage.html">Financial Year</a></li>
+                </ul>
+            </li>
+            <li class="v2FeatureTrigger">Staff Activity</li>
+            <li><a href="customers.html">Your Customers</a></li>
+            <li>Support</li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <!-- Page Header -->
+       <!-- Page Header -->
+<div class="content-header-wrapper">
+    <!-- Left: Logo -->
+    <div class="header-left">
+        <img id="firmLogo" src="" alt="Firm Logo">
+    </div>
+
+    <!-- Center: Title and Info -->
+    <div class="content-header">
+        <h3>You are Creating Transaction for:</h3>
+        <p><strong>Firm:</strong> <span id="firmName"></span> | <strong>FY:</strong> <span id="fy"></span></p>
+    </div>
+
+    <!-- Right: Status Options -->
+     <!-- Right: Status Options -->
+        <div class="header-right">
+            <label><strong>Default Bill Settings: (On page Load)</strong></label>
+            <div class="status-options">
+                <label><input type="radio" name="unitStatus" value="0" checked> By Quintal</label>
+                <label><input type="radio" name="unitStatus" value="1"> By Bags</label>
+                <label><input type="radio" name="unitStatus" value="2"> Both</label>
+            </div>
+        </div>
+
+</div>       
+        <!-- Form Section -->
+        <div class="transaction-wrapper">
+          <form class="form-grid" id="transactionForm">
+
+            <!-- Row 1 -->
+           
+            <div class="form-group">
+              <label>Firm ID</label>
+              <input type="text" id="firmId" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+              <label>Firm Name</label>
+              <input type="text" id="firmNameInput" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+              <label>FY</label>
+              <input type="text" id="financialYear" class="form-input" readonly>
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group"></div>
+          
+            <!-- Row 2 -->
+            <div class="form-group">
+              <label>Sauda No</label>
+              <input type="text" id="sno" class="form-input , important" readonly>
+            </div>
+            <div class="form-group">
+              <label>Billing Type</label>
+              <select  id="billingType" class="form-select">
+                <option value="0">By Quintal</option>
+                <option value="1">By Bags</option>
+                <option value="2">Both</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="date">Date</label>
+              <input type="date" id="date" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label  for="itemDropdown" >Item</label>
+              <select id="itemDropdown" class="form-select" required>
+                <option value="Paddy">Paddy</option>
+                <option value="Poha">Poha</option>
+            </select>
+            </div>
+            <div class="form-group">
+              <label for="TRate">Bhav</label>
+             <input type="text" id="TRate" class="form-input">
+            </div>
+            
+          
+            <!-- Seller Details -->
+            <div class="section-header">Seller Details</div>
+          
+            <div class="form-group">
+              <label for="stateDropdown">Seller State</label>
+              <select id="stateDropdown" class="form-select">
+                <option value="">Select State</option>
+                <option value="gj">Gujarat</option>
+                <option value="mp">Madhya Pradesh</option>
+                <option value="cg">Chhattisgarh</option>
+                <option value="rj">Rajasthan</option>
+                <option value="mh">Maharashtra</option>
+            </select>
+            </div>
+            <div class="form-group">
+              <label for="cityDropdown" >Seller City</label>
+              <select id="cityDropdown" class="form-select searchable">
+                <option value="">Select City</option>
+            </select>
+            </div>
+            <div class="form-group">
+              <label for="sellerDropdown">Seller Name</label>
+              <select id="sellerDropdown" class="form-select searchable">
+                <option value="">Select Seller</option>
+            </select>
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group"></div>
+                      <!-- Row 3: By Bags (each form-group goes into one column) -->
+                      <div class="form-group billing-by-bags hidden">
+                        <div class="section-header">Packaging basis →</div>
+                      </div>
+ 
+  <div class="form-group billing-by-bags hidden">
+    <label for="packagingDropdown">Packaging</label>
+    <select id="packagingDropdown" class="form-select" required>
+      <option selected value="Bags">Bags</option>
+      <option value="Katta">Katta</option>
+    </select>
+  </div>
+  <div class="form-group billing-by-bags hidden">
+    <label for="sellerQuantity">Bori Quantity</label>
+    <input type="number" id="sellerQuantity" class="form-input" >
+  </div>
+  <div class="form-group billing-by-bags hidden">
+    <label for="sellerPrice">S Brok Rate /Bori</label>
+    <input type="number" id="sellerPrice" class="form-input" step="any" required>
+  </div>
+  <div class="form-group billing-by-bags hidden">
+    <label for="sellerAmount">Amount</label>
+    <input type="number" id="sellerAmount" class="form-input" readonly>
+  </div>
+                        
+
+          
+ 
+  <div class="form-group billing-by-quintal hidden">
+    <div class="section-header">Quintal basis →</div>
+  </div>
+  <div class="form-group billing-by-quintal hidden">
+    <label>&nbsp;</label>
+  </div>
+  <!-- Row 4: By Quintal -->
+  <div class="form-group billing-by-quintal hidden">
+    <label for="sQuintQuantity">Quintal Quantity</label>
+    <input type="number" id="sQuintQuantity" class="form-input" />
+  </div>
+  <div class="form-group billing-by-quintal hidden">
+    <label  for="sQuintRate">Rate /Quintal</label>
+    <input type="number"  id="sQuintRate" class="form-input" value="5" step="any"/>
+  </div>
+  <div class="form-group billing-by-quintal hidden">
+    <label for="sQuintAmount">Amount</label>
+    <input type="number" id="sQuintAmount" class="form-input" readonly />
+  </div>
+            
+            
+            
+            
+            
+            <!-- Buyer Details -->
+            <div class="section-header">Buyer Details</div>
+          
+            <div class="form-group">
+              <label for="buyerStateDropdown">State</label>
+              <select id="buyerStateDropdown" class="form-select">
+                <option value="">Select State</option>
+                <option value="gj">Gujarat</option>
+                <option value="mp">Madhya Pradesh</option>
+                <option value="cg">Chhattisgarh</option>
+                <option value="rj">Rajasthan</option>
+                <option value="mh">Maharashtra</option>
+            </select>
+            </div>
+            <div class="form-group">
+              <label  for="buyerCityDropdown">City</label>
+              <select id="buyerCityDropdown" class="form-select searchable">
+                <option value="">Select City</option>
+            </select>
+            </div>
+            <div class="form-group">
+              <label for="buyerDropdown">Buyer</label>
+              <select id="buyerDropdown" class="form-select searchable">
+                <option value="">Select Buyer</option>
+            </select>
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group"></div>
+          
+       
+            <div class="form-group billing-by-bags hidden">
+              <div class="section-header"></div>
+              <div class="section-header">Packaging basis-></div>
+            </div>
+          
+            
+            <div class="form-group billing-by-bags hidden">
+              
+            </div>
+            <div class="form-group billing-by-bags hidden">
+              <label  for="buyerQuantity" >B Bori Quantity</label>
+              <input type="number" id="buyerQuantity" class="form-input" >
+            </div>
+            <div class="form-group billing-by-bags hidden">
+              <label for="buyerPrice">B Rate/ Bori</label>
+              <input type="number" id="buyerPrice" class="form-input" step="any" required>
+            </div>
+            <div class="form-group billing-by-bags hidden">
+              <label for="buyerAmount">Amount</label>
+              <input type="number" id="buyerAmount" class="form-input" readonly>
+            </div>
+          
+          
+            <div class="form-group billing-by-quintal hidden">
+              <div class="section-header"></div>
+              <div class="section-header">Quintal basis-></div>
+            </div>
+            <div class="form-group billing-by-quintal hidden"></div>
+            <div class="form-group billing-by-quintal hidden">
+              <label for="bQuintQuantity">Quintal Quantity</label>
+              <input id ="bQuintQuantity" type="number" class="form-input" />
+            </div>
+      
+
+            <div class="form-group billing-by-quintal hidden">
+              <label for="bQuintRate" >Rate / Quintal</label>
+              <input id="bQuintRate" type="number" class="form-input" value="4" />
+            </div>
+            <div class="form-group billing-by-quintal hidden">
+              <label for="bQuintAmount">Amount</label>
+              <input id="bQuintAmount"  type="number" class="form-input" readonly />
+            </div>
+          
+            <!-- Buttons -->
+            <div class="form-actions">
+              <button id="submitbtn" type="submit" class="form-btn">Submit</button>
+              <button type="reset" class="form-btn clear">Clear</button>
+            </div>
+          </form>
+          
+
+        </div>
+
+    <div class="button-container">
+        <button class="fixed-btn" id="lastTransaction">Copy Last Transaction Data</button>
+        <button class="fixed-btn" id="YourCustomers">Your Customers</button>
+        <button class="fixed-btn" id="add-city-btn" >Add City</button>
+        <button class="fixed-btn" id="edit-city-btn" >Edit City</button>
+        <button class="fixed-btn" id="add-customer-btn" >Add Customer</button>
+        <button class="fixed-btn" id="edit-txn" >All Transactions edit</button>
+      </div>
+    
+        
+    <!-- Modal for v2Feature -->
+    <div class="modal" id="dailySaudaModal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal1" id="closeModal1">&times;</button>
+            <p>
+                Thank you for showing interest in the feature.<br>
+                It will be released with version 2 in the future.<br>
+                For more inquiry, contact Manav.<br>
+                Thank you!
+            </p>
+        </div>
+    </div>
+
+
+    
+      <!-- Add City Modal -->
+<div id="add-city-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Add City</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="add-city-state">Select State:</label>
+      <select id="add-city-state">
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="add-city-name">City Name:</label>
+      <input type="text" id="add-city-name">
+    </div>
+    <div class="modal-footer1">
+      <button id="add-city-save">Save</button>
+      <button class="modal-close">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- Edit City Modal -->
+  <div id="edit-city-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Edit City</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="edit-city-state">Select State:</label>
+      <select id="edit-city-state">
+        <option value="">Select State</option>
+        <option value="mp">mp</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="edit-city-name">Select City:</label>
+      <select id="edit-city-name">
+        <!-- Future: Dynamically fetched values -->
+      </select>
+  
+      <label for="edit-city-new-state">Select New State:</label>
+      <select id="edit-city-new-state">
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="edit-city-new-name">New Updated Name:</label>
+      <input type="text" id="edit-city-new-name">
+    </div>
+    <div class="modal-footer1">
+      <button id="edit-city-save">Save</button>
+      <button class="modal-close">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- Add Customer Modal -->
+  <div id="add-customer-modal" class="modal1">
+    <div class="modal-header1">
+      <h2>Add Customer</h2>
+      <span class="modal-close">&times;</span>
+    </div>
+    <div class="modal-content1">
+      <label for="add-customer-type">Type:</label>
+      <select id="add-customer-type">
+        <option value="seller">Seller</option>
+        <option value="buyer">Buyer</option>
+      </select>
+  
+      <label for="add-customer-state">State:</label>
+      <select id="add-customer-state">
+        <option value="">Select your State</option>
+        <option value="mp">MP</option>
+        <option value="gj">GJ</option>
+        <option value="cg">CG</option>
+        <option value="rj">RJ</option>
+        <option value="mh">MH</option>
+      </select>
+  
+      <label for="add-customer-city">City:</label>
+      <select id="add-customer-city">
+        <!-- Future: Dynamically fetched values -->
+      </select>
+  
+      <label for="add-customer-name">Client Name:</label>
+      <input type="text" id="add-customer-name" required>
+  
+      <label for="add-customer-contact">Contact:</label>
+      <input type="text" id="add-customer-contact">
+  
+      <label for="add-customer-email">Email:</label>
+      <input type="email" id="add-customer-email">
+    </div>
+    <div class="modal-footer1">
+      <button id="add-customer-save">Save</button>
+      <button class="modal-close">Cancel</button>
+      <br>
+      
+    </div>
+   <center> <p>Updating Customer will update all records.</p></center>
+  </div>
+</body>
+
+</html>

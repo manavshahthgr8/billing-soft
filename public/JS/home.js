@@ -166,7 +166,18 @@ document.getElementById("firmFyForm").addEventListener("submit", async (event) =
         if (response.ok) {
             // ✅ Redirect to correct page based on action
             if (currentAction === "create") {
-                window.location.href = `internalpages/transactions.html?firmId=${firmId}&fy=${fy}`;
+                const goToNew =confirm(
+                    "✅ Password verified!\n\n" +
+                    "➡️ Click **OK** to open the **new design** (with Quintal option).\n" +
+                    "👉 नए डिज़ाइन (क्विंटल विकल्प सहित) पर जाने के लिए OK दबाएं।\n\n" +
+                    "❌ Or click **Cancel** to continue with the **old layout**.\n" +
+                    "👉 पुराने डिज़ाइन पर बने रहने के लिए Cancel दबाएं।"
+                  );
+                  
+              
+                const urlBase = goToNew ? "internalpages/newtransaction.html" : "internalpages/transactions.html";
+                window.location.href = `${urlBase}?firmId=${firmId}&fy=${fy}`;
+              
             } else if (currentAction === "transactions") {
                 window.location.href = `internalpages/editTransactions.html?firmId=${firmId}&fy=${fy}`;
             } else if (currentAction === "print") {

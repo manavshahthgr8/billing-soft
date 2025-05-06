@@ -1,0 +1,460 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.hamburger {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.welcome-text {
+    margin-left: 0px;
+    font-size: 16px;
+}
+
+.navbar-center {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar-right #currentTime {
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.navbar-right button {
+    background: white;
+    border: none;
+    color: #007bff;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar-right button:hover {
+    background: #ffffff;
+    color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: #333;
+    color: rgb(228, 196, 13);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar li:hover {
+    color: #e65614;
+}
+
+.sidebar .dropdown {
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.sidebar .dropdown li {
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.sidebar .dropdown li:hover {
+    color: rgb(241, 5, 5);
+}
+
+
+a {
+    text-decoration: none;  /* Remove underline */
+    color: inherit;         /* Use the same color as surrounding text */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+/* Transaction Form Styling */
+/* Main Grid Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px 16px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: none !important;
+}
+.billing-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+/* Each Item */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.form-input,
+.form-select {
+  padding: 3px 5px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+}
+
+/* Section Divider */
+.section-header {
+  grid-column: span 5;
+  font-size: 14px;
+  font-weight: bold;
+  padding-top: 1px;
+  color: #e72626;
+  text-align: center;
+}
+.form-static {
+  padding: 6px 4px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  text-align: center;
+  color: #444;
+}
+
+
+
+/* Buttons */
+.form-actions {
+  grid-column: span 5;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 0px;
+}
+
+.form-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+}
+
+.form-btn.clear {
+  background: #888;
+}
+.transaction-wrapper {
+  max-width: 1350px;
+  margin: 10px 50px 0px 50px;
+  padding: 10px 32px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  box-shadow: 0 0 10px rgba(0,0,0,0.04);
+}
+
+
+  
+
+  .important {
+    color: rgb(0, 102, 255);
+    font-weight: bold;
+}
+  
+  
+  
+  .sauda-display {
+    display: inline-block;
+    font-weight: bold;
+    color: red;
+    font-size: 15px;
+    padding: 4px 6px;
+  }
+  
+  .form-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #2d89ef;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+  }
+  
+  .form-btn.clear {
+    background-color: #c0392b;
+  }
+  
+  .small-top-margin {
+    margin-top: 0 !important;
+    font-size: 14px;
+  }
+  
+
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .form-full {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-full {
+        grid-column: span 1;
+    }
+}
+
+/* Page Header Container */
+.content-header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    border-bottom: 1px solid #ccc;
+}
+
+/* Center Section Styling (Your Existing Style) */
+.content-header {
+    text-align: center;
+    flex: 2;
+}
+
+.content-header h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+/* Left Logo */
+.header-left {
+    flex: 1;
+    text-align: left;
+}
+
+.header-left img {
+    height: 50px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Right Radio Buttons */
+/* Right Section */
+.header-right {
+    flex: 1;
+    text-align: right;
+    font-size: 14px;
+}
+
+.header-right .status-options {
+    margin-top: 5px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.header-right .status-options label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+
+/* Separator Line */
+.separator-line {
+    width: 100%;
+    height: 2px;
+    background-color: #ddd;
+    margin: 0px 0;
+}
+select {
+    color: black !important; /* Ensure text color is visible */
+    background-color: white !important; /* Ensure dropdown is visible */
+}
+option {
+    color: black !important; /* Ensure option text is visible */
+}
+
+
+.button-container {
+    position: fixed;
+    bottom: 5px;
+    right: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  /* Styling only these buttons */
+  .fixed-btn {
+    padding: 5px 5px;
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.3s;
+  }
+
+  .fixed-btn1 {
+    padding: 5px 5px;
+    background-color: rgb(241, 241, 243);
+    color: rgb(34, 32, 32);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.3s;
+  }
+  .fixed-btn1:hover {
+    background-color: rgb(78, 78, 78);
+  }
+
+  .fixed-btn:hover {
+    background-color: darkblue;
+  }
+
+  .dropdown-up {
+    position: relative;
+    bottom: 50px;
+}
+
+
+.modal1 {
+    width: 35%;
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #d6d4d4;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    z-index: 1000;
+  }
+
+  .modal-header1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-close {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .modal-content1 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-footer1 {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 10px;
+    flex-wrap: wrap;
+  }

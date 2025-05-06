@@ -666,7 +666,7 @@ app.post("/financial-years", (req, res) => {
           // ✅ Now safely create the transactions table
           createTransactionsTable(startYear);
 
-          res.json({ id: this.lastID, startYear, endYear });
+          res.json({ success:true, id: this.lastID, startYear, endYear , message: "Status : Created" });
       }
   );
 });
@@ -882,23 +882,34 @@ app.get("/buyers/city/:city_name", (req, res) => {
 
 
 // 📌 Add a Transaction
+// 📌 Add a Transaction
 app.post("/transactions/:fy", (req, res) => {
     const { fy } = req.params;
-    const { sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, payment_status } = req.body;
 
-    // 🛑 Validate required fields before proceeding
-    if (!firm_id || !financial_year || !seller_id || !buyer_id || !date || !item || !packaging || !qty || !bhav || !seller_rate || !buyer_rate || !payment_status) {
+    // 🛑 Destructure all expected fields from request body
+    const {
+        sno, firm_id, financial_year, seller_id, buyer_id, date,
+        item, packaging,
+        S_QuintQty, B_QuintQty, S_QuintRate, B_QuintRate,
+        S_QuintAmount, B_QuintAmount,
+        qty, bqty, bhav, seller_rate, buyer_rate,
+        seller_amount, buyer_amount,
+        payment_status
+    } = req.body;
+
+    // ✅ Validate key required fields (you can expand this further as needed)
+    if (!firm_id || !financial_year || !seller_id || !buyer_id || !date || !item || !payment_status) {
         return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    // 💡 Ensure table name is safe (Prevents SQL injection)
+    // 💡 Validate financial year table name
     if (!/^transactions_FY\d{4}$/.test(`transactions_FY${fy}`)) {
         return res.status(400).json({ success: false, message: "Invalid financial year format." });
     }
 
-    const tableName = `transactions_FY${fy}`;  // ✅ Define table name early
+    const tableName = `transactions_FY${fy}`;
 
-    // ✅ Check for duplicates by sno + firm_id
+    // ✅ Check for duplicates
     const checkDuplicateSql = `SELECT COUNT(*) AS count FROM ${tableName} WHERE sno = ? AND firm_id = ?`;
 
     db.get(checkDuplicateSql, [sno, firm_id], (err, row) => {
@@ -909,26 +920,36 @@ app.post("/transactions/:fy", (req, res) => {
 
         if (row.count > 0) {
             console.warn(`⚠️ Duplicate transaction detected for SNO: ${sno}, Firm ID: ${firm_id}`);
-            return res.status(409).json({ 
-                success: false, 
-                message: `Duplicate transaction detected for SNO: ${sno} in Firm ID: ${firm_id}` 
+            return res.status(409).json({
+                success: false,
+                message: `Duplicate transaction detected for SNO: ${sno} in Firm ID: ${firm_id}`
             });
         }
 
-        // 💰 Calculate Amounts
-        const seller_amount = qty * seller_rate;
-        const buyer_amount = bqty * buyer_rate;
-
-        // 📌 Insert Query
-        const sql = `
-            INSERT INTO ${tableName} 
-            (sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        // 🧾 Insert Transaction
+        const insertSql = `
+            INSERT INTO ${tableName} (
+                sno, firm_id, financial_year, seller_id, buyer_id, date,
+                item, packaging,
+                S_QuintQty, B_QuintQty, S_QuintRate, B_QuintRate,
+                S_QuintAmount, B_QuintAmount,
+                qty, bqty, bhav, seller_rate, buyer_rate,
+                seller_amount, buyer_amount,
+                payment_status, Seller_Billed, Buyer_Billed
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Not', 'Not')
         `;
 
-        const values = [sno, firm_id, financial_year, seller_id, buyer_id, date, item, packaging, qty, bqty, bhav, seller_rate, buyer_rate, seller_amount, buyer_amount, payment_status];
+        const values = [
+            sno, firm_id, financial_year, seller_id, buyer_id, date,
+            item, packaging,
+            S_QuintQty, B_QuintQty, S_QuintRate, B_QuintRate,
+            S_QuintAmount, B_QuintAmount,
+            qty, bqty, bhav, seller_rate, buyer_rate,
+            seller_amount, buyer_amount,
+            payment_status
+        ];
 
-        db.run(sql, values, function (err) {
+        db.run(insertSql, values, function (err) {
             if (err) {
                 console.error("🚨 Error inserting transaction:", err.message);
                 return res.status(500).json({ success: false, error: err.message });
@@ -938,6 +959,7 @@ app.post("/transactions/:fy", (req, res) => {
         });
     });
 });
+
 
 
 
@@ -1696,6 +1718,40 @@ app.post("/api/transactions/markBilled", async (req, res) => {
         console.error("Error updating transactions:", error);
         res.status(500).json({ error: "Failed to update transactions." });
     }
+});
+
+// 📌 GET Setting by ID
+app.get("/api/settings/:id", (req, res) => {
+    const id = req.params.id;
+    db.get("SELECT * FROM settings WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            console.error("❌ Error fetching setting:", err.message);
+            return res.status(500).json({ error: "Database error" });
+        }
+        if (!row) return res.status(404).json({ error: "Setting not found" });
+        res.json(row);
+    });
+});
+
+// 📌 UPDATE Setting by ID
+app.post("/api/settings/:id", (req, res) => {
+    const id = req.params.id;
+    const newValue = req.body.value;
+
+    db.run(
+        "UPDATE settings SET value = ? WHERE id = ?",
+        [newValue, id],
+        function (err) {
+            if (err) {
+                console.error("❌ Error updating setting:", err.message);
+                return res.status(500).json({ error: "Database error" });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Setting not found" });
+            }
+            res.json({ success: true, message: "Setting updated" });
+        }
+    );
 });
 
 // Correct path to billing.db
