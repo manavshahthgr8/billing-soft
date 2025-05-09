@@ -9,11 +9,11 @@ db.run(
     [
         'Manav Brokers',          // firm_name
         '123456789',         // account_no
-        '9425918012',        // mobile_no
+        '9',        // mobile_no
         'ABCD123456',        // ifsc_no
         '22ABCDE1234FZ1',    // pan_no
         'IDFC',               // bank_name
-        '32, Bhaktnagar Ujjain', // address
+        '', // address
         'Hetal Shah',             // proprietor
         'firm3@xyz.com'      // email
     ],

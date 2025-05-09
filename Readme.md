@@ -1,7 +1,9 @@
 # Billing Software
 
 ## Overview
-This project is a billing software application designed to manage and streamline the billing process for businesse of client having 3 firm. It provides features such as invoice generation, customer management, and payment tracking. This is a personal project made public temporarily.
+This project is a billing software application designed to manage and streamline the billing process for businesse of client having 3 firm. It provides features such as invoice generation, customer management, and payment tracking. 
+
+This is a personal project done for a client made public temporarily.Any wrong usage will be subject to actions.
 
 Few manage modules like delete firm or add item is made static to prevent customer distribution
 
@@ -20,13 +22,13 @@ You can use ElectronJs or Bat script to launch server and open it in default bro
     ```
 3. Install dependencies:
     ```bash
-    npm install
+    npm install 
     ```
 
 ## Usage
 1. Start the application:
     ```bash
-    npm start
+    npm start // bat // // node server .js  
     ```
 2. Open your browser and navigate to `http://localhost:3000`.
 
