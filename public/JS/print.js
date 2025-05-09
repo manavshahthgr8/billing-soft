@@ -204,6 +204,8 @@ async function fetchAllBillingStatuses() {
                     billingStatusMap[customerId] = {
                         billedAmount: data.billedAmount,
                         unbilledAmount: data.unbilledAmount,
+                        billedQtl: data.QtlBilledAmount,
+                        unbilledQtl: data.QtlUnbilledAmount,
                         billedTxnCount: data.billedTxnCount,
                         unbilledTxnCount: data.unbilledTxnCount
                     };
@@ -253,8 +255,10 @@ function renderCustomers() {
                 <th>Customer Name</th>
                 <th>Location</th>
                 <th>Category</th>
-                <th>Billed Amount</th>
-                <th>Unbilled Amount</th>
+                <th>Billed Amnt (Bori)</th>
+                <th>Unbilled Amnt (Bori)</th>
+                <th>Billed Amnt (Qtl)</th>
+                <th>Unbilled Amnt (Qtl)</th>
                 <th>Billed Txn</th>
                 <th>Unbilled Txn</th>
                 <th>Action</th>
@@ -270,6 +274,8 @@ function renderCustomers() {
         const customerId = customer.customer_id;
         const billing = billingStatusMap[customerId] || {
             billedAmount: "Loading...",
+            billedQtl: "Loading...",
+            unbilledQtl: "Loading...",
             unbilledAmount: "Loading...",
             billedTxnCount: "Loading...",
             unbilledTxnCount: "Loading..."
@@ -283,6 +289,8 @@ function renderCustomers() {
             <td>${customer.category.charAt(0).toUpperCase() + customer.category.slice(1)}</td>
             <td>${billing.billedAmount}</td>
             <td>${billing.unbilledAmount}</td>
+            <td>${billing.billedQtl}</td>
+            <td>${billing.unbilledQtl}</td>
             <td>${billing.billedTxnCount}</td>
             <td>${billing.unbilledTxnCount}</td>
             <td><button class="print-bill-btn" data-id="${customerId}">View, Print</button></td>

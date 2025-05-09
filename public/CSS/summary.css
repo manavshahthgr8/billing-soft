@@ -18,6 +18,31 @@ body {
     padding: 5px 10px;
 }
 
+.print-options-inline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    margin: 0px 0px 2px 0px;
+}
+
+.print-options-inline label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+}
+
+.print-options-inline .label-title {
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
 .navbar-left,
 .navbar-center,
 .navbar-right {

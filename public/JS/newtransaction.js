@@ -673,7 +673,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (submitType === "0") { // Quintal based submission
 			// 🛑 Ensure required fields are filled
 			if (!transactionData.seller_id || !transactionData.bhav || !transactionData.buyer_id || !transactionData.date || !transactionData.item || !transactionData.S_QuintQty || !transactionData.S_QuintRate || !transactionData.B_QuintQty || !transactionData.B_QuintRate) {
-				alert("⚠️ Please fill in all required fields.");
+				alert("⚠️ Please fill in all required fields. \n Your Bill Type: By Quintal");
 				isSubmitting = false; // Unlock
 				return;
 			}
@@ -683,7 +683,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}else if (submitType === "1") { // Bags based submission
 			// 🛑 Ensure required fields are filled
 			if (!transactionData.seller_id || !transactionData.bhav || !transactionData.buyer_id || !transactionData.date || !transactionData.item || !transactionData.qty || !transactionData.bqty || !transactionData.seller_rate || !transactionData.buyer_rate) {
-				alert("⚠️ Please fill in all required fields.");
+				alert("⚠️ Please fill in all required fields. \n Your Bill Type: By Bori");
 				isSubmitting = false; // Unlock
 				return;
 			}
@@ -692,7 +692,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}else if (submitType === "2") { // Both types submission
 			// 🛑 Ensure required fields are filled
 		if (!transactionData.seller_id || !transactionData.bhav || !transactionData.buyer_id || !transactionData.date || !transactionData.item || !transactionData.qty || !transactionData.seller_rate || !transactionData.buyer_rate || !transactionData.S_QuintQty || !transactionData.S_QuintRate || !transactionData.B_QuintQty || !transactionData.B_QuintRate) {
-			alert("⚠️ Please fill in all required fields.");
+			alert("⚠️ Please fill in all required fields. \n Your Bill Type: Both (Quintal & Bori )");
 			isSubmitting = false; // Unlock
 			return;
 		}
@@ -861,6 +861,12 @@ try {
 				document.getElementById("buyerPrice").value = txn.buyer_rate;
 				document.getElementById("sellerAmount").value = txn.seller_amount;
 				document.getElementById("buyerAmount").value = txn.buyer_amount;
+				document.getElementById("sQuintQuantity").value = txn.S_QuintQty;
+				document.getElementById("bQuintQuantity").value = txn.B_QuintQty;
+				document.getElementById("sQuintRate").value = txn.S_QuintRate;
+				document.getElementById("bQuintRate").value = txn.B_QuintRate;
+				document.getElementById("sQuintAmount").value = txn.S_QuintAmount;
+				document.getElementById("bQuintAmount").value = txn.B_QuintAmount;
 
 				document.getElementById("date").focus();
 			}
@@ -871,26 +877,55 @@ try {
 
 
 	//new code
-	const fields = ["date", "sellerDropdown", "buyerDropdown", "sellerQuantity", "TRate", "packagingDropdown", "submitbtn"];
+	const allFields = [
+		"date", "sellerDropdown", "buyerDropdown", "itemDropdown",
+		"TRate", "sellerQuantity", "packagingDropdown", "sQuintQuantity", "submitbtn"
+	];
+	
 	let currentIndex = 0;
 	let dropdownOpened = false;
 	let submitPressedOnce = false;
+	
+	// billingTypeSelect = 0 
+	// billingTypeSelect = 1 
+	let billingTypeSelect1 = parseInt(document.getElementById("billingType").value);
 
+document.getElementById("billingType").addEventListener("change", function () {
+	billingTypeSelect1 = parseInt(this.value);
+	currentIndex = 0; // Optional: reset form flow
+	document.getElementById(getFieldsByBillingType()[0]).focus();
+});
+
+	function getFieldsByBillingType() {
+		if (billingTypeSelect1 === 0) {
+			//console.log("Billing Type: By Quintal");
+			return allFields.filter(id => !["sellerQuantity", "packagingDropdown"].includes(id));
+		} else if (billingTypeSelect1 === 1) {
+			return allFields.filter(id => ![ "sQuintQuantity"].includes(id));
+		}
+		return allFields;
+	}
+	
 	function focusNextField() {
+		const fields = getFieldsByBillingType();
 		currentIndex++;
 		if (currentIndex < fields.length) {
 			let nextField = document.getElementById(fields[currentIndex]);
-			nextField.focus();
-			dropdownOpened = false;
+			if (nextField) {
+				nextField.focus();
+				dropdownOpened = false;
+			}
 		}
 	}
-
+	
 	document.addEventListener("keydown", function(event) {
 		if (event.key === "Enter") {
 			event.preventDefault();
-
+			const fields = getFieldsByBillingType();
 			let currentField = document.getElementById(fields[currentIndex]);
-
+	
+			if (!currentField) return;
+	
 			if (currentField.tagName === "SELECT") {
 				if (!dropdownOpened) {
 					currentField.focus();
@@ -912,11 +947,11 @@ try {
 				if (!submitPressedOnce) {
 					submitPressedOnce = true;
 				} else {
-					submitTransactionForm(); // Call the new function on second Enter
+					submitTransactionForm(); // Call your submit logic
 					setTimeout(() => {
 						submitPressedOnce = false;
 						currentIndex = 0;
-						document.getElementById(fields[0]).focus();
+						document.getElementById(getFieldsByBillingType()[0]).focus();
 					}, 500);
 				}
 			} else {
@@ -924,34 +959,40 @@ try {
 			}
 		}
 	});
-
-	// Dropdown auto-focus logic
-	fields.forEach(id => {
+	
+	// Setup dropdown behavior
+	allFields.forEach(id => {
 		let field = document.getElementById(id);
 		if (field && field.tagName === "SELECT") {
 			field.addEventListener("change", function() {
 				dropdownOpened = true;
 			});
-
+	
 			field.addEventListener("blur", function() {
-				dropdownOpened = false;
-				field.size = 1;
-				field.classList.remove("dropdown-up");
+				setTimeout(() => {
+					dropdownOpened = false;
+					field.size = 1;
+					field.classList.remove("dropdown-up");
+				}, 100);
 			});
 		}
 	});
-
-	// Auto-detect last focused field
-	fields.forEach((id, index) => {
+	
+	// Track focus for accurate currentIndex
+	allFields.forEach((id, index) => {
 		let field = document.getElementById(id);
 		if (field) {
 			field.addEventListener("focus", function() {
-				currentIndex = index;
+				const currentFields = getFieldsByBillingType();
+				let i = currentFields.indexOf(id);
+				if (i !== -1) currentIndex = i;
 			});
 		}
 	});
-
-	document.getElementById(fields[0]).focus();
+	
+	// Initial focus
+	document.getElementById(getFieldsByBillingType()[0]).focus();
+	
 
 
 	//open modal based on button footer button

@@ -167,23 +167,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 transactionBody.innerHTML = ""; // Clear existing data
                 
                 let totalAmount = 0;
+                let totalAmountQuint = 0; // Initialize totalAmountQuint
     
                 data.transactions.forEach(txn => {
                     totalAmount += parseFloat(txn.amount);
+                    totalAmountQuint += parseFloat(txn.fQuintAmount); // Add to totalAmountQuint
     
                     const row = `
                         <tr>
                             <td>${txn.transaction_id}</td>
                             <td>${txn.sno}</td>
                             <td>${txn.date}</td>
-                           <td><div class="scroll-cell" title="${txn.seller_name}">${txn.seller_name}</div></td> <!-- (${txn.seller_city}) Showing city in brackets -->
-                            <td><div class="scroll-cell" title="${txn.buyer_name}">${txn.buyer_name}</div></td> <!--  (${txn.buyer_city})Showing city in brackets -->
+                           <td><div class="scroll-cell" title="${txn.seller_name}, ${txn.seller_city}">${txn.seller_name}</div></td> <!-- commented out (${txn.seller_city}) Showing city in brackets -->
+                            <td><div class="scroll-cell" title="${txn.buyer_name}, ${txn.buyer_city}">${txn.buyer_name}</div></td> <!--  (${txn.buyer_city})Showing city in brackets -->
                             <td>${txn.transactionType}</td>
                             <td>${txn.item}</td>
-                            <td>${txn.fqty}</td>
                             <td>${txn.bhav}</td>
+
+                            <td>${txn.fqty}</td>
                             <td>${txn.brokerageRate}</td>
                             <td>₹${txn.amount.toFixed(2)}</td>
+
+                            
+                            <td>${txn.fQuintQty}</td> <!-- Showing quantity in quintals -->
+                            <td>${txn.fQuintRate}</td> <!-- Showing brokerage in rupees -->
+                            <td>₹${txn.fQuintAmount}</td> <!-- Showing brokerage rate in rupees --> 
+
+
                             <td><input type="checkbox" class="txn-checkbox" value="${txn.transaction_id}"></td>
 
                             
@@ -198,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
     
                 document.getElementById("totalAmount").textContent = totalAmount.toFixed(2);
+                document.getElementById("totalAmountQuint").textContent = totalAmountQuint.toFixed(2); // Update totalAmountQuint
             }
         } catch (error) {
             console.error("Error fetching transactions:", error);
@@ -238,6 +249,8 @@ async function generatePDF(action) {
     await fetchCustomerDetails();
 
     const printType = document.querySelector('input[name="printType"]:checked').value;
+    const BillType = document.querySelector('input[name="BillType"]:checked').value;
+
     const fyDisplay = `${financialYear} - ${financialYear + 1}`;
     const headerText = printType === "1" 
         ? `${firmName} Statement | FY ${fyDisplay}` 
@@ -289,8 +302,8 @@ async function generatePDF(action) {
         ? ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"]
         : ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
     let colWidths = printType === "1"
-        ? [9, 8, 20, 52, 24, 10, 12, 12, 10, 10, 10, 18]
-        : [9, 8, 20, 52, 24, 15, 13, 12, 10, 14, 3, 18];
+        ? [9, 8, 20, 52, 22, 10, 12, 12, 10, 15, 10, 18]
+        : [9, 8, 20, 52, 22, 15, 13, 12, 10, 14, 3, 18];
 
     const fitText = (doc, text, maxWidth) => {
         if (doc.getTextWidth(text) <= maxWidth) return text;
@@ -329,11 +342,13 @@ async function generatePDF(action) {
         const row = checkbox.closest("tr").querySelectorAll("td");
         let txnType = row[5].textContent.trim();
         let party = txnType === "Purchased" ? row[3].textContent.trim() : row[4].textContent.trim();
-        let city = txnType === "Purchased" ? row[12].textContent.trim() : row[13].textContent.trim();
+        let city = txnType === "Purchased" ? row[15].textContent.trim() : row[16].textContent.trim();
         party = fitText(doc, party, colWidths[3] - 2);
         city = fitText(doc, city, colWidths[4] - 2);
 
-        let amount = parseFloat(row[10].textContent.replace("₹", "").trim());
+        let pkg1 = BillType ==="0"? row[17].textContent.trim() : "Quintal";
+
+        let amount = BillType ==="0"? parseFloat(row[10].textContent.replace("₹", "").trim()) : parseFloat(row[13].textContent.replace("₹", "").trim());
         totalAmount += amount;
 
         selectedTransactions.push({
@@ -342,12 +357,14 @@ async function generatePDF(action) {
             date: row[2].textContent.trim(),
             party: party,
             city: city,
-            type: txnType === "Purchased" ? "Buy" : "Sell",
+            type: txnType === "Purchased" ? "Buy" : txnType === "Sold" ? "Sell" : "N/A",
             item: row[6].textContent.trim(),
-            bhav: row[8].textContent.trim(),
-            qty: row[7].textContent.trim(),
-            pkg: row[14].textContent.trim(),
-            rate: printType === "1" ? row[9].textContent.trim() : " ",
+            bhav: row[7].textContent.trim(),
+            qty: BillType==="0"? row[8].textContent.trim() : row[11].textContent.trim(), // Showing quantity in quintals
+            pkg: pkg1,
+            rate: printType === "1"
+            ? (BillType === "1" ? row[12].textContent.trim() : row[9].textContent.trim())
+            : " ",
             amount: amount.toFixed(2)
         });
     });
@@ -433,6 +450,10 @@ async function generatePDF(action) {
     doc.text(`${firmName} | FY ${fyDisplay} | ${customerName} ${printType === "1" ? 'Statement' : 'Invoice'}`, footerX, footerY);
     doc.text(`Page ${pageNumber}`, 170, footerY);
 
+    const baseType = BillType === "1" ? "Quintal Se" : "Bori Se";
+    const oppositeType = BillType === "1" ? "Bori Se" : "Quintal Se";
+    
+    alert(`PDF generated successfully! \n\nPress OK to preview or download the PDF.\n\n 📌 You have printed Bill (${baseType}). Kuch entry (${oppositeType}) se ho sakti hai , so verify manually to avoid 0 amount`);
     if (action === "preview") {
         window.open(doc.output("bloburl"), "_blank");
     } else if (action === "download") {
@@ -490,18 +511,6 @@ async function markTransactionsAsBilled() {
 
 // Attach event listener
 
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     document.getElementById("backButton").addEventListener("click", function () {
         if (document.referrer) {

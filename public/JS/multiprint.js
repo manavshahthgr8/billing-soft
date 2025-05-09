@@ -150,8 +150,10 @@ function renderCustomers(customers) {
                 <th>Customer Name</th>
                 <th>Location</th>
                 <th>Category</th>
-                <th>Billed Amount</th>
-                <th>Unbilled Amount</th>
+                <th>Billed Amnt (Bori)</th>
+                <th>Unbilled Amnt (Bori)</th>
+                <th>Billed Amnt (Qtl)</th>
+                <th>Unbilled Amnt (Qtl)</th>
                 <th>Billed Txn</th>
                 <th>Unbilled Txn</th>
             </tr>
@@ -169,6 +171,8 @@ function renderCustomers(customers) {
             <td>${customer.category ? customer.category.charAt(0).toUpperCase() + customer.category.slice(1) : "Unknown"}</td>
             <td id="billed-${customer.customer_id}">Loading...</td>
             <td id="unbilled-${customer.customer_id}">Loading...</td>
+            <td id="billed-qtl-${customer.customer_id}">Loading...</td>
+            <td id="unbilled-qtl-${customer.customer_id}">Loading...</td>
             <td id="billed-txn-${customer.customer_id}">Loading...</td>
             <td id="unbilled-txn-${customer.customer_id}">Loading...</td>
         `;
@@ -190,6 +194,8 @@ async function fetchBillingStatus(customerId) {
         if (data.success) {
             document.getElementById(`billed-${customerId}`).textContent = data.billedAmount;
             document.getElementById(`unbilled-${customerId}`).textContent = data.unbilledAmount;
+            document.getElementById(`billed-qtl-${customerId}`).textContent = data.QtlBilledAmount;
+            document.getElementById(`unbilled-qtl-${customerId}`).textContent = data.QtlUnbilledAmount;
             document.getElementById(`billed-txn-${customerId}`).textContent = data.billedTxnCount;
             document.getElementById(`unbilled-txn-${customerId}`).textContent = data.unbilledTxnCount;
         } else {
@@ -393,6 +399,7 @@ async function fetchBillId(customerId, financialYear) {
 async function generateCustomerPDF(doc, customerId, transactions, firmDetails, customerDetails) {
     // Determine print type (Statement or Invoice)
     const printType = document.querySelector('input[name="printType"]:checked').value;
+    const BillType = document.querySelector('input[name="BillType"]:checked').value;
     const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
     const headerText = printType === "1" 
         ? `${firmDetails.firmName} Statement | FY ${fyDisplay} ` 
@@ -428,6 +435,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
     const billId = await fetchBillId(customerId, fy); 
     if (!billId) {
         console.warn(`⚠️ No Bill ID found for customer ${customerId}`);
+        alert("No Bill ID found for this customer. Please check the database.");
         return;
     }
 
@@ -498,7 +506,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
 
     if (printType === "1") {
         headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"];
-        colWidths = [9, 8, 20, 52, 24, 10, 12, 10, 10,10 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
+        colWidths = [9, 8, 20, 52, 22, 10, 12, 10, 10,14 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
     } else {
         headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
         colWidths = [9, 8, 20, 52, 24, 15, 13, 12, 10,14, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
@@ -574,6 +582,9 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
         values.push(includeTid ? (txn.transaction_id || "N/A") : "-");
         values.push(includeSno ? (txn.sno || "N/A") : "-");
 
+        let pkg = BillType ==="0"? txn.packaging : "Quintal";
+        let qty = BillType ==="0"? txn.fqty : txn.fQuintQty ;
+
         values.push(
             txn.date || "N/A",
             fitText(doc, party, colWidths[3] - 2),    // ✅ Apply ellipsis only to Party name
@@ -581,12 +592,12 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
             txnType,                        // Leave pkg as-is
             txn.item || "N/A",                         // Leave item as-is
             txn.bhav || "0",                           // Swapped order: Bhav now comes first
-            txn.fqty || "0",
-            txn.packaging || "N/A",  
+            qty || "0",
+            pkg,  
         );           
-        values.push( printType === "1" ?txn.brokerageRate || "0": "  " );               // Swapped order: Qty now comes second
+        values.push( printType === "1" ?(BillType === "1" ? txn.fQuintRate : txn.brokerageRate): "  " );               // Swapped order: Qty now comes second
             values.push(
-        parseFloat(txn.amount || 0).toFixed(2)
+        parseFloat(BillType === "1" ? txn.fQuintAmount : txn.amount).toFixed(2)
         );
 
         values.forEach((value, i) => {
@@ -596,7 +607,7 @@ async function generateCustomerPDF(doc, customerId, transactions, firmDetails, c
             colX += colWidths[i];
         });
 
-        totalAmount += parseFloat(txn.amount || 0);
+        totalAmount += parseFloat(BillType === "1" ? txn.fQuintAmount : txn.amount) || 0;
         rowY += rowHeight;
     });
 

@@ -210,37 +210,61 @@ a {
 }
 
 
-/* 📄 Table Container with Side Margins */
-.table-container {
-    width: 95%;  /* Reduce width to give side margins */
-    max-width: 1200px; /* Prevent stretching too wide on big screens */
-    margin: 20px auto;
+/* 🌐 Table Container for Scroll Fallback */
+.table-wrapper {
     overflow-x: auto;
-    padding: 10px;
+    max-width: 100%;
 }
 
-/* 📊 Responsive Table */
+/* 📊 Base Table Styling */
 .transaction-table {
     width: 100%;
     border-collapse: collapse;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    table-layout: auto; /* Keep dynamic layout for non-fixed columns */
+    table-layout: fixed;
 }
 
 /* 🧱 General Cell Styling */
 .transaction-table th,
 .transaction-table td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 4px 1px 4px 2px;
     text-align: center;
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
 }
 
-/* 🌈 Table Header Styling */
-.transaction-table th {
+.transaction-table td:nth-child(9),
+.transaction-table td:nth-child(10),
+.transaction-table td:nth-child(11) {
+    background-color: #f3dea39f;
+  }
+
+.transaction-table td:nth-child(12),
+.transaction-table td:nth-child(13),
+.transaction-table td:nth-child(14) {
+    background-color: #8bfa695e;
+  }
+  
+
+
+
+
+/* 🎨 Sub-header Styling */
+.transaction-table thead tr:not(.group-header) th {
     background: #007bff;
     color: white;
+}
+
+/* 🎯 Group Header Row */
+.transaction-table .group-header th {
+    background-color: #343a40;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 /* 🌓 Alternate Row Colors */
@@ -253,22 +277,32 @@ a {
 }
 
 /* 🧭 Fixed Width for Seller/Buyer Columns */
-.transaction-table th:nth-child(4),  /* Seller */
+.transaction-table th:nth-child(4),
 .transaction-table td:nth-child(4),
-.transaction-table th:nth-child(5),  /* Buyer */
+.transaction-table th:nth-child(5),
 .transaction-table td:nth-child(5) {
-    max-width: 280px;
-    min-width: 280px;
+    max-width: 200px;
+    min-width: 160px;
 }
 
 .scroll-cell {
-    max-width: 280px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
     cursor: help;
 }
+
+/* 📱 Responsive Adjustments */
+@media screen and (max-width: 1200px) {
+    .transaction-table th,
+    .transaction-table td {
+        font-size: 12px;
+        padding: 4px;
+    }
+}
+
 
 
 /* 🌀 Scrollable Cell Content 
@@ -289,6 +323,30 @@ a {
     background-color: #888;
     border-radius: 2px;
 }*/
+.print-options-inline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.print-options-inline label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+}
+
+.print-options-inline .label-title {
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
 
 
 
@@ -299,15 +357,21 @@ a {
     margin-right: 5%;
 }
 
-/* 💰 Total Section */
-.total-container {
+.total-section {
     width: 95%;
     max-width: 1200px;
     margin: 20px auto;
     font-size: 18px;
     font-weight: bold;
     text-align: right;
+    line-height: 1.8; /* improves spacing between lines */
 }
+
+.total-section strong {
+    display: inline-block;
+    min-width: 240px; /* aligns amounts nicely */
+}
+
 .button-container {
     display: flex;
     justify-content: center; /* Centers buttons horizontally */

@@ -985,6 +985,12 @@ app.get("/transactions", (req, res) => {
   t.date, 
   t.item, 
   t.packaging, 
+  t.S_QuintQty,
+  t.B_QuintQty,
+    t.S_QuintRate,
+    t.B_QuintRate,
+    t.S_QuintAmount,
+    t.B_QuintAmount,
   t.qty,
   t.bqty, 
   t.bhav,
@@ -1083,7 +1089,8 @@ app.get("/filteredTransactions", (req, res) => {
     const sql = `
         SELECT 
             t.transaction_id, t.firm_id, t.sno, t.financial_year, t.date, t.item, t.packaging, t.qty, t.bqty, t.bhav, 
-            t.seller_rate, t.buyer_rate, t.seller_amount, t.buyer_amount, t.payment_status,
+            t.seller_rate, t.buyer_rate, t.seller_amount, t.buyer_amount, t.payment_status,t.S_QuintQty, t.B_QuintQty, t.S_QuintRate, t.B_QuintRate,
+            t.S_QuintAmount, t.B_QuintAmount,
             seller.client_name AS seller_name, seller.state AS seller_state, seller.city AS seller_city, seller.category AS seller_category,
             buyer.client_name AS buyer_name, buyer.state AS buyer_state, buyer.city AS buyer_city, buyer.category AS buyer_category
         FROM ${tableName} t
@@ -1144,6 +1151,12 @@ app.get("/api/customer-transactions", (req, res) => {
             strftime('%d-%m-%Y', t.date) AS date,     -- ✅ Formatted date
             t.item, 
             t.packaging, 
+            t.S_QuintQty,
+            t.B_QuintQty,
+            t.S_QuintRate,
+            t.B_QuintRate,
+            t.S_QuintAmount,
+            t.B_QuintAmount,
             t.qty,
             t.bqty, 
             t.bhav,
@@ -1180,23 +1193,35 @@ app.get("/api/customer-transactions", (req, res) => {
             let amount = txn.seller_amount;
             let billedStatus = txn.Buyer_Billed;  
             let fqty = txn.qty;
+            let fQuintQty = txn.S_QuintQty;
+            let fQuintRate = txn.S_QuintRate;
+            let fQuintAmount = txn.S_QuintAmount;
 
             if (txn.seller_id == customer_id && txn.buyer_id == customer_id) {
                 transactionType = "Not Applicable";
                 billedStatus = txn.Buyer_Billed;
                 fqty = txn.qty;
+                fQuintQty = txn.S_QuintQty;
+                fQuintRate = txn.S_QuintRate;
+                fQuintAmount = txn.S_QuintAmount;
             } else if (txn.seller_id == customer_id) {
                 transactionType = "Sold";
                 brokerageRate = txn.seller_rate;
                 amount = txn.seller_amount;
                 billedStatus = txn.Seller_Billed;
                 fqty = txn.qty;
+                fQuintQty = txn.S_QuintQty;
+                fQuintRate = txn.S_QuintRate;
+                fQuintAmount = txn.S_QuintAmount;
             } else if (txn.buyer_id == customer_id) {
                 transactionType = "Purchased";
                 brokerageRate = txn.buyer_rate;
                 amount = txn.buyer_amount;
                 billedStatus = txn.Buyer_Billed;
                 fqty = txn.bqty;
+                fQuintQty = txn.B_QuintQty;
+                fQuintRate = txn.B_QuintRate;
+                fQuintAmount = txn.B_QuintAmount;
             }
 
             // ✅ Force format date again in JS as a failsafe 
@@ -1213,6 +1238,9 @@ app.get("/api/customer-transactions", (req, res) => {
                 brokerageRate,
                 amount,
                 fqty,
+                fQuintQty,
+                fQuintAmount,
+                fQuintRate,
                 billedStatus
             };
         });
@@ -1234,109 +1262,101 @@ app.get("/api/customer-billing-status", (req, res) => {
 
     const sql = `
         SELECT 
-            -- Seller Billed Amount
-            SUM(CASE 
-                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' 
-                THEN t.seller_amount ELSE 0 
-            END) AS seller_billed,
+            -- Seller Billed/Unbilled
+            SUM(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' THEN t.seller_amount ELSE 0 END) AS seller_billed,
+            SUM(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' THEN t.seller_amount ELSE 0 END) AS seller_unbilled,
 
-            -- Seller Unbilled Amount
-            SUM(CASE 
-                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' 
-                THEN t.seller_amount ELSE 0 
-            END) AS seller_unbilled,
+            -- Buyer Billed/Unbilled
+            SUM(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN t.buyer_amount ELSE 0 END) AS buyer_billed,
+            SUM(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN t.buyer_amount ELSE 0 END) AS buyer_unbilled,
 
-            -- Buyer Billed Amount
-            SUM(CASE 
-                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
-                THEN t.buyer_amount ELSE 0 
-            END) AS buyer_billed,
+            -- Seller Qtl Billed/Unbilled
+            SUM(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' THEN t.S_QuintAmount ELSE 0 END) AS seller_billed_qtl,
+            SUM(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' THEN t.S_QuintAmount ELSE 0 END) AS seller_unbilled_qtl,
 
-            -- Buyer Unbilled Amount
-            SUM(CASE 
-                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
-                THEN t.buyer_amount ELSE 0 
-            END) AS buyer_unbilled,
+            -- Buyer Qtl Billed/Unbilled
+            SUM(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN t.B_QuintAmount ELSE 0 END) AS buyer_billed_qtl,
+            SUM(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN t.B_QuintAmount ELSE 0 END) AS buyer_unbilled_qtl,
 
-            -- Not Applicable Transactions (Seller Amount only)
-            SUM(CASE 
-                WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
-                THEN t.seller_amount ELSE 0 
-            END) AS not_applicable_unbilled,
+            -- Not Applicable (seller = buyer)
+            SUM(CASE WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN t.seller_amount ELSE 0 END) AS not_applicable_unbilled,
+            SUM(CASE WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN t.seller_amount ELSE 0 END) AS not_applicable_billed,
 
-            SUM(CASE 
-                WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
-                THEN t.seller_amount ELSE 0 
-            END) AS not_applicable_billed,
+            SUM(CASE WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN t.S_QuintAmount ELSE 0 END) AS not_applicable_unbilled_qtl,
+            SUM(CASE WHEN t.seller_id = ? AND t.buyer_id = ? AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN t.S_QuintAmount ELSE 0 END) AS not_applicable_billed_qtl,
 
-            -- ✅ Seller Billed Transaction Count
-            COUNT(CASE 
-                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' 
-                THEN 1 ELSE NULL 
-            END) AS seller_billed_txn_count,
-
-            -- ✅ Seller Unbilled Transaction Count
-            COUNT(CASE 
-                WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' 
-                THEN 1 ELSE NULL 
-            END) AS seller_unbilled_txn_count,
-
-            -- ✅ Buyer Billed Transaction Count
-            COUNT(CASE 
-                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' 
-                THEN 1 ELSE NULL 
-            END) AS buyer_billed_txn_count,
-
-            -- ✅ Buyer Unbilled Transaction Count
-            COUNT(CASE 
-                WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' 
-                THEN 1 ELSE NULL 
-            END) AS buyer_unbilled_txn_count
-
+            -- Transaction counts
+            COUNT(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Yes' THEN 1 END) AS seller_billed_txn_count,
+            COUNT(CASE WHEN t.seller_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Seller_Billed, 'Not') = 'Not' THEN 1 END) AS seller_unbilled_txn_count,
+            COUNT(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN 1 END) AS buyer_billed_txn_count,
+            COUNT(CASE WHEN t.buyer_id = ? AND t.seller_id <> t.buyer_id AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN 1 END) AS buyer_unbilled_txn_count,
+            COUNT(CASE WHEN t.seller_id = ? AND t.buyer_id = ?  AND COALESCE(t.Buyer_Billed, 'Not') = 'Not' THEN 1 END) AS not_applicable_unbilled_txn_count,
+            COUNT(CASE WHEN t.seller_id = ? AND t.buyer_id = ?  AND COALESCE(t.Buyer_Billed, 'Not') = 'Yes' THEN 1 END) AS not_applicable_billed_txn_count
         FROM ${tableName} t
         WHERE t.firm_id = ? AND (t.seller_id = ? OR t.buyer_id = ?);
     `;
 
-    db.get(sql, [
-        customer_id, customer_id, // Seller Billed/Unbilled
-        customer_id, customer_id, // Buyer Billed/Unbilled
-        customer_id, customer_id, // Not Applicable Unbilled
-        customer_id, customer_id, // Not Applicable Billed
-        customer_id, customer_id, // Seller Billed/Unbilled Count
-        customer_id, customer_id, // Buyer Billed/Unbilled Count
-        firm_id, customer_id, customer_id // WHERE conditions
-    ], (err, row) => {
+    // Exactly 27 parameters:
+    const params = [
+        customer_id, // 1 seller billed
+        customer_id, // 2 seller unbilled
+
+        customer_id, // 3 buyer billed
+        customer_id, // 4 buyer unbilled
+
+        customer_id, // 5 seller qtl billed
+        customer_id, // 6 seller qtl unbilled
+
+        customer_id, // 7 buyer qtl billed
+        customer_id, // 8 buyer qtl unbilled
+
+        customer_id, // 9 not applicable unbilled
+        customer_id, // 10
+
+        customer_id, // 11 not applicable billed
+        customer_id, // 12
+
+        customer_id, // 13 not applicable unbilled qtl
+        customer_id, // 14
+
+        customer_id, // 15 not applicable billed qtl
+        customer_id, // 16
+
+        customer_id, // 17 seller billed count
+        customer_id, // 18 seller unbilled count
+        customer_id, // 19 buyer billed count
+        customer_id, // 20 buyer unbilled count
+
+        customer_id,customer_id,
+        customer_id,customer_id,
+
+        firm_id,      // 21 WHERE
+        customer_id,  // 22 WHERE seller_id = ?
+        customer_id   // 23 WHERE buyer_id = ?
+    ];
+
+    db.get(sql, params, (err, row) => {
         if (err) {
-            console.error("🚨 Error fetching billing status:", err.message);
+            console.error("SQL error:", err.message);
             return res.status(500).json({ success: false, error: err.message });
         }
 
-        // Ensure valid values (replace NULLs with 0)
-        const seller_billed = row?.seller_billed || 0;
-        const seller_unbilled = row?.seller_unbilled || 0;
-        const buyer_billed = row?.buyer_billed || 0;
-        const buyer_unbilled = row?.buyer_unbilled || 0;
-        const not_applicable_unbilled = row?.not_applicable_unbilled || 0;
-        const not_applicable_billed = row?.not_applicable_billed || 0;
-        const seller_billed_txn_count = row?.seller_billed_txn_count || 0;
-        const seller_unbilled_txn_count = row?.seller_unbilled_txn_count || 0;
-        const buyer_billed_txn_count = row?.buyer_billed_txn_count || 0;
-        const buyer_unbilled_txn_count = row?.buyer_unbilled_txn_count || 0;
+        const safe = (v) => v || 0;
+        const result = {
+            success: true,
+            billedAmount: safe(row?.seller_billed) + safe(row?.buyer_billed) + safe(row?.not_applicable_billed),
+            unbilledAmount: safe(row?.seller_unbilled) + safe(row?.buyer_unbilled) + safe(row?.not_applicable_unbilled),
+            QtlBilledAmount: safe(row?.seller_billed_qtl) + safe(row?.buyer_billed_qtl) + safe(row?.not_applicable_billed_qtl),
+            QtlUnbilledAmount: safe(row?.seller_unbilled_qtl) + safe(row?.buyer_unbilled_qtl) + safe(row?.not_applicable_unbilled_qtl),
+            billedTxnCount: safe(row?.seller_billed_txn_count) + safe(row?.buyer_billed_txn_count)+ safe(row?.not_applicable_billed_txn_count),
+            unbilledTxnCount: safe(row?.seller_unbilled_txn_count) + safe(row?.buyer_unbilled_txn_count) + safe(row?.not_applicable_unbilled_txn_count),
+        };
 
-        const billedAmount = seller_billed + buyer_billed + not_applicable_billed;
-        const unbilledAmount = seller_unbilled + buyer_unbilled + not_applicable_unbilled;
-        const billedTxnCount = seller_billed_txn_count + buyer_billed_txn_count;
-        const unbilledTxnCount = seller_unbilled_txn_count + buyer_unbilled_txn_count;
-
-        res.json({ 
-            success: true, 
-            billedAmount, 
-            unbilledAmount, 
-            billedTxnCount, 
-            unbilledTxnCount 
-        });
+        res.json(result);
     });
 });
+
+
 
 app.get("/sellers/active/:financialYear", async (req, res) => {
     const { financialYear } = req.params;
@@ -1432,6 +1452,12 @@ app.get("/lastTransaction/details", (req, res) => {
         t.date, 
         t.item, 
         t.packaging, 
+        t.S_QuintQty,
+        t.B_QuintQty,
+        t.S_QuintRate,
+        t.B_QuintRate,
+        t.S_QuintAmount,
+        t.B_QuintAmount,
         t.qty,
         t.bqty, 
         t.bhav,
@@ -1537,42 +1563,54 @@ app.get("/api/transactions/:tid", (req, res) => {
 
 
 // 📌 API: Update a transaction
-// 📌 API: Update a transaction
 app.post("/api/transactions/update", (req, res) => {
-    const { tid, fy, firmId, seller_id, seller_rate, item, qty, bqty, bhav, date, packaging, buyer_id, buyer_rate } = req.body;
+    const {
+        tid, fy, firmId, seller_id, seller_rate, item, qty, bqty, bhav, date, packaging,
+        buyer_id, buyer_rate,
+        S_QuintQty, B_QuintQty, S_QuintRate, B_QuintRate,
+        S_QuintAmount, B_QuintAmount
+    } = req.body;
 
-    if (!tid || !fy || !seller_id || !buyer_id || !qty || !bqty || !bhav) {
+    if (!tid || !fy || !seller_id || !buyer_id || !qty || !bqty || !bhav || !S_QuintQty || !B_QuintQty || !S_QuintRate || !B_QuintRate) {
         return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
     const tableName = `transactions_FY${fy}`;
-    const seller_amount = seller_rate * qty;
-    const buyer_amount = buyer_rate * bqty;
 
     const sql = `
-        UPDATE ${tableName} 
-        SET seller_id = ?, seller_rate = ?, item = ?, qty = ?, bqty = ?, bhav = ?, date = ?, packaging = ?, 
-            buyer_id = ?, buyer_rate = ?, seller_amount = ?, buyer_amount = ?, 
-            Seller_Billed = 'Not', Buyer_Billed = 'Not'  -- Reset billing status
+        UPDATE ${tableName}
+        SET
+            seller_id = ?, seller_rate = ?, item = ?, qty = ?, bqty = ?, bhav = ?,
+            date = ?, packaging = ?, buyer_id = ?, buyer_rate = ?,
+            seller_amount = ?, buyer_amount = ?,
+            S_QuintQty = ?, B_QuintQty = ?, S_QuintRate = ?, B_QuintRate = ?,
+            S_QuintAmount = ?, B_QuintAmount = ?,
+            Seller_Billed = 'Not', Buyer_Billed = 'Not'
         WHERE transaction_id = ?`;
 
-    db.run(
-        sql,
-        [seller_id, seller_rate, item, qty, bqty, bhav, date, packaging, buyer_id, buyer_rate, seller_amount, buyer_amount, tid],
-        function (err) {
-            if (err) {
-                console.error("🚨 Error updating transaction:", err.message);
-                return res.status(500).json({ success: false, error: err.message });
-            }
+    const params = [
+        seller_id, seller_rate, item, qty, bqty, bhav,
+        date, packaging, buyer_id, buyer_rate,
+        seller_rate * qty, buyer_rate * bqty,
+        S_QuintQty, B_QuintQty, S_QuintRate, B_QuintRate,
+        S_QuintAmount, B_QuintAmount,
+        tid
+    ];
 
-            if (this.changes === 0) {
-                return res.status(404).json({ success: false, message: "Transaction not found or no changes made." });
-            }
-
-            res.json({ success: true, message: "Transaction updated successfully. Billing status reset." });
+    db.run(sql, params, function (err) {
+        if (err) {
+            console.error("🚨 Error updating transaction:", err.message);
+            return res.status(500).json({ success: false, error: err.message });
         }
-    );
+
+        if (this.changes === 0) {
+            return res.status(404).json({ success: false, message: "Transaction not found or no changes made." });
+        }
+
+        res.json({ success: true, message: "Transaction updated successfully. Billing status reset." });
+    });
 });
+
 
 //special api for multiple customer
 // ✅ API: Mark Multiple Customers as Billed

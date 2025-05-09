@@ -181,16 +181,19 @@ const renderTransactions = (transactions) => {
                     <p><strong>To:</strong> ${transaction.buyer_name} (${transaction.buyer_city})</p>
                 </div>
                 <div class="transaction-column">
-                    <p><strong>S Rate:</strong> #${transaction.seller_rate}</p>
-                    <p><strong>B Rate:</strong> #${transaction.buyer_rate}</p>
+                    <label> Details : Bori Se </label>
+                    <p><strong>S Qty:</strong> ${transaction.qty} <strong>&nbsp;&nbsp;&nbsp; Seller Rate</strong> #${transaction.seller_rate} </p>
+                    <p><strong>B Qty:</strong> ${transaction.bqty} <strong>&nbsp;&nbsp;&nbsp; Buyer  Rate</strong> #${transaction.buyer_rate} </p>
                 </div>
+
                 <div class="transaction-column">
-                    <p><strong>S Qty:</strong> ${transaction.qty}</p>
-                    <p><strong>B Qty:</strong> ${transaction.bqty}</p>
+                <label> Details : Quintal Se </label>
+                    <p><strong>S Qty:</strong> ${transaction.S_QuintQty} <strong>&nbsp;&nbsp;&nbsp; Seller Rate</strong> #${transaction.S_QuintRate} </p>
+                    <p><strong>B Qty:</strong> ${transaction.B_QuintQty} <strong>&nbsp;&nbsp;&nbsp; Buyer  Rate</strong> #${transaction.B_QuintRate}</p>
                 </div>
                 <div class="transaction-column">
                     <p><strong>Bhav:</strong> ₹${transaction.bhav}</p>
-                    <p><strong>Type:</strong> ₹${transaction.packaging}</p>
+                    <p><strong>Type:</strong> ${transaction.packaging}</p>
                 </div>
                 <div class="transaction-column">
                     <p><strong>FY:</strong> ${transaction.financial_year}</p>
@@ -362,6 +365,11 @@ document.body.addEventListener("click", async function (event) {
         document.getElementById("edit-buyer-name").value = txn.buyer_id;
         document.getElementById("edit-buyer-rate").value = txn.buyer_rate;
         document.getElementById("bhav").value = txn.bhav;
+        document.getElementById("qedit-qty").value = txn.S_QuintQty; // Sync with seller quantity
+        document.getElementById("qbedit-qty").value = txn.B_QuintQty; // Sync with seller quantity
+        document.getElementById("qedit-seller-rate").value = txn.S_QuintRate; // Sync with seller quantity
+        document.getElementById("qedit-buyer-rate").value = txn.B_QuintRate; // Sync with seller quantity
+
         document.getElementById("edit-password").value = ""; // Clear password field
 
         // ✅ Show modal after data is populated
@@ -371,14 +379,20 @@ document.body.addEventListener("click", async function (event) {
         const sQuantityInput = document.getElementById("edit-qty");  // Seller Quantity
         const bQuantityInput = document.getElementById("bedit-qty");  // Buyer Quantity
 
+        const sQuintQuantityInput = document.getElementById("qedit-qty");  // Seller Quantity in Quintals
+        const bQuintQuantityInput = document.getElementById("qbedit-qty");  // Buyer Quantity in Quintals
+
         // Remove previous event listener to prevent multiple bindings
         sQuantityInput.removeEventListener("input", syncBuyerQuantity);
+        sQuintQuantityInput.removeEventListener("input", syncBuyerQuantity);
 
         // Add event listener inside modal open logic
         function syncBuyerQuantity() {
             bQuantityInput.value = sQuantityInput.value;  // Sync buyer quantity
+            bQuintQuantityInput.value = sQuintQuantityInput.value;  // Sync buyer quantity in quintals
         }
         sQuantityInput.addEventListener("input", syncBuyerQuantity);
+        sQuintQuantityInput.addEventListener("input", syncBuyerQuantity);  // Sync buyer quantity in quintals
     } catch (error) {
         console.error("🚨 Error loading transaction details:", error);
         alert("Failed to load transaction data.");
@@ -397,7 +411,7 @@ document.getElementById("save-transaction").addEventListener("click", async func
     const tid = document.getElementById("edit-tid").textContent;
     const password = document.getElementById("edit-password").value;
 
-    if(document.getElementById("edit-seller-rate").value=="" || document.getElementById("edit-buyer-rate").value=="" ){
+    if(document.getElementById("edit-seller-rate").value=="" || document.getElementById("edit-buyer-rate").value=="" || document.getElementById("qedit-seller-rate").value=="" || document.getElementById("qedit-buyer-rate").value==""){
         alert("Seller Rate , Buyer rate can't be empty.");
         return
     }
@@ -461,6 +475,22 @@ document.getElementById("save-transaction").addEventListener("click", async func
             buyer_rate: isNaN(parseFloat(document.getElementById("edit-buyer-rate").value)) 
                 ? "0" 
                 : parseFloat(document.getElementById("edit-buyer-rate").value).toString(),
+
+            S_QuintQty: isNaN(parseInt(document.getElementById("qedit-qty").value))
+                ? "0" 
+                : parseInt(document.getElementById("qedit-qty").value).toString(),
+
+            B_QuintQty: isNaN(parseInt(document.getElementById("qbedit-qty").value))
+                ? "0" 
+                : parseInt(document.getElementById("qbedit-qty").value).toString(),
+
+            S_QuintRate: isNaN(parseFloat(document.getElementById("qedit-seller-rate").value))
+                ? "0" 
+                : parseFloat(document.getElementById("qedit-seller-rate").value).toString(),
+            
+            B_QuintRate: isNaN(parseFloat(document.getElementById("qedit-buyer-rate").value))
+                ? "0" 
+                : parseFloat(document.getElementById("qedit-buyer-rate").value).toString(),
         
             seller_amount: (
                 isNaN(parseFloat(document.getElementById("edit-seller-rate").value)) || 
@@ -470,7 +500,17 @@ document.getElementById("save-transaction").addEventListener("click", async func
             buyer_amount: (
                 isNaN(parseFloat(document.getElementById("edit-buyer-rate").value)) || 
                 isNaN(parseInt(document.getElementById("edit-qty").value))
-            ) ? "0" : (parseFloat(document.getElementById("edit-buyer-rate").value) * parseInt(document.getElementById("edit-qty").value)).toString()
+            ) ? "0" : (parseFloat(document.getElementById("edit-buyer-rate").value) * parseInt(document.getElementById("edit-qty").value)).toString(),
+
+            S_QuintAmount: (
+                isNaN(parseFloat(document.getElementById("qedit-seller-rate").value)) || 
+                isNaN(parseInt(document.getElementById("qedit-qty").value))
+            ) ? "0" : (parseFloat(document.getElementById("qedit-seller-rate").value) * parseInt(document.getElementById("qedit-qty").value)).toString(),  
+
+            B_QuintAmount: (
+                isNaN(parseFloat(document.getElementById("qedit-buyer-rate").value)) || 
+                isNaN(parseInt(document.getElementById("qbedit-qty").value))
+            ) ? "0" : (parseFloat(document.getElementById("qedit-buyer-rate").value) * parseInt(document.getElementById("qbedit-qty").value)).toString()
         };
         
         

@@ -69,25 +69,21 @@
           
     
         <!-- ✅ New Checkboxes for TID and SNO -->
-        <div class="checkbox-container">
-            <label>
-                <input type="checkbox" id="printTidCheckbox" checked> Print TID
-            </label>
-            <label>
-                <input type="checkbox" id="printSnoCheckbox" checked> Print SNO
-            </label>
-            <label for="statement">
-                <input type="radio" name="printType" id="statement" value="1" checked> Statement
-            </label>
-            <label for="invoice">
-                <input type="radio" name="printType" id="invoice" value="0"> Invoice
-            </label>
-            
-            
+        <div class="print-options-inline">
+            <label><input type="checkbox" id="printTidCheckbox" checked> Print TID</label>
+            <label><input type="checkbox" id="printSnoCheckbox" checked> Print SNO</label>
+        
+            <span class="label-title">Select Pdf Type:</span>
+            <label for="statement"><input type="radio" name="printType" id="statement" value="1" checked> Statement</label>
+            <label for="invoice"><input type="radio" name="printType" id="invoice" value="0"> Invoice</label>
+        
+            <span class="label-title">Select Data/Bill Type:</span>
+            <label for="Quintal"><input type="radio" name="BillType" id="Quintal se" value="1" checked> Quintal Se</label>
+            <label for="Bori"><input type="radio" name="BillType" id="Bori Se" value="0"> Bori Se</label>
         </div>
     
         <!-- Separator Line -->
-        <div class="separator-line"></div>
+      
         <p class="eco-note">
             🌳 Note: Recommended to skip transactions with 
             <span class="highlight-warning">Unbilled Amount = / ₹0 / or (Khali gadi)</span>

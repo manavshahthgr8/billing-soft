@@ -189,6 +189,10 @@
                 <div id="right-edit-modal">
                     <div class="row">
                         <div class="col">
+                            <label for="edit-date">Date:</label>
+                            <input type="date" id="edit-date" />
+                        </div>
+                        <div class="col">
                             <label>T-ID:</label>
                             <span id="edit-tid"></span>
                         </div>
@@ -207,7 +211,7 @@
 
     
             <!-- Seller Details (Dropdown for Seller Name) -->
-            <h3 class="center-text">Seller Details</h3>
+            <h3 class="center-text">Seller & Buyer Details</h3>
             <div class="row">
                 <div class="col">
                     <label for="edit-seller-name">Seller Name:</label>
@@ -217,19 +221,13 @@
                     </select>
                 </div>
                 <div class="col">
-                    <label for="edit-seller-rate">Selling Rate:</label>
-                    <input type="number" id="edit-seller-rate" step="any"  required/>
+                    <label for="edit-buyer-name">Buyer Name:</label>
+                    <select id="edit-buyer-name">
+                        <option value="">Select Buyer</option>
+                        <!-- Options will be loaded from API -->
+                    </select>
                 </div>
-                <div class="col">
-                    <label for="edit-qty">S Quantity:</label>
-                    <input type="number" id="edit-qty" step="any" required/>
-                </div>
-            </div>
-    
-            <!-- Item Details -->
-            <h3 class="center-text">Item Details</h3>
-            <div class="row">
-                <div class="col">
+                <div class="col" style="width: 75px; max-width: 75px;">
                     <label for="edit-item">Item:</label>
                     <select id="edit-item">
                         <option value="Paddy" selected>Paddy</option>
@@ -237,33 +235,24 @@
                         <!-- Add more options if needed -->
                     </select>
                 </div>
-                
-                <div class="col">
-                    <label for="edit-date">Date:</label>
-                    <input type="date" id="edit-date" />
-                </div>
-                <div class="col">
-                    <label for="edit-pkg">Packaging:</label>
-                    <select id="edit-pkg">
-                        <option value="Katta">Katta</option>
-                        <option value="Bags">Bags</option>
-                    </select>
-                </div>
-                <div class="col">
+                <div class="col" style="width: 65px; max-width: 65px;">
                     <label for="bhav">Bhav:</label>
                     <input type="text" id="bhav" required />
                 </div>
+                
+                
             </div>
     
-            <!-- Buyer Details -->
-            <h3 class="center-text">Buyer Details</h3>
+            <!-- Item Details -->
+            <h3 class="center-text">Details (Bori se)</h3>
             <div class="row">
                 <div class="col">
-                    <label for="edit-buyer-name">Buyer Name:</label>
-                    <select id="edit-buyer-name">
-                        <option value="">Select Buyer</option>
-                        <!-- Options will be loaded from API -->
-                    </select>
+                    <label for="edit-seller-rate">Selling Rate:</label>
+                    <input type="number" id="edit-seller-rate" step="any"  required/>
+                </div>
+                <div class="col">
+                    <label for="edit-qty">S Quantity:</label>
+                    <input type="number" id="edit-qty" step="any" required/>
                 </div>
                 <div class="col">
                     <label for="edit-buyer-rate">Buyer Rate:</label>
@@ -273,6 +262,37 @@
                     <label for="bedit-qty">B Quantity:</label>
                     <input type="number" id="bedit-qty" step="any" required/>
                 </div>
+                <div class="col">
+                    <label for="edit-pkg">Packaging:</label>
+                    <select id="edit-pkg">
+                        <option value="Katta">Katta</option>
+                        <option value="Bags">Bags</option>
+                    </select>
+                </div>
+                
+            </div>
+    
+            <!-- Buyer Details -->
+            <h3 class="center-text">Details (Quintal se)</h3>
+            <div class="row">
+                <div class="col">
+                    <label for="qedit-seller-rate">Selling Rate:</label>
+                    <input type="number" id="qedit-seller-rate" step="any"  required/>
+                </div>
+                <div class="col">
+                    <label for="qedit-qty">S Quantity:</label>
+                    <input type="number" id="qedit-qty" step="any" required/>
+                </div>
+                <div class="col">
+                    <label for="qedit-buyer-rate">Buyer Rate:</label>
+                    <input type="number" id="qedit-buyer-rate" step="any" required="number"/>
+                </div>
+                <div class="col">
+                    <label for="qbedit-qty">B Quantity:</label>
+                    <input type="number" id="qbedit-qty" step="any" required/>
+                </div>
+                
+               
             </div>
     
             <!-- Password Confirmation -->

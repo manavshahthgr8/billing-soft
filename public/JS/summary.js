@@ -171,50 +171,77 @@ async function populateFirmNames() {
   }
 }
 const billingStatusMap = {}; // Optional if you want to store results
+//const BillType = document.querySelector('input[name="BillType"]:checked').value;
+
 
 // ✅ Fetch present due for each firm for this customer
-async function fetchPresentDues(customerId, fy) {
+// ✅ Fetch present due for each firm for this customer
+async function fetchPresentDues(customerId, fy, BillType) {
+  //console.log("Fetching present dues with BillType:", typeof BillType, BillType);
+  
   for (const firmId of firmIds) {
-          const cellId = `present-due-${firmId}`;
-          const cell = document.getElementById(cellId);
+    const cellId = `present-due-${firmId}`;
+    const cell = document.getElementById(cellId);
 
-          // Show loading...
-          if (cell) cell.textContent = "Loading...";
+    // Show loading...
+    if (cell) cell.textContent = "Loading...";
 
-          try {
-                  const response = await fetch(`/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customerId}`);
-                  const data = await response.json();
+    try {
+      const response = await fetch(`/api/customer-billing-status?fy=${fy}&firm_id=${firmId}&customer_id=${customerId}`);
+      const data = await response.json();
 
-                  if (data.success) {
-                          billingStatusMap[firmId] = {
-                                  billedAmount: data.billedAmount,
-                                  unbilledAmount: data.unbilledAmount
-                          };
+      if (data.success) {
+        //console.log(`Firm ${firmId} billing data:`, data);
 
-                          if (cell) {
-                                  cell.textContent = `₹${(data.billedAmount || 0).toFixed(2)}`;
+        billingStatusMap[firmId] = {
+          billedAmount: data.billedAmount,
+          unbilledAmount: data.unbilledAmount,
+          BilledQtl: data.QtlBilledAmount,
+          UnbilledQtl: data.QtlUnbilledAmount
+        };
 
-                                  if(data.unbilledAmount > 0) {
-                                    cell.textContent += ` is Billed & Remaining skipped due to Unbilled = ₹${(data.unbilledAmount || 0).toFixed(2)}`;
-                            }
-                          }
-                  } else {
-                          if (cell) cell.textContent = "Error";
-                          console.warn(`Billing fetch failed for firm ${firmId}`);
-                  }
-          } catch (err) {
-                  console.error(`Error fetching billing status for firm ${firmId}:`, err);
-                  if (cell) cell.textContent = "Error";
+        if (cell) {
+          const isQtl = String(BillType) === "1";
+          const billed = isQtl ? Number(data.QtlBilledAmount || 0) : Number(data.billedAmount || 0);
+          const unbilled = isQtl ? Number(data.QtlUnbilledAmount || 0) : Number(data.unbilledAmount || 0);
+
+          cell.textContent = `₹${billed.toFixed(2)}`;
+
+          if (unbilled > 0) {
+            cell.textContent += ` is Billed & Remaining skipped due to Unbilled = ₹${unbilled.toFixed(2)}`;
           }
+        }
+
+      } else {
+        if (cell) cell.textContent = "Error";
+        console.warn(`Billing fetch failed for firm ${firmId}`);
+      }
+    } catch (err) {
+      console.error(`Error fetching billing status for firm ${firmId}:`, err);
+      if (cell) cell.textContent = "Error";
+    }
   }
 }
+
+// ✅ Add event listener to all BillType radio buttons
+document.querySelectorAll('input[name="BillType"]').forEach(radio => {
+  radio.addEventListener("change", async () => {
+    const BillType = document.querySelector('input[name="BillType"]:checked').value;
+    //console.log("Bill Type changed to:", BillType);
+
+    await fetchPresentDues(cid, fy, BillType);
+    calculateTotals();
+  });
+});
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   // ✅ Fetch firm names
   await populateFirmNames();
+  const billType = document.querySelector('input[name="BillType"]:checked').value;
 
   // ✅ Fetch present dues for each firm
-  await fetchPresentDues(cid, fy);
+  await fetchPresentDues(cid, fy , billType);
 
   // ✅ Calculate totals after everything is loaded
   calculateTotals();
@@ -323,239 +350,247 @@ async function fetchBillId(customerId, financialYear) {
 
 async function generateCustomerPDF(doc, customerId, transactions, firmDetails, customerDetails,firmId) {
   // Determine print type (Statement or Invoice)
-  const printType = document.querySelector('input[name="printType"]:checked').value;
-  const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
-  const headerText = printType === "1" 
-      ? `${firmDetails.firmName} Statement | FY ${fyDisplay} ` 
-      : `${firmDetails.firmName} Invoice | FY ${fyDisplay} `;
+ // Determine print type (Statement or Invoice)
+ const printType = document.querySelector('input[name="printType"]:checked').value;
+ const BillType = document.querySelector('input[name="BillType"]:checked').value;
+ const fyDisplay = `${fy} - ${parseInt(fy) + 1}`;
+ const headerText = printType === "1" 
+     ? `${firmDetails.firmName} Statement | FY ${fyDisplay} ` 
+     : `${firmDetails.firmName} Invoice | FY ${fyDisplay} `;
 
-      const headerText0 = printType === "1" 
-      ? `Statement` 
-      : `Invoice`;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
+     const headerText0 = printType === "1" 
+     ? `Statement` 
+     : `Invoice`;
+ doc.setFontSize(10);
+ doc.setFont("helvetica", "normal");
+
+
+ doc.setFont("helvetica", "bold");
+ doc.setFontSize(14);
+ doc.text(headerText0, 103, 5.5, { align: "center" });
+ doc.setFontSize(13);
+ doc.text(headerText, 103, 10.5, { align: "center" });
+ doc.setFontSize(10);
+ if(firmId==1){
+     doc.addImage("../images/B%26B.png", "PNG", 5, 0.1, 19, 19);
+ }else if(firmId==2){
+     doc.addImage("../images/PKC.png", "PNG", 5, 0.1, 19, 19);
+ }else if(firmId==3){
+     doc.addImage("../images/MB.png", "PNG", 5, 0.1, 19, 19);
+ }
  
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text(headerText0, 103, 5.5, { align: "center" });
-  doc.setFontSize(13);
-  doc.text(headerText, 103, 10.5, { align: "center" });
-  doc.setFontSize(10);
-  if(firmId==1){
-      doc.addImage("../images/B%26B.png", "PNG", 5, 0.1, 19, 19);
-  }else if(firmId==2){
-      doc.addImage("../images/PKC.png", "PNG", 5, 0.1, 19, 19);
-  }else if(firmId==3){
-      doc.addImage("../images/MB.png", "PNG", 5, 0.1, 19, 19);
-  }
-  
+ 
+ doc.setFont("helvetica", "normal");
+ doc.text(`32 Bhaktnagar Ujjain (M.P),456010, Contact: ${firmDetails.Contact}`, 100, 15.5, { align: "center" });
 
-  
-  doc.setFont("helvetica", "normal");
-  doc.text(`32 Bhaktnagar Ujjain (M.P),456010, Contact: ${firmDetails.Contact}`, 100, 15.5, { align: "center" });
+ // Fetch bill ID for the customer from the database
+ const billId = await fetchBillId(customerId, fy); 
+ if (!billId) {
+     console.warn(`⚠️ No Bill ID found for customer ${customerId}`);
+     alert("No Bill ID found for this customer. Please check the database.");
+     return;
+ }
 
-  // Fetch bill ID for the customer from the database
-  const billId = await fetchBillId(customerId, fy); 
-  if (!billId) {
-      console.warn(`⚠️ No Bill ID found for customer ${customerId}`);
-      return;
-  }
+ let firmPrefix, baseNumber;
+ switch (parseInt(firmId, 10)) {
+     case 1:
+         firmPrefix = "BB";
+         baseNumber = 100000;
+         break;
+     case 2:
+         firmPrefix = "PKC";
+         baseNumber = 300000;
+         break;
+     case 3:
+         firmPrefix = "MB";
+         baseNumber = 600000;
+         break;
+     default:
+         console.error("❌ Invalid Firm ID");
+         return;
+ }
 
-  let firmPrefix, baseNumber;
-  switch (parseInt(firmId, 10)) {
-      case 1:
-          firmPrefix = "BB";
-          baseNumber = 100000;
-          break;
-      case 2:
-          firmPrefix = "PKC";
-          baseNumber = 300000;
-          break;
-      case 3:
-          firmPrefix = "MB";
-          baseNumber = 600000;
-          break;
-      default:
-          console.error("❌ Invalid Firm ID");
-          return;
-  }
+ // Generate final Bill No
+ let finalBillNo = `${firmPrefix}${baseNumber + billId}`;
+ 
+ doc.setFont("helvetica", "normal");
+ doc.setFontSize(9);
 
-  // Generate final Bill No
-  let finalBillNo = `${firmPrefix}${baseNumber + billId}`;
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+
+ // **Firm & Customer Details Box**
+ doc.setFontSize(10);
+ let boxHeight = 23;
+ doc.rect(5, 17.5, 200, boxHeight);
  
 
-  // **Firm & Customer Details Box**
-  doc.setFontSize(10);
-  let boxHeight = 23;
-  doc.rect(5, 17.5, 200, boxHeight);
-  
  
-  
+
  
-  
-  
-  //top
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text(`Date: 31/03/${Number(fy)+1}`, 170, 14.5); //new
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  
-  //left section
-  if(printType === "0"){
-      doc.text(`Bill No: ${finalBillNo}`, 10, 21);//new
-  }
-  doc.text(`Party name : M/S ${customerDetails.name}`, 10, 27);
-  doc.text(`Party city : ${customerDetails.city}`, 10, 33);
-  doc.text(`Generated by: (${firmDetails.ProprietorName}) | ${firmDetails.firmName}`, 10, 39);
+ 
+ //top
+ doc.setFont("helvetica", "bold");
+ doc.setFontSize(12);
+ doc.text(`Date: 31/03/${Number(fy)+1}`, 170, 14.5); //new
+ doc.setFont("helvetica", "normal");
+ doc.setFontSize(10);
+ 
+ //left section
+ if(printType === "0"){
+     doc.text(`Bill No: ${finalBillNo}`, 10, 21);//new
+ }
+ doc.text(`Party name : M/S ${customerDetails.name}`, 10, 27);
+ doc.text(`Party city : ${customerDetails.city}`, 10, 33);
+ doc.text(`Generated by: (${firmDetails.ProprietorName}) | ${firmDetails.firmName}`, 10, 39);
 
-  //right section
-  doc.text(`Bank: ${firmDetails.BankName}`, 160, 21); 
-  doc.text(`A/C No: ${firmDetails.AccountNo}`, 160, 27);
-  doc.text(`IFSC: ${firmDetails.IFSC}`, 160, 33);
-  doc.text(`PAN No: ${firmDetails.PAN}`, 160, 39, );
-  
+ //right section
+ doc.text(`Bank: ${firmDetails.BankName}`, 160, 21); 
+ doc.text(`A/C No: ${firmDetails.AccountNo}`, 160, 27);
+ doc.text(`IFSC: ${firmDetails.IFSC}`, 160, 33);
+ doc.text(`PAN No: ${firmDetails.PAN}`, 160, 39, );
 
-  const includeTid = document.getElementById("printTidCheckbox").checked;
-  const includeSno = document.getElementById("printSnoCheckbox").checked;
+ 
 
-  // **Table Headers** - Declare outside of if/else block
-    let headers, colWidths;
+ const includeTid = document.getElementById("printTidCheckbox").checked;
+ const includeSno = document.getElementById("printSnoCheckbox").checked;
 
-    if (printType === "1") {
-        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"];
-        colWidths = [9, 8, 20, 52, 24, 10, 12, 10, 10,10 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
-    } else {
-        headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
-        colWidths = [9, 8, 20, 52, 24, 15, 13, 12, 10,14, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
-    }
+ // **Table Headers** - Declare outside of if/else block
+ let headers, colWidths;
 
-    const printTableHeaders = (yPos) => {
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(220, 220, 220);
-        doc.rect(5, yPos - 4, 200, 6, "F");
+ if (printType === "1") {
+     headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty" , "Pkg", "Brok", "Amount"];
+     colWidths = [9, 8, 20, 52, 22, 10, 12, 10, 10,14 , 10, 18];  // Reduced width of Txn Type by 2 and added to City column
+ } else {
+     headers = ["Tid", "S.N", "Date", "Party", "City", "Txn", "Item", "Bhav", "Qty", "Pkg", "   ", "Amount"];
+     colWidths = [9, 8, 20, 52, 24, 15, 13, 12, 10,14, 3, 18];  // Reduced width of Txn Type by 2 and added to City column
+ }
 
-        let colX = 8;
-        headers.forEach((header, index) => {
-            doc.text(header, colX, yPos);
-            colX += colWidths[index];
-        });
+ const printTableHeaders = (yPos) => {
+     doc.setFontSize(10);
+     doc.setFont("helvetica", "bold");
+     doc.setFillColor(220, 220, 220);
+     doc.rect(5, yPos - 4, 200, 6, "F");
 
-        return yPos + 6;
-    };
+     let colX = 8;
+     headers.forEach((header, index) => {
+         doc.text(header, colX, yPos);
+         colX += colWidths[index];
+     });
 
-    let startY = 25 + boxHeight;
-    let rowY = printTableHeaders(startY);
-    let pageHeight = doc.internal.pageSize.height;
-    let bottomMargin = 10;
-    let rowHeight = 6;
-    let pageNumber = 1;
-    let totalAmount = 0;
-    let firstPage = true;
+     return yPos + 6;
+ };
 
-    // ✅ **Ellipsis Function (Only for Party Name and City)**
-    const fitText = (doc, text, maxWidth) => {
-        if (doc.getTextWidth(text) <= maxWidth) return text;
+ let startY = 25 + boxHeight;
+ let rowY = printTableHeaders(startY);
+ let pageHeight = doc.internal.pageSize.height;
+ let bottomMargin = 10;
+ let rowHeight = 6;
+ let pageNumber = 1;
+ let totalAmount = 0;
+ let firstPage = true;
 
-        let ellipsis = "...";
-        let shortened = text;
-        
-        while (doc.getTextWidth(shortened + ellipsis) > maxWidth && shortened.length > 1) {
-            shortened = shortened.slice(0, -1);
-        }
+ // ✅ **Ellipsis Function (Only for Party Name and City)**
+ const fitText = (doc, text, maxWidth) => {
+     if (doc.getTextWidth(text) <= maxWidth) return text;
 
-        return shortened + ellipsis;
-    };
+     let ellipsis = "...";
+     let shortened = text;
+     
+     while (doc.getTextWidth(shortened + ellipsis) > maxWidth && shortened.length > 1) {
+         shortened = shortened.slice(0, -1);
+     }
 
-    transactions.forEach((txn, index) => {
-        let txnType = txn.transactionType;
-        txnType = txnType === "Purchased" ? "Buy" : txnType === "Sold" ? "Sell" : "N/A";  // Adjusted txn type
-        let party = txnType === "Buy" ? txn.seller_name : txn.buyer_name;
-        let city = txnType === "Buy" ? txn.seller_city : txn.buyer_city;
+     return shortened + ellipsis;
+ };
 
-        if (rowY + rowHeight > pageHeight - bottomMargin) {
-            doc.setFont("helvetica", "normal");
-            doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, 10, pageHeight - 3);
-            doc.text(`Continued on next page | Page ${pageNumber}`, 175, pageHeight - 3, { align: "center" });
-            doc.addPage();
-            rowY = printTableHeaders(12);
-            doc.text(headerText, 100, 5.5, { align: "center" });
-            if(printType === "0"){
-                doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
-            }
-            
-            pageNumber++;
-            firstPage = false;
-            doc.setFont("helvetica", "bold");
-        }
+ transactions.forEach((txn, index) => {
+     let txnType = txn.transactionType;
+     txnType = txnType === "Purchased" ? "Buy" : txnType === "Sold" ? "Sell" : "N/A";  // Adjusted txn type
+     let party = txnType === "Buy" ? txn.seller_name : txn.buyer_name;
+     let city = txnType === "Buy" ? txn.seller_city : txn.buyer_city;
 
-        if (index % 2 === 0) {
-            doc.setFillColor(240, 240, 240);
-            doc.rect(5, rowY - 4, 200, rowHeight, "F");
-        }
+     if (rowY + rowHeight > pageHeight - bottomMargin) {
+         doc.setFont("helvetica", "normal");
+         doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, 10, pageHeight - 3);
+         doc.text(`Continued on next page | Page ${pageNumber}`, 175, pageHeight - 3, { align: "center" });
+         doc.addPage();
+         rowY = printTableHeaders(12);
+         doc.text(headerText, 100, 5.5, { align: "center" });
+         if(printType === "0"){
+             doc.text(`Bill No: ${finalBillNo}`, 205, 5.5, { align: "right" });
+         }
+         
+         pageNumber++;
+         firstPage = false;
+         doc.setFont("helvetica", "bold");
+     }
 
-        let colX = 5;
-        let values = [];
-        values.push(includeTid ? (txn.transaction_id || "N/A") : "-");
-        values.push(includeSno ? (txn.sno || "N/A") : "-");
+     if (index % 2 === 0) {
+         doc.setFillColor(240, 240, 240);
+         doc.rect(5, rowY - 4, 200, rowHeight, "F");
+     }
 
-        values.push(
-            txn.date || "N/A",
-            fitText(doc, party, colWidths[3] - 2),    // ✅ Apply ellipsis only to Party name
-            fitText(doc, city, colWidths[4] - 2),     // ✅ Apply ellipsis to City
-            txnType,                        // Leave pkg as-is
-            txn.item || "N/A",                         // Leave item as-is
-            txn.bhav || "0",                           // Swapped order: Bhav now comes first
-            txn.fqty || "0",
-            txn.packaging || "N/A",  
-        );           
-        values.push( printType === "1" ?txn.brokerageRate || "0": "  " );               // Swapped order: Qty now comes second
-            values.push(
-        parseFloat(txn.amount || 0).toFixed(2)
-        );
+     let colX = 5;
+     let values = [];
+     values.push(includeTid ? (txn.transaction_id || "N/A") : "-");
+     values.push(includeSno ? (txn.sno || "N/A") : "-");
 
-        values.forEach((value, i) => {
-            let align = ["Qty", "Brok", "Amount"].includes(headers[i]) ? "right" : "left";
-            let xPos = align === "right" ? colX + colWidths[i] - 2 : colX + 2;
-            doc.text(value.toString(), xPos, rowY, { align });
-            colX += colWidths[i];
-        });
+     let pkg = BillType ==="0"? txn.packaging : "Quintal";
+     let qty = BillType ==="0"? txn.fqty : txn.fQuintQty ;
 
-        totalAmount += parseFloat(txn.amount || 0);
-        rowY += rowHeight;
-    });
+     values.push(
+         txn.date || "N/A",
+         fitText(doc, party, colWidths[3] - 2),    // ✅ Apply ellipsis only to Party name
+         fitText(doc, city, colWidths[4] - 2),     // ✅ Apply ellipsis to City
+         txnType,                        // Leave pkg as-is
+         txn.item || "N/A",                         // Leave item as-is
+         txn.bhav || "0",                           // Swapped order: Bhav now comes first
+         qty || "0",
+         pkg,  
+     );           
+     values.push( printType === "1" ?(BillType === "1" ? txn.fQuintRate : txn.brokerageRate): "  " );               // Swapped order: Qty now comes second
+         values.push(
+     parseFloat(BillType === "1" ? txn.fQuintAmount : txn.amount).toFixed(2)
+     );
 
-    if (firstPage) {
-        doc.rect(5, startY - 4, 200, rowY - startY + 3);
-    }
+     values.forEach((value, i) => {
+         let align = ["Qty", "Brok", "Amount"].includes(headers[i]) ? "right" : "left";
+         let xPos = align === "right" ? colX + colWidths[i] - 2 : colX + 2;
+         doc.text(value.toString(), xPos, rowY, { align });
+         colX += colWidths[i];
+     });
 
-    doc.line(5, rowY, 205, rowY);
-    rowY += 6;
-    doc.setFont("helvetica", "bold");
-    doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 201, rowY, { align: "right" });
+     totalAmount += parseFloat(BillType === "1" ? txn.fQuintAmount : txn.amount) || 0;
+     rowY += rowHeight;
+ });
 
-    let footerY = pageHeight - 3;
-    let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10;
+ if (firstPage) {
+     doc.rect(5, startY - 4, 200, rowY - startY + 3);
+ }
 
-    doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
-    doc.setFont("helvetica", "normal");
-    doc.text(`Digitally signed by ${firmDetails.ProprietorName}`, 60, rowY + 5, { align: "right" });
+ doc.line(5, rowY, 205, rowY);
+ rowY += 6;
+ doc.setFont("helvetica", "bold");
+ doc.text(`Total: INR ${totalAmount.toFixed(2)}`, 201, rowY, { align: "right" });
 
-    rowY += 8;
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "italic");
-    doc.text("Thank you for being a valuable customer.", 105, rowY + 10, { align: "center" });
+ let footerY = pageHeight - 3;
+ let footerX = Math.abs(rowY - footerY) <= 10 ? 70 : 10;
 
-    doc.setFontSize(9);
-    doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, footerX, footerY);
+ doc.text(`Verified Stamp`, 60, rowY, { align: "right" });
+ doc.setFont("helvetica", "normal");
+ doc.text(`Digitally signed by ${firmDetails.ProprietorName}`, 60, rowY + 3, { align: "right" });
+ doc.text(`${firmDetails.firmName}`, 60, rowY + 7, { align: "right" });
 
-    doc.setFontSize(9);
-    doc.text(`Page ${pageNumber}`, 170, pageHeight - 3);
+ rowY += 8;
+ doc.setFontSize(11);
+ doc.setFont("helvetica", "italic");
+ doc.text("Thank you for being a valuable customer.", 105, rowY + 10, { align: "center" });
+
+ doc.setFontSize(9);
+ doc.text(`${firmDetails.firmName} | FY ${fyDisplay} | ${customerDetails.name} ${printType === "1" ? 'Statement' : 'Invoice'}`, footerX, footerY);
+
+ doc.setFontSize(9);
+ doc.text(`Page ${pageNumber}`, 170, pageHeight - 3);
 }
 
 

@@ -69,53 +69,95 @@
         <div class="separator-line"></div>
 
          <!-- ✅ New Checkboxes for TID and SNO -->
-         <div class="checkbox-container">
-            <label>
-                <input type="checkbox" id="printTidCheckbox" checked> Print TID
-            </label>
-            <label>
-                <input type="checkbox" id="printSnoCheckbox" checked> Print SNO
-            </label>
-            <label for="statement">
-                <input type="radio" name="printType" id="statement" value="1" checked> Statement
-            </label>
-            <label for="invoice">
-                <input type="radio" name="printType" id="invoice" value="0"> Invoice
-            </label>
-            
-            
+         <div class="print-options-inline">
+            <label><input type="checkbox" id="printTidCheckbox" checked> Print TID</label>
+            <label><input type="checkbox" id="printSnoCheckbox" checked> Print SNO</label>
+        
+            <span class="label-title">Select Pdf Type:</span>
+            <label for="statement"><input type="radio" name="printType" id="statement" value="1" checked> Statement</label>
+            <label for="invoice"><input type="radio" name="printType" id="invoice" value="0"> Invoice</label>
+        
+            <span class="label-title">Select Data/Bill Type:</span>
+            <label for="Quintal"><input type="radio" name="BillType" id="Quintal se" value="1" checked> Quintal Se</label>
+            <label for="Bori"><input type="radio" name="BillType" id="Bori Se" value="0"> Bori Se</label>
         </div>
+        
+        
+        
         
         
     <!-- Separator Line -->
 <div class="separator-line"></div>
-<table class="transaction-table">
-    <thead>
-        <tr>
-            <th>Tid</th>
-            <th>S No</th>
-            <th>Date</th>
-            <th>Seller</th>
-            <th>Buyer</th>
-            <th>TXN type</th>
-            <th>Item</th>
-            <th>Qty</th>
-            <th>Bhav</th>
-            <th>Brok</th>
-            <th>Amount</th>
-            <th>Select All <input type="checkbox" id="selectAll"></th>
-            <th>Billed</th>
+<div class="table-wrapper">
+    <table class="transaction-table">
+        <colgroup>
+            <col style="width: 40px;">   <!-- Tid -->
+            <col style="width: 40px;">   <!-- S No -->
+            <col style="width: 75px;">  <!-- Date -->
+            <col style="width: 250px;">  <!-- Seller -->
+            <col style="width: 250px;">  <!-- Buyer -->
+            <col style="width: 60px;">  <!-- TXN Type -->
+            <col style="width: 40px;">  <!-- Item -->
+            <col style="width: 40px;">   <!-- Qty -->
+            <col style="width: 40px;">   <!-- Bhav -->
+            <col style="width: 40px;">   <!-- Brok -->
+            <col style="width: 90px;">   <!-- Amount -->
+            <col style="width: 40px;">   <!-- Qty (Qtl) -->
+            <col style="width: 40px;">   <!-- Rate (Qtl) -->
+            <col style="width: 80px;">   <!-- Amount (Qtl) -->
+            <col style="width: 40px;">   <!-- Select -->
+            <col style="width: 40px;">   <!-- Billed -->
+          </colgroup>
+          
+      <thead>
+        <!-- Group Header Row -->
+        <tr class="group-header">
+          <th colspan="3">Sauda Details</th>
+          <th colspan="2">Party Info</th>
+          <th colspan="3">Txn Info</th>
+          <th colspan="3">Rates by Bori</th>
+          <th colspan="3">Rates by Quintal</th>
+          <th colspan="2">Actions</th>
         </tr>
-    </thead>
-    <tbody id="transactionBody">
-        <!-- Transactions will be inserted dynamically -->
-    </tbody>
-</table>
+        <!-- Sub Header Row -->
+        <tr class="sub-header">
+          <th>Tid</th>
+          <th>S No</th>
+          <th>Date</th>
+          <th>Seller</th>
+          <th>Buyer</th>
+          <th>TXN Type</th>
+          <th>Item</th>
+          <th>Bhav</th>
+          <th>Qty</th>
+          <th>Brok</th>
+          <th>Amount</th>
+          <th>Qtl </th>
+          <th>Rate</th>
+          <th>Amount (Qtl)</th>
+          <th>Select <br><input type="checkbox" id="selectAll"></th>
+          <th>Billed</th>
+        </tr>
+      </thead>
+      <tbody id="transactionBody">
+        <!-- Data will be injected here -->
+      </tbody>
+    </table>
+  </div>
+  
+  
+  
 
     
-        <div class="total-section">
-            <strong>Total Amount: </strong> ₹<span id="totalAmount">0.00</span>
-        </div>
+  <div class="total-section">
+    <div>
+        <strong>Total Amount (Bori Se):</strong> ₹<span id="totalAmount">0.00</span>
+    </div>
+    <div>
+        <strong>Total Amount (Quintal Se):</strong> ₹<span id="totalAmountQuint">0.00</span>
+    </div>
+</div>
+
     
         <div class="button-container">
             <button id="preview" class="print-btn">Preview </button>
